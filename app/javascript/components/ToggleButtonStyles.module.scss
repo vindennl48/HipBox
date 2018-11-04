@@ -1,0 +1,24 @@
+
+.wrapper {
+  display:       grid;
+  place-items:   center;
+  width:         40px;
+  height:        40px;
+  border-radius: 5px;
+  font-size:     12px;
+  border:        1px solid #ccc;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.on {
+  box-shadow: inset 2px 2px 5px #aaa;
+  //background-color: #fff4a8;
+  background-color: #ffa8a8;
+  transition: all 0.3s ease;
+}
+
+.off {
+  box-shadow: 2px 2px 5px #aaa;
+  transition: all 0.3s ease;
+}

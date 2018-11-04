@@ -1,0 +1,6 @@
+
+.wrapper {
+  display: grid;
+  grid-template: auto / repeat(5,1fr);
+  //grid-template: auto / repeat(auto-fit,minmax(10px,1fr));
+}
