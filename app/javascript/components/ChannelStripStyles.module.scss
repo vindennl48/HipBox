@@ -2,14 +2,12 @@
 
 .wrapper {
   display:     grid;
-  place-items: center;
   color:       $textcolor;
 
   .border {
     display:          grid;
-    grid-template:    auto / 1fr;
-    //place-items:      center;
-    padding:          5px;
+    grid-template:    30px auto / 1fr;
+    padding:          1vw;
     margin:           0px;
     border:           1px solid $fgcolor;
     border-radius:    10px;
@@ -22,10 +20,9 @@
     }
 
     .body {
-      display:           grid;
-      grid-template:     1fr / 1fr 1fr;
-      //grid-column-gap: 10px;
-      place-items:       center;
+      display:       grid;
+      grid-template: 1fr / 1fr 1fr;
+      place-items:   center;
 
       .slider { }
 
@@ -38,4 +35,3 @@
     }
   }
 }
-

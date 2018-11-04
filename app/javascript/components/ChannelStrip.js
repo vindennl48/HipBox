@@ -20,8 +20,9 @@ class ChannelStrip extends React.Component {
   }
 
   render () {
-    const { value } = this.state
-    const { label } = this.props
+    const { value }                      = this.state
+    const { label, soloIsDisabled }      = this.props
+    const { muteIsDisabled, soloRemote } = this.props
     return (
       <div className={styles.wrapper}>
 
@@ -46,8 +47,8 @@ class ChannelStrip extends React.Component {
 
             <div className={styles.buttons}>
               <div>{value}</div>
-              <ToggleButton label="Solo" color="yellow" />
-              <ToggleButton label="Mute" color="red" />
+              <ToggleButton label="Solo" color="yellow" isDisabled={soloIsDisabled} isRemote={soloRemote} />
+              <ToggleButton label="Mute" color="red"    isDisabled={muteIsDisabled} />
             </div>
 
           </div>

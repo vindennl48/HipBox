@@ -3,13 +3,27 @@
 .wrapper {
   display:       grid;
   place-items:   center;
-  width:         40px;
+  @media only screen and (min-width: 521px) {
+    width: 40px;
+  }
+  @media only screen and (max-width: 520px) {
+    width: 9vw;
+  }
   height:        40px;
   border-radius: 5px;
   font-size:     12px;
   border:        1px solid $fgcolor;
   box-shadow:    none;
   transition:    all 0.3s ease;
+}
+
+.disabled {
+  color:  $disabled;
+  border: 1px solid $disabled;
+}
+
+.remote {
+  background-color: #00aaaa;
 }
 
 .on {

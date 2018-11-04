@@ -113,9 +113,21 @@
 }
 .rangeslider-vertical .rangeslider__handle {
   width: 30px;
-  height: 10px;
+  height: 30px;
+  border-radius: 15px;
   left: -10px;
   box-shadow: none;
+}
+.rangeslider-vertical .rangeslider__handle:after {
+  content: ' ';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 6px;
+  left: 6px;
+  border-radius: 50%;
+  background-color: #dadada;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset, 0 -1px 3px rgba(0, 0, 0, 0.4) inset;
 }
 .rangeslider-vertical .rangeslider__handle-tooltip {
   left: -100%;
