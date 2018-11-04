@@ -20,7 +20,7 @@ class App extends React.Component {
 
   componentDidMount () {
     // uncomment when api is ready
-    //this.timer = setInterval(() => this.refreshData(), 1000)
+    //this.timer = setInterval(() => this.refreshData(), 2000)
   }
 
   componentWillUnmount () {
@@ -33,9 +33,9 @@ class App extends React.Component {
       .then((response) => { return response.json() })
       .then((data)     => {
         this.setState({
-          jamesSoloRemote: data.jamesSoloRemote,
-          jesseSoloRemote: data.jesseSoloRemote,
-          drumsSoloRemote: data.drumsSoloRemote,
+          jamesSoloRemote: data.james.solo,
+          jesseSoloRemote: data.jesse.solo,
+          drumsSoloRemote: data.drums.solo,
         })
       })
   }
