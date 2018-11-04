@@ -1,5 +1,8 @@
 // BASE
 //////////////////////////////
+
+@import 'rangeslider';
+
 html, body {
   margin: 0;
   height: 100%;
@@ -17,9 +20,10 @@ html {
 }
 
 body {
-  font-size:   16px;
-  line-height: 1.5;
-  font-family: helvetica;
+  font-size:        16px;
+  line-height:      1.5;
+  font-family:      helvetica;
+  background-color: black;
 
   //div { border: 1px solid black }
 }

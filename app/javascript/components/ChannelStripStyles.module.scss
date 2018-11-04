@@ -1,17 +1,25 @@
+@import "colors";
+
 .wrapper {
   display:     grid;
   place-items: center;
+  color:       $textcolor;
 
   .border {
-    display:       grid;
-    grid-template: auto / 1fr;
-    place-items:   center;
-    padding:       5px;
-    margin:        0px;
-    border:        1px solid #ccc;
-    border-radius: 10px;
+    display:          grid;
+    grid-template:    auto / 1fr;
+    //place-items:      center;
+    padding:          5px;
+    margin:           0px;
+    border:           1px solid $fgcolor;
+    border-radius:    10px;
+    background-color: $bgcolor;
 
-    .information { }
+    .information {
+      font-weight:   bold;
+      border-bottom: 1px solid $fgcolor;
+      text-align:    center;
+    }
 
     .body {
       display:           grid;
@@ -25,6 +33,7 @@
         display:       grid;
         grid-template: repeat(auto-fit,minmax(10px,40px)) / 1fr;
         grid-row-gap:  5px;
+        place-items:   center;
       }
     }
   }

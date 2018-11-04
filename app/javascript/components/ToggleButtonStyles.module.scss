@@ -1,3 +1,4 @@
+@import "colors";
 
 .wrapper {
   display:       grid;
@@ -6,19 +7,33 @@
   height:        40px;
   border-radius: 5px;
   font-size:     12px;
-  border:        1px solid #ccc;
-  box-shadow: none;
-  transition: all 0.3s ease;
+  border:        1px solid $fgcolor;
+  box-shadow:    none;
+  transition:    all 0.3s ease;
 }
 
 .on {
-  box-shadow: inset 2px 2px 5px #aaa;
+  box-shadow:         inset 2px 2px 5px $bgcolor;
   //background-color: #fff4a8;
-  background-color: #ffa8a8;
-  transition: all 0.3s ease;
+  transition:         all 0.3s ease;
+
+  &.red {
+    color:            black;
+    background-color: #ff7171;
+  }
+
+  &.yellow {
+    color:            black;
+    background-color: #fffb72;
+  }
+
+  &.green {
+    color:            black;
+    background-color: #71ff75;
+  }
 }
 
 .off {
-  box-shadow: 2px 2px 5px #aaa;
+  //box-shadow: 2px 2px 5px #aaa;
   transition: all 0.3s ease;
 }

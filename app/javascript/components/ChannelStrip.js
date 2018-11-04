@@ -9,7 +9,7 @@ class ChannelStrip extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      value: 0,
+      value: 84,
     }
   }
 
@@ -21,13 +21,14 @@ class ChannelStrip extends React.Component {
 
   render () {
     const { value } = this.state
+    const { label } = this.props
     return (
       <div className={styles.wrapper}>
 
         <div className={styles.border}>
 
           <div className={styles.information}>
-            <div>James</div>
+            <div>{label}</div>
           </div>
 
           <div className={styles.body}>
@@ -44,8 +45,9 @@ class ChannelStrip extends React.Component {
             </div>
 
             <div className={styles.buttons}>
-              <ToggleButton label="Solo" />
-              <ToggleButton label="Mute" />
+              <div>{value}</div>
+              <ToggleButton label="Solo" color="yellow" />
+              <ToggleButton label="Mute" color="red" />
             </div>
 
           </div>

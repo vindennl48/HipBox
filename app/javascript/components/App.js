@@ -8,23 +8,14 @@ import ChannelStrip from "./ChannelStrip"
 class App extends React.Component {
   render () {
     return (
-      <div>
-        <ChannelStrip />
+      <div className={styles.wrapper}>
+        <ChannelStrip label="James" />
+        <ChannelStrip label="Jesse" />
+        <ChannelStrip label="Mitch" />
+        <ChannelStrip label="Drums" />
+        <ChannelStrip label="HP Vol" />
       </div>
     )
-    //return (
-      //<React.Fragment>
-        //<div className={styles.wrapper}>
-          //<VolumeSlider label="James" />
-          //<VolumeSlider label="Jesse" />
-          //<VolumeSlider label="Mitch" />
-          //<VolumeSlider label="Drums" />
-          //<VolumeSlider label="HP Vol" />
-          //<VolumeSlider label="Click" />
-          //<VolumeSlider label="TlkBk" />
-        //</div>
-      //</React.Fragment>
-    //);
   }
 }
 

@@ -21,11 +21,14 @@ class ToggleButton extends React.Component {
   }
 
   render () {
-    const { label } = this.props
+    let   { label, color } = this.props
     const { value } = this.state
+    if (color == 'red')    { color = `${styles.on} ${styles.red}` }
+    if (color == 'yellow') { color = `${styles.on} ${styles.yellow}` }
+    if (color == 'green')  { color = `${styles.on} ${styles.green}` }
     return (
       <div
-        className={`${styles.wrapper} ${value ? styles.on : styles.off}`}
+        className={`${styles.wrapper} ${value ? color : styles.off}`}
         onClick={this.handleClick}
       >
         {label}
