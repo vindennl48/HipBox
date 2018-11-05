@@ -1,0 +1,53 @@
+@import "colors";
+
+.wrapper {
+  display:       grid;
+  place-items:   center;
+  @media only screen and (min-width: 521px) {
+    width: 40px;
+  }
+  @media only screen and (max-width: 520px) {
+    width: 9vw;
+  }
+  height:        40px;
+  border-radius: 5px;
+  font-size:     12px;
+  border:        1px solid $fgcolor;
+  box-shadow:    none;
+  transition:    all 0.3s ease;
+}
+
+.disabled {
+  color:  $disabled;
+  border: 1px solid $disabled;
+}
+
+.remote {
+  background-color: #00aaaa;
+}
+
+.on {
+  box-shadow:         inset 2px 2px 5px $bgcolor;
+  //background-color: #fff4a8;
+  transition:         all 0.3s ease;
+
+  &.red {
+    color:            black;
+    background-color: #ff7171;
+  }
+
+  &.yellow {
+    color:            black;
+    background-color: #fffb72;
+  }
+
+  &.green {
+    color:            black;
+    background-color: #71ff75;
+  }
+}
+
+.off {
+  //box-shadow: 2px 2px 5px #aaa;
+  transition: all 0.3s ease;
+}
