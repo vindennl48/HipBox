@@ -1,7 +1,38 @@
 import React from "react"
 import PropTypes from "prop-types"
-import styles from "./ToggleButtonStyles"
+import styled from "styled-components"
 
+
+let Button = styled.div`
+  display:       grid;
+  place-items:   center;
+  @media only screen and (min-width: 521px) { width: 40px; }
+  @media only screen and (max-width: 520px) { width: 9vw; }
+  height:        40px;
+  border-radius: 5px;
+  font-size:     12px;
+  border:        1px solid #777;
+  box-shadow:    none;
+  transition:    all 0.3s ease;
+
+  ${props => props.isDisabled ? `
+    color:  #444;
+    border: 1px solid #444;
+  ` : ''}
+
+  ${props => props.isRemote ? `
+    background-color: ${props.remoteColorActive};
+  ` : ''}
+
+  ${props => props.value ? `
+    box-shadow:       inset 2px 2px 5px #222;
+    color:            ${props.textColorActive};
+    background-color: ${props.bgColorActive};
+    transition:       all 0.3s ease;
+  ` : `
+    transition: all 0.3s ease;
+  `}
+`;
 
 class ToggleButton extends React.Component {
 
@@ -13,57 +44,41 @@ class ToggleButton extends React.Component {
   }
 
   componentDidMount() {
-    this.props.setValue(this.setValue)
-  }
-
-  setValue = (value) => {
-    this.props.onChange(value)
-    this.setState({ value: value })
-  }
-
-  handleClick = () => {
-    let { value } = this.state
-
-    //console.log('clicked')
-
-    value = value ? false : true
-
-    this.props.onChange(value)
-
-    this.setState({
-      value: value,
+    this.props.setValue((value) => {
+      this.setState({ value: value })
     })
   }
 
+  click = () => {
+    let { value } = this.state
+    value = value ? false : true
+    this.setState({ value: value, })
+    this.props.callback(value)
+  }
+
   render () {
-    const { label, color }         = this.props
-    const { isDisabled, isRemote } = this.props
-    const { value }                = this.state
-    let classes                    = `${styles.wrapper}`
-
-    if      (isDisabled)        { classes += ` ${styles.disabled}` }
-    else if (color == 'red')    { classes += value ? ` ${styles.on} ${styles.red}`    : ` ${styles.off}` }
-    else if (color == 'yellow') { classes += value ? ` ${styles.on} ${styles.yellow}` : ` ${styles.off}` }
-    else if (color == 'green')  { classes += value ? ` ${styles.on} ${styles.green}`  : ` ${styles.off}` }
-    if      (isRemote)          { classes += ` ${styles.remote}` }
-
+    const { value } = this.state
     return (
-      <div
-        className={classes}
-        onClick={isDisabled ? () => {} : this.handleClick}
+      <Button
+        {...this.props}
+        onClick={this.props.isDisabled ? () => {} : this.click}
+        value={value}
       >
-        {label}
-      </div>
+        {this.props.label}
+      </Button>
     );
   }
 }
 
 ToggleButton.defaultProps = {
-  setValue:   () => {},
-  onChange:   () => {},
-  label:      'no lbl',
-  isDisabled: false,
-  isRemote:   false,
+  setValue:          () => {},
+  callback:          () => {},
+  label:             'no lbl',
+  isDisabled:        false,
+  isRemote:          false,
+  bgColorActive:     '#50f442',
+  textColorActive:   '#000',
+  remoteColorActive: '#00aaaa',
 }
 
 export default ToggleButton

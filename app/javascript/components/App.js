@@ -5,13 +5,13 @@ import styles from "./AppStyles"
 //import HeadphoneVolume from "./HeadphoneVolume"
 //import ClickVolume from "./ClickVolume"
 //import TalkbackVolume from "./TalkbackVolume"
-import ToggleButton from "./ToggleButtonRaw"
+import MuteButton from "./MuteButton"
 
 
 class App extends React.Component {
   render () {
     return (
-      <ToggleButton label="Mute" />
+      <MuteButton variable="talkback_toggle" />
     )
     //return (
       //<div className={styles.wrapper}>
