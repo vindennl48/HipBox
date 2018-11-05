@@ -8,21 +8,36 @@ class ToggleButton extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      value: false
+      value: false,
     }
   }
 
+  componentDidMount() {
+    this.props.setValue(this.setValue)
+  }
+
+  setValue = (value) => {
+    this.props.onChange(value)
+    this.setState({ value: value })
+  }
+
   handleClick = () => {
-    console.log('clicked')
-    const { value } = this.state
+    let { value } = this.state
+
+    //console.log('clicked')
+
+    value = value ? false : true
+
+    this.props.onChange(value)
+
     this.setState({
-      value: value ? false : true,
+      value: value,
     })
   }
 
   render () {
-    let   { label, color }         = this.props
-    let   { isDisabled, isRemote } = this.props
+    const { label, color }         = this.props
+    const { isDisabled, isRemote } = this.props
     const { value }                = this.state
     let classes                    = `${styles.wrapper}`
 
@@ -41,6 +56,14 @@ class ToggleButton extends React.Component {
       </div>
     );
   }
+}
+
+ToggleButton.defaultProps = {
+  setValue:   () => {},
+  onChange:   () => {},
+  label:      'no lbl',
+  isDisabled: false,
+  isRemote:   false,
 }
 
 export default ToggleButton

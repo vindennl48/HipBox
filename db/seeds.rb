@@ -12,3 +12,7 @@ User.create([
   { email:'jesse@lof.com', password:'password' },
   { email:'sean@lof.com',  password:'password' },
 ])
+
+Variable.create([
+  { name:'talkback_toggle', status:false },
+])

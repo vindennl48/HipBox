@@ -9,14 +9,22 @@ class ChannelStrip extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      value: 84,
+      value: 0,
     }
   }
 
-  handleChange = (value) => {
-    this.setState({
-      value: value
-    })
+  componentDidMount() {
+    this.props.setValue(this.setValue)
+    this.props.setMute(this.setMute)
+  }
+
+  setValue = (value) => {
+    this.props.onChange(value)
+    this.setState({ value: value })
+  }
+
+  resetValue = () => {
+    this.setValue(84)
   }
 
   render () {
@@ -36,19 +44,30 @@ class ChannelStrip extends React.Component {
 
             <div className={styles.slider}>
               <Slider
-                value={value}
-                min={0}
-                max={127}
-                tooltip={false}
-                orientation="vertical"
-                onChange={this.handleChange}
+                value       = {value}
+                min         = {0}
+                max         = {127}
+                tooltip     = {false}
+                orientation = "vertical"
+                onChange    = {this.setValue}
               />
             </div>
 
             <div className={styles.buttons}>
-              <div>{value}</div>
-              <ToggleButton label="Solo" color="yellow" isDisabled={soloIsDisabled} isRemote={soloRemote} />
-              <ToggleButton label="Mute" color="red"    isDisabled={muteIsDisabled} />
+              <div onClick={this.resetValue}>{`${value == 84 ? '' : '*'}${value}`}</div>
+              <ToggleButton
+                label      = "Solo"
+                color      = "yellow"
+                isDisabled = {soloIsDisabled}
+                isRemote   = {soloRemote}
+              />
+              <ToggleButton
+                label      = "Mute"
+                color      = "red"
+                isDisabled = {muteIsDisabled}
+                onChange   = {this.props.onMuteChange}
+                setValue   = {(func) => { this.setMute = func }}
+              />
             </div>
 
           </div>
@@ -59,5 +78,17 @@ class ChannelStrip extends React.Component {
     );
   }
 }
+
+ChannelStrip.defaultProps = {
+  setValue:       () => {},
+  setMute:        () => {},
+  onChange:       () => {},
+  value:          0,
+  label:          'no lbl',
+  soloIsDisabled: false,
+  muteIsDisabled: false,
+  soloRemote:     false,
+}
+
 
 export default ChannelStrip
