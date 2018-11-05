@@ -6,13 +6,19 @@ import styles from "./AppStyles"
 //import ClickVolume from "./ClickVolume"
 //import TalkbackVolume from "./TalkbackVolume"
 import MuteButton from "./MuteButton"
+import SoloButton from "./SoloButton"
+import VolumeSlider from "./VolumeSlider"
 
 
 class App extends React.Component {
   render () {
     return (
-      <MuteButton variable="talkback_toggle" />
+      <div>
+        <MuteButton variable="talkback_toggle" />
+        <SoloButton />
+      </div>
     )
+        //<VolumeSlider variable="mitch_talkback_vol" />
     //return (
       //<div className={styles.wrapper}>
         //<HeadphoneVolume />

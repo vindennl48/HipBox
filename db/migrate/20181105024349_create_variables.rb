@@ -3,6 +3,7 @@ class CreateVariables < ActiveRecord::Migration[5.2]
     create_table :variables do |t|
       t.string :name
       t.boolean :status, default: false
+      t.integer :value, default: 0
 
       t.timestamps
     end

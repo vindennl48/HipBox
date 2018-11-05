@@ -3,12 +3,12 @@ import PropTypes from "prop-types"
 import ToggleButton from "./ToggleButton"
 
 
-class MuteButton extends React.Component {
+class SoloButton extends React.Component {
   constructor (props) {
     super(props)
 
     this.state = {
-      mute: null,
+      solo: null,
     }
   }
 
@@ -24,33 +24,33 @@ class MuteButton extends React.Component {
         body: JSON.stringify({ name: variable })
       })
         .then((response) => { return response.json() })
-        .then((mute)     => {
-          this.setValue(mute.status)
-          this.setState({ mute: {
-            id:     mute.id,
-            status: mute.status,
+        .then((solo)     => {
+          this.setValue(solo.status)
+          this.setState({ solo: {
+            id:     solo.id,
+            status: solo.status,
           }})
         })
     }
   }
 
   save = (value) => {
-    let { mute } = this.state
+    let { solo } = this.state
 
-    if (mute) {
-      mute.status = value
+    if (solo) {
+      solo.status = value
 
-      this.setState({ mute: mute })
+      this.setState({ solo: solo })
 
-      fetch(`/api/v1/variables/${mute.id}`, {
+      fetch(`/api/v1/variables/${solo.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(mute),
+        body: JSON.stringify(solo),
       })
         .then((response) => { return response.json() })
-        //.then((mute)     => { console.log(mute) })
+        //.then((solo)     => { console.log(solo) })
     }
   }
 
@@ -60,8 +60,8 @@ class MuteButton extends React.Component {
     return (
       <ToggleButton
         {...this.props}
-        label="Mute"
-        bgColorActive="#ff9393"
+        label="Solo"
+        bgColorActive="#fffb93"
         callback={this.save}
         setValue={(func) => { this.setValue = func }}
       />
@@ -69,8 +69,8 @@ class MuteButton extends React.Component {
   }
 }
 
-MuteButton.defaultProps = {
+SoloButton.defaultProps = {
   variable: null,
 }
 
-export default MuteButton
+export default SoloButton

@@ -23,10 +23,6 @@ ActiveRecord::Schema.define(version: 2018_11_05_024349) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "solo", default: false
-    t.integer "hpVol", default: 84
-    t.integer "clickVol", default: 84
-    t.integer "tbVol", default: 84
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -34,6 +30,7 @@ ActiveRecord::Schema.define(version: 2018_11_05_024349) do
   create_table "variables", force: :cascade do |t|
     t.string "name"
     t.boolean "status", default: false
+    t.integer "value", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

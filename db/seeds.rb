@@ -15,4 +15,5 @@ User.create([
 
 Variable.create([
   { name:'talkback_toggle', status:false },
+  { name:'mitch_talkback_vol', value:0 },
 ])
