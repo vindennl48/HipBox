@@ -27,23 +27,19 @@ class App extends React.Component {
 
   render () {
     const { currentUser } = this.state
-    if (currentUser) {
-      return (
-        <div className={styles.wrapper}>
-          <InstrumentVolume currentUser={currentUser.name} member="james" />
-          <InstrumentVolume currentUser={currentUser.name} member="jesse" />
-          <InstrumentVolume currentUser={currentUser.name} member="mitch" />
-          <InstrumentVolume currentUser={currentUser.name} member="drums" />
-          <HeadphoneVolume  currentUser={currentUser.name} />
-          <ClickVolume      currentUser={currentUser.name} />
-          <TalkbackVolume   currentUser={currentUser.name} />
-        </div>
-      )
-    } else {
-      return (
-        <div className={styles.loading_wrapper}>loading...</div>
-      )
-    }
+    return (
+      <div className={styles.wrapper}>
+        {
+        //<InstrumentVolume currentUser={currentUser.name} member="james" />
+        //<InstrumentVolume currentUser={currentUser.name} member="jesse" />
+        //<InstrumentVolume currentUser={currentUser.name} member="mitch" />
+        //<InstrumentVolume currentUser={currentUser.name} member="drums" />
+        //<HeadphoneVolume  currentUser={currentUser.name} />
+        //<ClickVolume      currentUser={currentUser.name} />
+        //<TalkbackVolume   currentUser={currentUser.name} />
+        }
+      </div>
+    )
   }
 }
 

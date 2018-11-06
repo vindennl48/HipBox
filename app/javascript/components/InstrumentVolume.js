@@ -43,8 +43,16 @@ class InstrumentVolume extends React.Component {
               <div onClick={() => { this.setVolume(84) }}>
                 {`${volume == 84 ? '' : '*'}${volume}`}
               </div>
-              <SoloButton isDisabled={true} variable={`${member}_${member}_solo`} />
-              <MuteButton variable={`${currentUser}_${member}_mute`} />
+
+              <SoloButton
+                isDisabled = {currentUser == member ? false : true}
+                variable   = {`${member}_${member}_solo`}
+              />
+
+              <MuteButton
+                variable = {`${currentUser}_${member}_mute`}
+              />
+
             </div>
 
           </div>

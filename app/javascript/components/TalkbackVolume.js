@@ -15,6 +15,7 @@ class TalkbackVolume extends React.Component {
 
   render () {
     const { volume } = this.state
+    const { currentUser } = this.props
     return (
       <div className={styles.wrapper}>
 
@@ -28,7 +29,7 @@ class TalkbackVolume extends React.Component {
 
             <div className={styles.slider}>
               <VolumeSlider
-                variable           = "mitch_talkback_vol"
+                variable           = {`${currentUser}_talkback_vol`}
                 sendValueToParent  = {(value) => { this.setState({ volume: value }) }}
                 getValueFromParent = {(func)  => { this.setVolume = func }}
               />

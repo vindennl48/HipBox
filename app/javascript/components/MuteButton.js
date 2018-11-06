@@ -16,21 +16,25 @@ class MuteButton extends React.Component {
     const { variable } = this.props
 
     if (variable) {
-      fetch("/api/v1/variables", {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: variable })
-      })
-        .then((response) => { return response.json() })
-        .then((mute)     => {
-          this.setValue(mute.status)
-          this.setState({ mute: {
-            id:     mute.id,
-            status: mute.status,
-          }})
+      let pollServer = () => {
+        fetch("/api/v1/variables", {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: variable })
         })
+          .then((response) => { return response.json() })
+          .then((mute)     => {
+            this.setValue(mute.status)
+            this.setState({ mute: {
+              id:     mute.id,
+              status: mute.status,
+            }})
+          })
+        setTimeout(pollServer, 1000)
+      }
+      setTimeout(pollServer, 1000)
     }
   }
 

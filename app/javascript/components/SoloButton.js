@@ -16,21 +16,25 @@ class SoloButton extends React.Component {
     const { variable } = this.props
 
     if (variable) {
-      fetch("/api/v1/variables", {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: variable })
-      })
-        .then((response) => { return response.json() })
-        .then((solo)     => {
-          this.setValue(solo.status)
-          this.setState({ solo: {
-            id:     solo.id,
-            status: solo.status,
-          }})
+      let pollServer = () => {
+        fetch("/api/v1/variables", {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: variable })
         })
+          .then((response) => { return response.json() })
+          .then((solo)     => {
+            this.setValue(solo.status)
+            this.setState({ solo: {
+              id:     solo.id,
+              status: solo.status,
+            }})
+          })
+        setTimeout(pollServer, 1000)
+      }
+      setTimeout(pollServer, 1000)
     }
   }
 

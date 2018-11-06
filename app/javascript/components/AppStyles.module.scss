@@ -14,3 +14,9 @@
     grid-template: auto / repeat(4,1fr);
   }
 }
+
+.loading_wrapper {
+  display:       grid;
+  grid-template: 100vh / 100vw;
+  place-items:   center;
+}

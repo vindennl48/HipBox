@@ -35,6 +35,21 @@ class VolumeSlider extends React.Component {
             value: volume.value,
           }})
         })
+
+      let pollServer = () => {
+        const { volume } = this.state
+        fetch(`/api/v1/variables/${volume.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(volume),
+        })
+          .then((response) => { return response.json() })
+          //.then((volume)     => { console.log(volume) })
+        setTimeout(pollServer, 1000)
+      }
+      setTimeout(pollServer, 1000)
     }
   }
 
