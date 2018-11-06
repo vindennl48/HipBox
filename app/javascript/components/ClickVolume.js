@@ -1,62 +1,52 @@
 import React from "react"
 import PropTypes from "prop-types"
+import styles from "./ChannelStripStyles"
 
-import ChannelStrip from "./ChannelStrip"
+import VolumeSlider from "./VolumeSlider"
+import SoloButton from "./SoloButton"
+import MuteButton from "./MuteButton"
 
 
 class ClickVolume extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
-    this.state = {
-      user: null
-    }
-  }
-
-  componentDidMount() {
-    fetch("/api/v1/users")
-      .then((response) => { return response.json() })
-      .then((user)     => {
-        this.setValue(user.clickVol)
-        this.setState({
-          user: {
-            id:       user.id,
-            clickVol: user.clickVol,
-          }
-        })
-      })
-  }
-
-  volumeChange = (value) => {
-    let { user } = this.state
-
-    if (user){
-      user.clickVol = value
-      this.setState({ user: user })
-
-      //console.log("volume: ", value)
-
-      fetch(`/api/v1/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(user),
-      })
-        .then((response) => { return response.json() })
-        //.then((data)     => { console.log(data) })
-    }
+    this.state = { volume: 0 }
   }
 
   render () {
+    const { volume } = this.state
     return (
-      <ChannelStrip
-        label          = "Click Vol"
-        soloIsDisabled = {true}
-        muteIsDisabled = {true}
-        soloRemote     = {false}
-        onChange       = {this.volumeChange}
-        setValue       = {(func) => { this.setValue = func }}
-      />
+      <div className={styles.wrapper}>
+
+        <div className={styles.border}>
+
+          <div className={styles.information}>
+            <div>Click Vol</div>
+          </div>
+
+          <div className={styles.body}>
+
+            <div className={styles.slider}>
+              <VolumeSlider
+                variable           = "mitch_talkback_vol"
+                sendValueToParent  = {(value) => { this.setState({ volume: value }) }}
+                getValueFromParent = {(func)  => { this.setVolume = func }}
+              />
+            </div>
+
+            <div className={styles.buttons}>
+              <div onClick={() => { this.setVolume(84) }}>
+                {`${volume == 84 ? '' : '*'}${volume}`}
+              </div>
+              <SoloButton isDisabled={true} />
+              <MuteButton isDisabled={true} />
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
     )
   }
 }

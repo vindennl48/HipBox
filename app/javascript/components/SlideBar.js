@@ -4,7 +4,7 @@ import PropTypes from "prop-types"
 import Slider from "react-rangeslider"
 
 
-class Slider extends React.Component {
+class SlideBar extends React.Component {
   constructor (props) {
     super(props)
 
@@ -39,9 +39,9 @@ class Slider extends React.Component {
   }
 }
 
-Slider.defaultProps = {
+SlideBar.defaultProps = {
   setValue: () => {},
   callback: () => {},
 }
 
-export default Slider
+export default SlideBar

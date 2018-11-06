@@ -2,31 +2,22 @@ import React from "react"
 import PropTypes from "prop-types"
 import styles from "./AppStyles"
 
-//import HeadphoneVolume from "./HeadphoneVolume"
-//import ClickVolume from "./ClickVolume"
-//import TalkbackVolume from "./TalkbackVolume"
-import MuteButton from "./MuteButton"
-import SoloButton from "./SoloButton"
-import VolumeSlider from "./VolumeSlider"
+import HeadphoneVolume from "./HeadphoneVolume"
+import ClickVolume from "./ClickVolume"
+import TalkbackVolume from "./TalkbackVolume"
+import InstrumentVolume from "./InstrumentVolume"
 
 
 class App extends React.Component {
   render () {
     return (
-      <div>
-        <MuteButton variable="talkback_toggle" />
-        <SoloButton />
+      <div className={styles.wrapper}>
+        <InstrumentVolume currentUser="mitch" member="james" />
+        <HeadphoneVolume />
+        <ClickVolume />
+        <TalkbackVolume />
       </div>
     )
-        //<VolumeSlider variable="mitch_talkback_vol" />
-    //return (
-      //<div className={styles.wrapper}>
-        //<HeadphoneVolume />
-        //<ClickVolume />
-        //<TalkbackVolume />
-      //</div>
-    //)
-
   }
 }
 

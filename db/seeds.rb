@@ -15,5 +15,9 @@ User.create([
 
 Variable.create([
   { name:'talkback_toggle', status:false },
-  { name:'mitch_talkback_vol', value:0 },
+  { name:'mitch_talkback_vol', value:84 },
+  { name:'mitch_hp_vol', value:84 },
+  { name:'mitch_james_vol', value:84 },
+  { name:'mitch_james_mute', status:false },
+  { name:'james_james_solo', status:false },
 ])

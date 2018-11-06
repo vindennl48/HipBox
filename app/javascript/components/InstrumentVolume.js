@@ -7,13 +7,18 @@ import SoloButton from "./SoloButton"
 import MuteButton from "./MuteButton"
 
 
-class HeadphoneVolume extends React.Component {
+class InstrumentVolume extends React.Component {
   constructor(props) {
     super(props)
     this.state = { volume: 0 }
   }
 
+  capitalize(word) {
+    return word.charAt(0).toUpperCase()+word.slice(1)
+  }
+
   render () {
+    const { currentUser, member } = this.props
     const { volume } = this.state
     return (
       <div className={styles.wrapper}>
@@ -21,14 +26,14 @@ class HeadphoneVolume extends React.Component {
         <div className={styles.border}>
 
           <div className={styles.information}>
-            <div>HP Vol</div>
+            <div>{this.capitalize(member)}</div>
           </div>
 
           <div className={styles.body}>
 
             <div className={styles.slider}>
               <VolumeSlider
-                variable           = "mitch_hp_vol"
+                variable           = {`${currentUser}_${member}_vol`}
                 sendValueToParent  = {(value) => { this.setState({ volume: value }) }}
                 getValueFromParent = {(func)  => { this.setVolume = func }}
               />
@@ -38,8 +43,8 @@ class HeadphoneVolume extends React.Component {
               <div onClick={() => { this.setVolume(84) }}>
                 {`${volume == 84 ? '' : '*'}${volume}`}
               </div>
-              <SoloButton isDisabled={true} />
-              <MuteButton isDisabled={true} />
+              <SoloButton isDisabled={true} variable={`${member}_${member}_solo`} />
+              <MuteButton variable={`${currentUser}_${member}_mute`} />
             </div>
 
           </div>
@@ -51,4 +56,4 @@ class HeadphoneVolume extends React.Component {
   }
 }
 
-export default HeadphoneVolume
+export default InstrumentVolume

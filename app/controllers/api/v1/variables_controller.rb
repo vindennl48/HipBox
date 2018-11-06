@@ -11,7 +11,7 @@ class Api::V1::VariablesController < Api::V1::BaseController
   end
 
   def variable_params
-    params.require(:variable).permit(:id, :name, :status)
+    params.require(:variable).permit(:id, :name, :status, :value)
   end
 
 end
