@@ -22,7 +22,7 @@ class ClickVolume extends React.Component {
         <div className={styles.border}>
 
           <div className={styles.information}>
-            <div>Click Vol</div>
+            <div>Click</div>
           </div>
 
           <div className={styles.body}>

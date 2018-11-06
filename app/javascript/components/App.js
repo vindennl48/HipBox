@@ -6,6 +6,7 @@ import HeadphoneVolume from "./HeadphoneVolume"
 import ClickVolume from "./ClickVolume"
 import TalkbackVolume from "./TalkbackVolume"
 import InstrumentVolume from "./InstrumentVolume"
+import ExtraChanStrip from "./ExtraChanStrip"
 
 
 class App extends React.Component {
@@ -37,6 +38,7 @@ class App extends React.Component {
           <HeadphoneVolume  currentUser={currentUser.name} />
           <ClickVolume      currentUser={currentUser.name} />
           <TalkbackVolume   currentUser={currentUser.name} />
+          <ExtraChanStrip   currentUser={currentUser.name} />
         </div>
       )
     } else {

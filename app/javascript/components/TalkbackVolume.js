@@ -22,7 +22,7 @@ class TalkbackVolume extends React.Component {
         <div className={styles.border}>
 
           <div className={styles.information}>
-            <div>Tlkbk Vol</div>
+            <div>Tlkbk</div>
           </div>
 
           <div className={styles.body}>

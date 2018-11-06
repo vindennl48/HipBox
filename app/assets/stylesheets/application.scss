@@ -2,6 +2,7 @@
 //////////////////////////////
 
 @import 'rangeslider';
+@import 'devise_login';
 
 html, body {
   margin: 0;
@@ -41,7 +42,9 @@ input {
   }
 }
 
-.wrapper {
+$linkColor: #eee;
+
+.ih-wrapper {
   display:       grid;
   grid-template: auto 1fr / 1fr;
   //place-items: center;
@@ -60,9 +63,13 @@ input {
 
     .sign-out {
       text-align: right;
-      color:      #4787ff;
-      a:visited {
-        color:      #4787ff;
+
+      a {
+        color: $linkColor;
+
+        &:visited {
+          color: $linkColor;
+        }
       }
     }
   }
