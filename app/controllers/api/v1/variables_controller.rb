@@ -14,4 +14,9 @@ class Api::V1::VariablesController < Api::V1::BaseController
     params.require(:variable).permit(:id, :name, :status, :value)
   end
 
+  private
+    def send_to_daw(variable)
+      $OSCRUBY.send OSC::Message.new(variable.osc, variable.value.to_i)
+    end
+
 end
