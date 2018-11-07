@@ -8,7 +8,8 @@ class BassFxToggle extends React.Component {
     super(props)
 
     this.state = {
-      fx: null,
+      fx:        null,
+      pollBlock: false,
     }
   }
 
@@ -26,15 +27,19 @@ class BassFxToggle extends React.Component {
         })
           .then((response) => { return response.json() })
           .then((fx)     => {
-            this.setValue(fx.status)
-            this.setState({ fx: {
-              id:     fx.id,
-              status: fx.status,
-            }})
+            if (!this.state.pollBlock) {
+              this.setValue(fx.status)
+              this.setState({ fx: {
+                id:     fx.id,
+                status: fx.status,
+              }})
+            } else {
+              this.setState({ pollBlock: false })
+            }
           })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+      pollServer()
     }
   }
 
@@ -44,7 +49,10 @@ class BassFxToggle extends React.Component {
     if (fx) {
       fx.status = value
 
-      this.setState({ fx: fx })
+      this.setState({
+        fx: fx,
+        pollBlock: true,
+      })
 
       fetch(`/api/v1/variables/${fx.id}`, {
         method: 'PUT',

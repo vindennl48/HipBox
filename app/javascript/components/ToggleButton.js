@@ -33,8 +33,8 @@ class ToggleButton extends React.Component {
       <Button
         {...this.props}
         isRemote = {isDisabled && value ? true : isRemote }
-        onClick = {isDisabled ? () => {} : this.click}
-        value   = {isDisabled ? false : value}
+        onClick  = {isDisabled ? () => {} : this.click}
+        value    = {isDisabled ? false : value}
       >
         {this.props.label}
       </Button>

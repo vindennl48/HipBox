@@ -8,7 +8,8 @@ class RecButton extends React.Component {
     super(props)
 
     this.state = {
-      rec: null,
+      rec:       null,
+      pollBlock: false,
     }
   }
 
@@ -26,15 +27,19 @@ class RecButton extends React.Component {
         })
           .then((response) => { return response.json() })
           .then((rec)     => {
-            this.setValue(rec.status)
-            this.setState({ rec: {
-              id:     rec.id,
-              status: rec.status,
-            }})
+            if (!this.state.pollBlock) {
+              this.setValue(rec.status)
+              this.setState({ rec: {
+                id:     rec.id,
+                status: rec.status,
+              }})
+            } else {
+              this.setState({ pollBlock: false })
+            }
           })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+      pollServer()
     }
   }
 
@@ -44,7 +49,10 @@ class RecButton extends React.Component {
     if (rec) {
       rec.status = value
 
-      this.setState({ rec: rec })
+      this.setState({
+        rec:       rec,
+        pollBlock: true,
+      })
 
       fetch(`/api/v1/variables/${rec.id}`, {
         method: 'PUT',
@@ -64,9 +72,9 @@ class RecButton extends React.Component {
     return (
       <ToggleButton
         {...this.props}
-        label           = "Rec"
+        label           = "REC"
         bgColorActive   = "#ff0000"
-        textColorActive = "#fff"
+        textColorActive = "#000"
         callback        = {this.save}
         setValue        = {(func) => { this.setValue = func }}
         width           = "50px"

@@ -8,7 +8,8 @@ class HPRerouteButton extends React.Component {
     super(props)
 
     this.state = {
-      hpr: null,
+      hpr:       null,
+      pollBlock: false,
     }
   }
 
@@ -26,15 +27,19 @@ class HPRerouteButton extends React.Component {
         })
           .then((response) => { return response.json() })
           .then((hpr)     => {
-            this.setValue(hpr.status)
-            this.setState({ hpr: {
-              id:     hpr.id,
-              status: hpr.status,
-            }})
+            if (!this.state.pollBlock) {
+              this.setValue(hpr.status)
+              this.setState({ hpr: {
+                id:     hpr.id,
+                status: hpr.status,
+              }})
+            } else {
+              this.setState({ pollBlock: false })
+            }
           })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+      pollServer()
     }
   }
 
@@ -44,7 +49,10 @@ class HPRerouteButton extends React.Component {
     if (hpr) {
       hpr.status = value
 
-      this.setState({ hpr: hpr })
+      this.setState({
+        hpr:       hpr,
+        pollBlock: true,
+      })
 
       fetch(`/api/v1/variables/${hpr.id}`, {
         method: 'PUT',

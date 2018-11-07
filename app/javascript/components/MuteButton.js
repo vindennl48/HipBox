@@ -8,7 +8,8 @@ class MuteButton extends React.Component {
     super(props)
 
     this.state = {
-      mute: null,
+      mute:      null,
+      pollBlock: false,
     }
   }
 
@@ -26,15 +27,19 @@ class MuteButton extends React.Component {
         })
           .then((response) => { return response.json() })
           .then((mute)     => {
-            this.setValue(mute.status)
-            this.setState({ mute: {
-              id:     mute.id,
-              status: mute.status,
-            }})
+            if (!this.state.pollBlock) {
+              this.setValue(mute.status)
+              this.setState({ mute: {
+                id:     mute.id,
+                status: mute.status,
+              }})
+            } else {
+              this.setState({ pollBlock: false })
+            }
           })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+      pollServer()
     }
   }
 
@@ -44,7 +49,10 @@ class MuteButton extends React.Component {
     if (mute) {
       mute.status = value
 
-      this.setState({ mute: mute })
+      this.setState({
+        mute:      mute,
+        pollBlock: true,
+      })
 
       fetch(`/api/v1/variables/${mute.id}`, {
         method: 'PUT',

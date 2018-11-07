@@ -8,7 +8,8 @@ class SoloButton extends React.Component {
     super(props)
 
     this.state = {
-      solo: null,
+      solo:      null,
+      pollBlock: false,
     }
   }
 
@@ -26,15 +27,19 @@ class SoloButton extends React.Component {
         })
           .then((response) => { return response.json() })
           .then((solo)     => {
-            this.setValue(solo.status)
-            this.setState({ solo: {
-              id:     solo.id,
-              status: solo.status,
-            }})
+            if (!this.state.pollBlock) {
+              this.setValue(solo.status)
+              this.setState({ solo: {
+                id:     solo.id,
+                status: solo.status,
+              }})
+            } else {
+              this.setState({ pollBlock: false })
+            }
           })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+      pollServer()
     }
   }
 
@@ -44,7 +49,10 @@ class SoloButton extends React.Component {
     if (solo) {
       solo.status = value
 
-      this.setState({ solo: solo })
+      this.setState({
+        solo:      solo,
+        pollBlock: true,
+      })
 
       fetch(`/api/v1/variables/${solo.id}`, {
         method: 'PUT',
