@@ -1,6 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
-import WideToggleButton from "./WideToggleButton"
+import ToggleButton from "./ToggleButton"
 
 
 class BassFxToggle extends React.Component {
@@ -54,7 +54,7 @@ class BassFxToggle extends React.Component {
         body: JSON.stringify(fx),
       })
         .then((response) => { return response.json() })
-        //.then((fx)     => { console.log(fx) })
+        //.then((fx) => { console.log(fx) })
     }
   }
 
@@ -62,10 +62,14 @@ class BassFxToggle extends React.Component {
 
   render () {
     return (
-      <WideToggleButton
+      <ToggleButton
         {...this.props}
         callback={this.save}
         setValue={(func) => { this.setValue = func }}
+        mediaQuery={`
+          @media only screen and (min-width: 741px) { width: 50px; }
+          @media only screen and (max-width: 740px) { width: 16vw; }
+        `}
       />
     );
   }

@@ -2,7 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import styles from "./ChannelStripStyles"
 
-import BassFxToggle from "./BassFxToggle"
+import BassFxButton from "./BassFxButton"
 
 
 class BassEffects extends React.Component {
@@ -26,27 +26,27 @@ class BassEffects extends React.Component {
 
           <div className={styles.body_extra}>
             <div className={styles.fx_buttons}>
-              <BassFxToggle
+              <BassFxButton
                 label="Lo-Cut"
                 variable="mitch_fx_locut"
                 bgColorActive="#aeff00"
               />
-              <BassFxToggle
+              <BassFxButton
                 label="Hi-Cut"
                 variable="mitch_fx_hicut"
                 bgColorActive="#fff600"
               />
-              <BassFxToggle
+              <BassFxButton
                 label="Dist"
                 variable="mitch_fx_dist"
                 bgColorActive="#ff7700"
               />
-              <BassFxToggle
+              <BassFxButton
                 label="Delay"
                 variable="mitch_fx_delay"
                 bgColorActive="#00f2ff"
               />
-              <BassFxToggle
+              <BassFxButton
                 label="Reverb"
                 variable="mitch_fx_reverb"
                 bgColorActive="#ff00e1"

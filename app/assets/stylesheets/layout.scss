@@ -1,0 +1,24 @@
+.body {
+  &.wrapper {
+    display:  grid;
+    grid-gap: 5px;
+    padding:  10px;
+
+    @media only screen and (min-width: 741px) {
+      grid-template: auto / repeat(auto-fit,minmax(10px,1fr));
+    }
+    @media only screen and (max-width: 740px) {
+      grid-template: auto / repeat(5,1fr);
+    }
+    @media only screen and (max-width: 520px) {
+      grid-template: auto / repeat(4,1fr);
+    }
+  }
+
+  &.loading {
+    display:       grid;
+    grid-template: 100vh / 100vw;
+    place-items:   center;
+  }
+}
+

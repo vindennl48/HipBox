@@ -1,6 +1,5 @@
 import React from "react"
 import PropTypes from "prop-types"
-import styles from "./ChannelStripStyles"
 
 import VolumeSlider from "./VolumeSlider"
 import SoloButton from "./SoloButton"
@@ -17,17 +16,17 @@ class HeadphoneVolume extends React.Component {
     const { volume } = this.state
     const { currentUser } = this.props
     return (
-      <div className={styles.wrapper}>
+      <div className="chan-strip wrapper">
 
-        <div className={styles.border}>
+        <div className="border">
 
-          <div className={styles.information}>
+          <div className="information">
             <div>HP Vol</div>
           </div>
 
-          <div className={styles.body}>
+          <div className="body">
 
-            <div className={styles.slider}>
+            <div className="slider">
               <VolumeSlider
                 variable           = {`${currentUser}_hp_vol`}
                 sendValueToParent  = {(value) => { this.setState({ volume: value }) }}
@@ -35,7 +34,7 @@ class HeadphoneVolume extends React.Component {
               />
             </div>
 
-            <div className={styles.buttons}>
+            <div className="buttons">
               <div onClick={() => { this.setVolume(84) }}>
                 {`${volume == 84 ? '' : '*'}${volume}`}
               </div>

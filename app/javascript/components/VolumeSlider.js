@@ -21,6 +21,7 @@ class VolumeSlider extends React.Component {
     })
 
     if (variable) {
+      // pull initial data from server
       fetch("/api/v1/variables", {
         method:  'PUT',
         headers: { 'Content-Type':'application/json' },
@@ -36,6 +37,7 @@ class VolumeSlider extends React.Component {
           }})
         })
 
+      // send data to server every 1s
       let pollServer = () => {
         const { volume } = this.state
         fetch(`/api/v1/variables/${volume.id}`, {
@@ -84,7 +86,7 @@ class VolumeSlider extends React.Component {
     }
   }
 
-  setValue() { /* call-forward for Slider.setValue */ }
+  setValue() { /* call-forward for SlideBar.setValue */ }
 
   render () {
     const { volume } = this.state

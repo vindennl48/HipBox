@@ -1,13 +1,13 @@
 .dl-wrapper {
   height:        100vh;
   display:       grid;
+  justify-items: center;
   @media only screen and (max-width: 520px) {
     grid-template: 30vh auto / 1fr;
   }
   @media only screen and (min-width: 521px) {
     grid-template: fit-content(100px) auto / 1fr;
   }
-  justify-items: center;
 
   .title {
     align-self: end;

@@ -1,8 +1,11 @@
 // BASE
 //////////////////////////////
 
-@import 'rangeslider';
+@import 'colors';
+@import 'layout';
 @import 'devise_login';
+@import 'rangeslider';
+@import 'channel_strip';
 
 html, body {
   margin: 0;

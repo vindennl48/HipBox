@@ -1,6 +1,5 @@
 import React from "react"
 import PropTypes from "prop-types"
-import styles from "./ChannelStripStyles"
 
 import RecButton from "./RecButton"
 import HPRerouteButton from "./HPRerouteButton"
@@ -22,16 +21,16 @@ class ExtraChanStrip extends React.Component {
     }
 
     return (
-      <div className={styles.wrapper}>
+      <div className="chan-strip wrapper">
 
-        <div className={styles.border}>
+        <div className="border">
 
-          <div className={styles.information}>
+          <div className="information">
             <div>Extra</div>
           </div>
 
-          <div className={styles.body_extra}>
-            <div className={styles.buttons}>
+          <div className="body_extra">
+            <div className="buttons">
               {hpr}
               <RecButton variable="record_toggle" />
             </div>

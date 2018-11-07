@@ -69,6 +69,9 @@ class RecButton extends React.Component {
         textColorActive = "#fff"
         callback        = {this.save}
         setValue        = {(func) => { this.setValue = func }}
+        width           = "50px"
+        height          = "50px"
+        mediaQuery      = ""
       />
     );
   }

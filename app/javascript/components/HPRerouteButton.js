@@ -69,6 +69,9 @@ class HPRerouteButton extends React.Component {
         textColorActive = "#000"
         callback        = {this.save}
         setValue        = {(func) => { this.setValue = func }}
+        width           = "50px"
+        height          = "50px"
+        mediaQuery      = ""
       />
     );
   }
