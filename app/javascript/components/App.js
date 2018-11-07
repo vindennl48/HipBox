@@ -8,6 +8,8 @@ import TalkbackVolume from "./TalkbackVolume"
 import InstrumentVolume from "./InstrumentVolume"
 import ExtraChanStrip from "./ExtraChanStrip"
 
+import BassEffects from "./BassEffects"
+
 
 class App extends React.Component {
   constructor(props) {
@@ -28,7 +30,14 @@ class App extends React.Component {
 
   render () {
     const { currentUser } = this.state
+    let mitch = null
+
     if (currentUser) {
+
+      if (currentUser.name == 'mitch') {
+        mitch = <BassEffects />
+      }
+
       return (
         <div className={styles.wrapper}>
           <InstrumentVolume currentUser={currentUser.name} member="james" />
@@ -39,6 +48,9 @@ class App extends React.Component {
           <ClickVolume      currentUser={currentUser.name} />
           <TalkbackVolume   currentUser={currentUser.name} />
           <ExtraChanStrip   currentUser={currentUser.name} />
+
+          {mitch}
+
         </div>
       )
     } else {

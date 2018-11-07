@@ -1,7 +1,7 @@
 
 .wrapper {
   display:       grid;
-  grid-gap:      2vw;
+  grid-gap:      5px;
   padding:       10px;
 
   @media only screen and (min-width: 741px) {
@@ -13,6 +13,12 @@
   @media only screen and (max-width: 520px) {
     grid-template: auto / repeat(4,1fr);
   }
+
+  //.effects {
+    //grid-column:  span 2;
+    //justify-self: center;
+    //align-self:   center;
+  //}
 }
 
 .loading_wrapper {

@@ -42,11 +42,40 @@
       place-items: center;
 
       .buttons {
-        display:       grid;
-        grid-template: repeat(auto-fit,minmax(10px,40px)) / 1fr;
-        grid-row-gap:  5px;
-        place-items:   center;
+        display:        grid;
+        grid-template:  repeat(auto-fit,minmax(10px,40px)) / 1fr;
+        grid-row-gap:   5px;
+        place-items:    center;
+        padding-top:    10px;
+        padding-bottom: 10px;
+      }
+
+      .fx_buttons {
+        display:        grid;
+        @media only screen and (min-width: 741px) {
+          grid-template: repeat(5,1fr) / 1fr;
+        }
+        @media only screen and (max-width: 740px) {
+          grid-template: repeat(5,1fr) / 1fr;
+        }
+        @media only screen and (max-width: 520px) {
+          grid-template:  1fr / repeat(5,1fr);
+        }
+        grid-gap:       5px;
+        place-items:    center;
+        padding-top:    10px;
+        padding-bottom: 10px;
       }
     }
+  }
+}
+
+.wrapper_extra_wide {
+  @extend .wrapper;
+  @media only screen and (max-width: 740px) {
+    grid-column: span 2;
+  }
+  @media only screen and (max-width: 520px) {
+    grid-column: span 4;
   }
 }
