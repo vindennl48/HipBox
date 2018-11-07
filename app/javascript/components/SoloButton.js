@@ -37,6 +37,7 @@ class SoloButton extends React.Component {
               this.setState({ pollBlock: false })
             }
           })
+          .catch(() => { location.reload() })
         setTimeout(pollServer, 1000)
       }
       pollServer()

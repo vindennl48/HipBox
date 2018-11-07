@@ -21,22 +21,6 @@ class VolumeSlider extends React.Component {
     })
 
     if (variable) {
-      // pull initial data from server
-      fetch("/api/v1/variables", {
-        method:  'PUT',
-        headers: { 'Content-Type':'application/json' },
-        body:    JSON.stringify({ name: variable })
-      })
-        .then((response) => { return response.json() })
-        .then((volume)   => {
-          this.setValue(volume.value)
-          this.sendValueToParent(volume.value)
-          this.setState({ volume: {
-            id:    volume.id,
-            value: volume.value,
-          }})
-        })
-
       // send data to server every 1s
       let pollServer = () => {
         const { volume } = this.state
@@ -51,7 +35,23 @@ class VolumeSlider extends React.Component {
           //.then((volume)     => { console.log(volume) })
         setTimeout(pollServer, 1000)
       }
-      setTimeout(pollServer, 1000)
+
+      // pull initial data from server
+      fetch("/api/v1/variables", {
+        method:  'PUT',
+        headers: { 'Content-Type':'application/json' },
+        body:    JSON.stringify({ name: variable })
+      })
+        .then((response) => { return response.json() })
+        .then((volume)   => {
+          this.setValue(volume.value)
+          this.sendValueToParent(volume.value)
+          this.setState({ volume: {
+            id:    volume.id,
+            value: volume.value,
+          }})
+          pollServer()
+        })
     }
   }
 
