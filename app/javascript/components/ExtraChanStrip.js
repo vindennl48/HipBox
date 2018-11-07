@@ -3,6 +3,7 @@ import PropTypes from "prop-types"
 import styles from "./ChannelStripStyles"
 
 import RecButton from "./RecButton"
+import HPRerouteButton from "./HPRerouteButton"
 
 
 class ExtraChanStrip extends React.Component {
@@ -14,6 +15,12 @@ class ExtraChanStrip extends React.Component {
   render () {
     const { volume } = this.state
     const { currentUser } = this.props
+
+    let hpr = null
+    if (currentUser == 'mitch') {
+      hpr = <HPRerouteButton variable="hpr_toggle" />
+    }
+
     return (
       <div className={styles.wrapper}>
 
@@ -25,10 +32,10 @@ class ExtraChanStrip extends React.Component {
 
           <div className={styles.body_extra}>
             <div className={styles.buttons}>
+              {hpr}
               <RecButton variable="record_toggle" />
             </div>
           </div>
-
 
         </div>
 
