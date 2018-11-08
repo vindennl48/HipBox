@@ -1,0 +1,64 @@
+$TFade:     all 0.3s ease;
+
+$boxWidth:  45px;
+$boxHeight: 45px;
+
+//////////////////////////////////////////////////
+
+.cs-btn {
+  display:          grid;
+  place-items:      center;
+
+  width:            $boxWidth;
+  height:           $boxHeight;
+
+  border:           1px solid #777;
+  border-radius:    5px;
+  box-shadow:       none;
+
+  font-size:        16px;
+  background-color: transparent;
+  transition:       $TFade;
+
+  &.toggle {
+    &.true {
+      box-shadow:       inset 2px 2px 5px #222;
+      color:            black;
+      background-color: #89ff99;
+      transition:       $TFade;
+
+      &.mute {
+        background-color: #ff8989;
+      }
+      &.solo {
+        background-color: #fff989;
+      }
+    }
+
+    &.false {
+      transition: $TFade;
+    }
+  }
+
+  &.disabled {
+    color:  #444;
+    border: 1px solid #444;
+  }
+}
+
+.cs-value-display {
+  display:          grid;
+  place-items:      center;
+
+  width:            $boxWidth;
+  height:           $boxHeight;
+
+  color:            white;
+  background-color: transparent;
+}
+
+.channel-strip {
+  place-content: stretch;
+  display:       grid;
+  border:        1px solid #777;
+}
