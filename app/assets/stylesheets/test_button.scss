@@ -1,7 +1,14 @@
-$TFade:     all 0.3s ease;
+$TFade:      all 0.3s ease;
 
-$boxWidth:  45px;
-$boxHeight: 45px;
+$boxWidth:   40px;
+$boxHeight:  40px;
+
+$textColor:  #fff;
+
+$fgColor:    #777;
+$fgDisabled: #444;
+
+$bgColor:    #111;
 
 //////////////////////////////////////////////////
 
@@ -12,11 +19,11 @@ $boxHeight: 45px;
   width:            $boxWidth;
   height:           $boxHeight;
 
-  border:           1px solid #777;
+  border:           1px solid $fgColor;
   border-radius:    5px;
   box-shadow:       none;
 
-  font-size:        16px;
+  font-size:        12px;
   background-color: transparent;
   transition:       $TFade;
 
@@ -41,8 +48,8 @@ $boxHeight: 45px;
   }
 
   &.disabled {
-    color:  #444;
-    border: 1px solid #444;
+    color:  $fgDisabled;
+    border: 1px solid $fgDisabled;
   }
 }
 
@@ -53,12 +60,45 @@ $boxHeight: 45px;
   width:            $boxWidth;
   height:           $boxHeight;
 
-  color:            white;
+  color:            $textColor;
   background-color: transparent;
 }
 
+.test-wrap {
+  display: grid;
+  width:   100px;
+  height:  100px;
+}
+
 .channel-strip {
-  place-content: stretch;
-  display:       grid;
-  border:        1px solid #777;
+  place-content:    stretch;
+  display:          grid;
+  grid-template:    fit-content(200px) auto / 1fr;
+  border:           1px solid $fgColor;
+  border-radius:    10px;
+  color:            $textColor;
+  background-color: $bgColor;
+
+  .information {
+    font-weight:   bold;
+    border-bottom: 1px solid $fgcolor;
+    text-align:    center;
+  }
+
+  .body {
+    display:       grid;
+    grid-template: 1fr / 1fr 1fr;
+    place-items:   center;
+    padding:       5px;
+
+    .slider {
+      height: 150px;
+    }
+
+    .buttons {
+      display:  grid;
+      grid-gap: 5px;
+    }
+  }
+
 }

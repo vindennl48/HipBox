@@ -34,7 +34,9 @@ class App extends React.Component {
           <SoloButton variable="mitch_mitch_solo" />
           <SoloButton />
           <ValueDisplay />
-          <ChanStrip />
+          <div className="test-wrap">
+            <ChanStrip />
+          </div>
         </div>
       )
 
