@@ -1,10 +1,9 @@
 import React from "react"
 import PropTypes from "prop-types"
 
-import MuteButton from "./Buttons/MuteButton"
-import SoloButton from "./Buttons/SoloButton"
-import ValueDisplay from "./Displays/ValueDisplay"
 import ChanStrip from "./ChanStrips/ChanStrip"
+import ChanStripSys from "./ChanStrips/ChanStripSys"
+import ChanStripExtra from "./ChanStrips/ChanStripExtra"
 
 
 class App extends React.Component {
@@ -13,7 +12,6 @@ class App extends React.Component {
 
     this.state = {
       currentUser: null,
-      name: 'setValue',
     }
   }
 
@@ -33,24 +31,21 @@ class App extends React.Component {
     if (currentUser) {
 
       return (
-        <div>
-          <MuteButton variable="mitch_james_mute" />
-          <SoloButton variable="mitch_mitch_solo" />
-          <SoloButton />
-          <button onClick={()=>{ this.setValue(84) }}>{this.state.name}</button>
-          <ValueDisplay
-            setValue={(func)=>{ this.setValue = func }}
-            callback={(value)=>{ this.setState({ name: value }) }}
-          />
-          <div className="test-wrap">
-            <ChanStrip />
-          </div>
+        <div className="bo-wrapper">
+          <ChanStrip    user={currentUser.name} chan="james" />
+          <ChanStrip    user={currentUser.name} chan="jesse" />
+          <ChanStrip    user={currentUser.name} chan="mitch" />
+          <ChanStrip    user={currentUser.name} chan="drums" />
+          <ChanStripSys user={currentUser.name} chan="hp"       label="HPVol" />
+          <ChanStripSys user={currentUser.name} chan="click"    label="Click" />
+          <ChanStripSys user={currentUser.name} chan="talkback" label="Tlkbk" />
+          <ChanStripExtra />
         </div>
       )
 
     } else {
       return (
-        <div>loading..</div>
+        <div className="bo-loading">loading..</div>
       )
     }
   }

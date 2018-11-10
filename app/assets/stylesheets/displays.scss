@@ -1,0 +1,10 @@
+.cs-value-display {
+  display:          grid;
+  place-items:      center;
+
+  width:            $boxWidth;
+  height:           $boxHeight;
+
+  color:            $textColor;
+  background-color: transparent;
+}

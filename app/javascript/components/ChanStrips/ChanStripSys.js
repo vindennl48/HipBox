@@ -18,13 +18,13 @@ class ChanStrip extends React.Component {
 
   render () {
 
-    const { user, chan } = this.props
+    const { user, chan, label } = this.props
 
     return (
       <div className="channel-strip">
 
         <div className="information">
-          {this.capitalize(chan)}
+          {label}
         </div>
 
         <div className="body">
@@ -43,12 +43,9 @@ class ChanStrip extends React.Component {
                 setValue={(func)=>{ this.setDisplay = func }}
                 callback={(value)=>{ this.setVolume(value) }}
               />
-              <SoloButton
-                isDisabled={user == chan ? false : true}
-                variable={`${chan}_${chan}_solo`}
-              />
+              <SoloButton />
               <MuteButton
-                variable={`${user}_${chan}_mute`}
+                variable={chan == 'talkback' ? 'talkback_toggle' : ''}
               />
             </div>
           </div>

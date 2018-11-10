@@ -5,7 +5,7 @@ import ChanStripButton from "./ChanStripButton"
 
 const SoloButton = (props) => (
   <ChanStripButton
-    className = {`cs-btn ${props.variable ? 'toggle solo' : 'disabled' }`}
+    className = {`cs-btn ${props.variable && !props.isDisabled ? 'toggle solo' : 'disabled' }`}
     variable  = {props.variable}
   >
     Solo

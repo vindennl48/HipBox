@@ -4,6 +4,12 @@ import PropTypes from "prop-types"
 
 const ToggleAjax = (WrappedComponent) => {
   return class HOC extends React.Component {
+
+    static defaultProps = {
+      setValue: ()=>{},
+      callback: ()=>{},
+    }
+
     constructor (props) {
       super(props)
 

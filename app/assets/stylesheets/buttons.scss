@@ -1,0 +1,56 @@
+.cs-btn {
+  display:          grid;
+  place-items:      center;
+
+  width:            $boxWidth;
+  @media only screen and (max-width: 380px) { width: 10vw; }
+  height:           $boxHeight;
+
+  border:           1px solid $fgColor;
+  border-radius:    5px;
+  box-shadow:       none;
+
+  font-size:        12px;
+  background-color: transparent;
+  transition:       $TFade;
+
+  &.toggle {
+    &.true {
+      box-shadow:       inset 2px 2px 5px #222;
+      color:            black;
+      background-color: #89ff99;
+      transition:       $TFade;
+
+      &.mute {
+        background-color: #ff8989;
+      }
+      &.solo {
+        background-color: #fff989;
+      }
+      &.rec {
+        color: white;
+        font-weight: bold;
+        background-color: #ff2b2b;
+      }
+    }
+
+    &.false {
+      transition: $TFade;
+    }
+  }
+
+  &.disabled {
+    color:  $fgDisabled;
+    border: 1px solid $fgDisabled;
+
+    &.true {
+      background-color: $bgDisabledOn;
+      transition:       $TFade;
+    }
+
+    &.false {
+      transition: $TFade;
+    }
+  }
+}
+
