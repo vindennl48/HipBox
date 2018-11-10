@@ -4,6 +4,11 @@ import PropTypes from "prop-types"
 
 class ToggleButton extends React.Component {
 
+  static defaultProps = {
+    setValue:   () => {},
+    callback:   () => {},
+  }
+
   constructor (props) {
     super(props)
     this.state = {
@@ -36,10 +41,4 @@ class ToggleButton extends React.Component {
     );
   }
 }
-
-ToggleButton.defaultProps = {
-  setValue:   () => {},
-  callback:   () => {},
-}
-
 export default ToggleButton

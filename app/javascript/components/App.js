@@ -6,12 +6,14 @@ import SoloButton from "./Buttons/SoloButton"
 import ValueDisplay from "./Displays/ValueDisplay"
 import ChanStrip from "./ChanStrips/ChanStrip"
 
+
 class App extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      currentUser: null
+      currentUser: null,
+      name: 'setValue',
     }
   }
 
@@ -23,6 +25,8 @@ class App extends React.Component {
       })
   }
 
+  setValue() { console.log('not working') }
+
   render () {
     const { currentUser } = this.state
 
@@ -33,7 +37,11 @@ class App extends React.Component {
           <MuteButton variable="mitch_james_mute" />
           <SoloButton variable="mitch_mitch_solo" />
           <SoloButton />
-          <ValueDisplay />
+          <button onClick={()=>{ this.setValue(84) }}>{this.state.name}</button>
+          <ValueDisplay
+            setValue={(func)=>{ this.setValue = func }}
+            callback={(value)=>{ this.setState({ name: value }) }}
+          />
           <div className="test-wrap">
             <ChanStrip />
           </div>

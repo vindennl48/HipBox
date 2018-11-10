@@ -3,6 +3,8 @@ import PropTypes from "prop-types"
 
 import MuteButton from "../Buttons/MuteButton"
 import SoloButton from "../Buttons/SoloButton"
+import ValueDisplay from "../Displays/ValueDisplay"
+import ChanStripSlider from "../Sliders/ChanStripSlider"
 
 
 class ChanStrip extends React.Component {
@@ -17,10 +19,18 @@ class ChanStrip extends React.Component {
         <div className="body">
 
           <div className="slider">
-            hey
+            <ChanStripSlider
+              variable="mitch_mitch_vol"
+              setValue={(func)=>{ this.setVolume = func }}
+              callback={(value)=>{ this.setDisplay(value) }}
+            />
           </div>
 
           <div className="buttons">
+            <ValueDisplay
+              setValue={(func)=>{ this.setDisplay = func }}
+              callback={(value)=>{ this.setVolume(value) }}
+            />
             <SoloButton isDisabled={true} variable="mitch_mitch_solo" />
             <MuteButton />
           </div>

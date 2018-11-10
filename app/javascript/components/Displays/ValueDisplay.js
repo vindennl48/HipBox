@@ -4,6 +4,11 @@ import PropTypes from "prop-types"
 
 class ValueDisplay extends React.Component {
 
+  static defaultProps = {
+    setValue:   () => {},
+    callback:   () => {},
+  }
+
   constructor (props) {
     super(props)
     this.state = {
@@ -33,10 +38,4 @@ class ValueDisplay extends React.Component {
     );
   }
 }
-
-ValueDisplay.defaultProps = {
-  setValue:   () => {},
-  callback:   () => {},
-}
-
 export default ValueDisplay

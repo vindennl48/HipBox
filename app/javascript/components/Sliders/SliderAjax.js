@@ -2,44 +2,61 @@ import React from "react"
 import PropTypes from "prop-types"
 
 
-const ToggleAjax = (WrappedComponent) => {
+const SliderAjax = (WrappedComponent) => {
   return class HOC extends React.Component {
+    static defaultProps = {
+      setValue: ()=>{},
+      callback: ()=>{},
+    }
+
     constructor (props) {
       super(props)
 
       this.state = {
-        record:    null,
-        pollBlock: false,
+        record: null,
       }
     }
 
     componentDidMount() {
-      const { variable } = this.props
+      const { variable, callback } = this.props
+
+      this.props.setValue((value) => { this.setValue(value) })
+
       if (variable) {
+
         let pollServer = () => {
-          fetch("/api/v1/variables", {
+          const { record } = this.state
+          fetch(`/api/v1/variables/${record.id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: variable })
+            body: JSON.stringify(record),
           })
             .then((response) => { return response.json() })
-            .then((record)     => {
-              if (!this.state.pollBlock) {
-                this.setValue(record.status)
-                this.setState({ record: {
-                  id:     record.id,
-                  status: record.status,
-                }})
-              } else {
-                this.setState({ pollBlock: false })
-              }
-            })
-            .catch((error) => { alert(`Error: "${error}"`);location.reload() })
+            //.then((record)     => { console.log(record) })
           setTimeout(pollServer, 1000)
         }
-        pollServer()
+
+        fetch("/api/v1/variables", {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: variable })
+        })
+          .then((response) => { return response.json() })
+          .then((record)     => {
+            callback(record.value)
+            this.setValue(record.value)
+            this.setState({ record: {
+              id:    record.id,
+              value: record.value,
+            }})
+            pollServer()
+          })
+          .catch((error) => { alert(`Error: "${error}"`);location.reload() })
+
       }
     }
 
@@ -49,12 +66,9 @@ const ToggleAjax = (WrappedComponent) => {
       this.props.callback(value)
 
       if (record) {
-        record.status = value
+        record.value = value
 
-        this.setState({
-          record:      record,
-          pollBlock: true,
-        })
+        this.setState({ record: record })
 
         fetch(`/api/v1/variables/${record.id}`, {
           method: 'PUT',
@@ -82,4 +96,4 @@ const ToggleAjax = (WrappedComponent) => {
   }
 }
 
-export default ToggleAjax
+export default SliderAjax
