@@ -5,7 +5,7 @@ RUN gem install rails -v 5.2.0
 
 WORKDIR /app
 ADD Gemfile Gemfile.lock /app/
-RUN bundle install
+RUN gem install rack -v 2.0.5 && gem uninstall rack -v 2.0.6 && bundle install
 
 ADD . .
 CMD ["puma"]
