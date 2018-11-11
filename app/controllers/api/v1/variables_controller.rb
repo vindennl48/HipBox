@@ -5,11 +5,11 @@ class Api::V1::VariablesController < Api::V1::BaseController
   end
 
   def update
-    #variable = Variable.find(params[:id])
-    #variable.update_attributes(variable_params)
-    SaveVariableJob.perform_later variable_params
-    send_to_daw(variable_params)
-    render json: variable_params
+    variable = Variable.find(params[:id])
+    variable.update_attributes(variable_params)
+    #SaveVariableJob.perform_later variable_params
+    send_to_daw(variable)
+    render json: variable
   end
 
   def variable_params
