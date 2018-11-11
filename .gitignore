@@ -29,3 +29,7 @@
 /node_modules
 yarn-debug.log*
 .yarn-integrity
+
+# Ignore vagrant files
+/VAGRANT
+*.bat
