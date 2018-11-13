@@ -70,15 +70,15 @@ const SliderAjax = (WrappedComponent) => {
 
         this.setState({ record: record })
 
-        fetch(`/api/v1/variables/${record.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(record),
-        })
-          .then((response) => { return response.json() })
-          //.then((record)     => { console.log(record) })
+        //fetch(`/api/v1/variables/${record.id}`, {
+          //method: 'PUT',
+          //headers: {
+            //'Content-Type': 'application/json'
+          //},
+          //body: JSON.stringify(record),
+        //})
+          //.then((response) => { return response.json() })
+          ////.then((record)     => { console.log(record) })
       }
     }
 
