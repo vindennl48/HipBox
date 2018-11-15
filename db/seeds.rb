@@ -14,6 +14,15 @@ User.create([
 ])
 
 Variable.create([
+  { name: 'stop_all',           status: false, type_of: 'boolean' },
+  { name: 'play_button',        status: false, type_of: 'boolean' },
+  { name: 'record_button',      status: false, type_of: 'boolean' },
+  { name: 'advance_playhead',   status: false, type_of: 'boolean' },
+  { name: 'stop_loops',         status: false, type_of: 'boolean' },
+  { name: 'stop_playhead',      status: false, type_of: 'boolean' },
+
+
+
   { name: 'mitch_fx_locut',     status: false, type_of: 'boolean' },
   { name: 'mitch_fx_hicut',     status: false, type_of: 'boolean' },
   { name: 'mitch_fx_dist',      status: false, type_of: 'boolean' },
@@ -22,6 +31,7 @@ Variable.create([
 
   { name: 'talkback_toggle',    status: false, type_of: 'boolean' },
   { name: 'record_toggle',      status: false, type_of: 'boolean' },
+  { name: 'play_toggle',        status: false, type_of: 'boolean' },
   { name: 'hpr_toggle',         status: false, type_of: 'boolean' },
 
   { name: 'mitch_james_vol',    value:  84,    type_of: 'value' },

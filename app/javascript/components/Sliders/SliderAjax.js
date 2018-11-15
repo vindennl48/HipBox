@@ -55,7 +55,7 @@ const SliderAjax = (WrappedComponent) => {
             }})
             pollServer()
           })
-          .catch((error) => { alert(`Error: "${error}"`);location.reload() })
+          //.catch((error) => { alert(`Error: "${error}"`);location.reload() })
 
       }
     }

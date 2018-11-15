@@ -42,7 +42,7 @@ const ToggleAjax = (WrappedComponent) => {
                 this.setState({ pollBlock: false })
               }
             })
-            .catch((error) => { alert(`Error: "${error}"`);location.reload() })
+            //.catch((error) => { alert(`Error: "${error}"`);location.reload() })
           setTimeout(pollServer, 1000)
         }
         pollServer()

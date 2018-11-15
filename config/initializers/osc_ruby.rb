@@ -20,11 +20,9 @@ Thread.new do
     server = OSC::Server.new 3002, local
 
     server.add_pattern /.*/ do |*args|
-      puts "received"
-      $OSCRUBY.send OSC::Message.new('/success', 1)
-
-      #name  = args[0][1..-1]
-      #value = args[1]
+      name  = args[0][1..-1]
+      value = args[1]
+      Variable.process_incoming(name: name, value: value)
       #record = Variable.find_by(name:name)
       #if record.type_of == 'boolean'
         #record.status = value == 1.0 ? true : false

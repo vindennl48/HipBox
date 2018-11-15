@@ -6,9 +6,11 @@ class Api::V1::VariablesController < Api::V1::BaseController
 
   def update
     variable = Variable.find(params[:id])
-    variable.update_attributes(variable_params)
-    #SaveVariableJob.perform_later variable_params
-    send_to_daw(variable)
+    if not Variable.process_incoming( name:variable.name, value:variable.type_of == 'boolean' ? params[:status] : params[:value] )
+      variable.update_attributes(variable_params)
+      #SaveVariableJob.perform_later variable_params
+      send_to_daw(variable)
+    end
     render json: variable
   end
 
