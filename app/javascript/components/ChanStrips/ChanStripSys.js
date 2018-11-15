@@ -31,21 +31,24 @@ class ChanStrip extends React.Component {
 
           <div className="slider">
             <ChanStripSlider
-              variable={`${user}_${chan}_vol`}
-              setValue={(func)=>{ this.setVolume = func }}
-              callback={(value)=>{ this.setDisplay(value) }}
+              variable = {`${user}_${chan}_vol`}
+              setValue = {(func)  => { this.setVolume = func }}
+              callback = {(value) => { this.setDisplay(value) }}
             />
           </div>
 
           <div className="buttons">
             <div className="wrapper">
               <ValueDisplay
-                setValue={(func)=>{ this.setDisplay = func }}
-                callback={(value)=>{ this.setVolume(value) }}
+                setValue = {(func)  => { this.setDisplay = func }}
+                callback = {(value) => { this.setVolume(value) }}
               />
-              <SoloButton />
+              <SoloButton
+                isDisabled = {true}
+              />
               <MuteButton
-                variable={chan == 'talkback' ? 'talkback_toggle' : ''}
+                isDisabled = {chan == 'talkback' ? false : true}
+                variable   = {chan == 'talkback' ? 'talkback_toggle' : ''}
               />
             </div>
           </div>

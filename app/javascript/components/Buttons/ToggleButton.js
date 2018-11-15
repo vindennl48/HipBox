@@ -30,11 +30,11 @@ class ToggleButton extends React.Component {
   }
 
   render () {
-    const { value }      = this.state
+    const { value } = this.state
     return (
       <div
         className = {`${this.props.className} ${value}`}
-        onClick   = {this.click}
+        onClick   = {this.props.isDisabled ? ()=>{} : this.click}
       >
         {this.props.children}
       </div>

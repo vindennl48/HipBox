@@ -5,8 +5,9 @@ import ChanStripButton from "./ChanStripButton"
 
 const MuteButton = (props) => (
   <ChanStripButton
-    className = {`cs-btn ${props.variable ? 'toggle mute' : 'disabled' }`}
-    variable  = {props.variable}
+    isDisabled = {props.isDisabled}
+    className  = {`cs-btn ${props.variable ? 'toggle mute' : 'disabled' }`}
+    variable   = {props.variable}
   >
     Mute
   </ChanStripButton>
