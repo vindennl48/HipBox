@@ -14,63 +14,56 @@ const ToggleAjax = (WrappedComponent) => {
       super(props)
 
       this.state = {
-        record:    null,
-        pollBlock: false,
+        record: null,
       }
     }
 
     componentDidMount() {
       const { variable } = this.props
       if (variable) {
-        let pollServer = () => {
-          fetch("/api/v1/variables", {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name: variable })
-          })
-            .then((response) => { return response.json() })
-            .then((record)     => {
-              if (!this.state.pollBlock) {
-                this.setValue(record.status)
-                this.setState({ record: {
-                  id:     record.id,
-                  status: record.status,
-                }})
-              } else {
-                this.setState({ pollBlock: false })
-              }
-            })
-            //.catch((error) => { alert(`Error: "${error}"`);location.reload() })
-          setTimeout(pollServer, 1000)
-        }
-        pollServer()
+        let cable = ActionCable.createConsumer('/cable')
+
+        this.osc_data = cable.subscriptions.create({
+          channel: "OscDataChannel",
+          room: variable
+        }, {
+          connected: () => {
+            console.log(`ActionCable: connection established for "${variable}"`)
+            this.osc_data.askForData()
+            //this.pollServer()
+          },
+          disconnected: () => {
+            console.log(`ActionCable: connection disconnected for "${variable}"`)
+          },
+          received: (data) => {
+            const record = data.record
+            this.setValue(record.status)
+            this.setState({ record: {
+              id:    record.id,
+              status: record.status,
+            }})
+          },
+          askForData: () => {
+            this.osc_data.perform('askForData')
+          },
+          sendData: (record) => {
+            this.osc_data.perform('sendData', { record: record })
+          },
+        })
+
       }
     }
 
     save = (value) => {
       let { record } = this.state
-
       this.props.callback(value)
 
       if (record) {
         record.status = value
-
         this.setState({
-          record:      record,
-          pollBlock: true,
+          record:    record,
         })
-
-        fetch(`/api/v1/variables/${record.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(record),
-        })
-          .then((response) => { return response.json() })
-          //.then((record)     => { console.log(record) })
+        this.osc_data.sendData(record)
       }
     }
 

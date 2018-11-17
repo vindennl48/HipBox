@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@rails/webpacker": "3.5",
+    "actioncable": "^5.2.1",
     "babel-preset-react": "^6.24.1",
     "osc-js": "^2.0.2",
     "prop-types": "^15.6.2",
