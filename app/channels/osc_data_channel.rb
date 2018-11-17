@@ -10,6 +10,7 @@ class OscDataChannel < ApplicationCable::Channel
 
   # send data to client/browser
   def askForData
+    @variable = Variable.find(@variable.id)
     OscDataChannel.broadcast_to(@variable, {record: @variable})
   end
 

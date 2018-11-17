@@ -18,6 +18,11 @@ const ToggleAjax = (WrappedComponent) => {
       }
     }
 
+    pollServer = () => {
+      this.osc_data.askForData()
+      setTimeout(this.pollServer, 5000)
+    }
+
     componentDidMount() {
       const { variable } = this.props
       if (variable) {
@@ -30,7 +35,7 @@ const ToggleAjax = (WrappedComponent) => {
           connected: () => {
             console.log(`ActionCable: connection established for "${variable}"`)
             this.osc_data.askForData()
-            //this.pollServer()
+            this.pollServer()
           },
           disconnected: () => {
             console.log(`ActionCable: connection disconnected for "${variable}"`)
