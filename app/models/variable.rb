@@ -46,12 +46,29 @@ class Variable < ApplicationRecord
 
   def self.record_toggle
     record_toggle = Variable.find_by(name:'record_toggle')
+    $OSCRUBY.send OSC::Message.new('/record_button', 1.0)
+
     if not record_toggle.status
       record_toggle.update_attributes(status:true)
-      # change to record_button in production
-      $OSCRUBY.send OSC::Message.new('/record_button', 1.0)
-    else # remove this in production
-      self.stop_all
+    #else # remove this in production
+      #self.stop_all
+    end
+
+  end
+
+  def self.send_to_daw(variable)
+    $OSCRUBY.send OSC::Message.new(self.get_osc(variable), self.parse_data(variable))
+  end
+
+  def self.get_osc(variable)
+    return "/#{variable.name}"
+  end
+
+  def self.parse_data(variable)
+    if variable.type_of == 'boolean'
+      return (variable.status ? 1.0 : 0.0)
+    else #elsif variable.type_of == 'value'
+      return (variable.value.to_f / 127.0).round(3)
     end
   end
 
@@ -59,22 +76,6 @@ class Variable < ApplicationRecord
     def broadcast_variable
       if self.type_of == 'boolean'
         OscDataChannel.broadcast_to(self, { record: self })
-      end
-    end
-
-    def self.send_to_daw(variable)
-      $OSCRUBY.send OSC::Message.new(self.get_osc(variable), self.parse_data(variable))
-    end
-
-    def self.get_osc(variable)
-      return "/#{variable.name}"
-    end
-
-    def self.parse_data(variable)
-      if variable.type_of == 'boolean'
-        return (variable.status ? 1.0 : 0.0)
-      else #elsif variable.type_of == 'value'
-        return (variable.value.to_f / 127.0).round(3)
       end
     end
 

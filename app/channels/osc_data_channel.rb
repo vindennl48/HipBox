@@ -11,6 +11,9 @@ class OscDataChannel < ApplicationCable::Channel
   # send data to client/browser
   def askForData
     @variable = Variable.find(@variable.id)
+    if @variable.name != 'record_toggle'
+      Variable.send_to_daw(@variable)
+    end
     OscDataChannel.broadcast_to(@variable, {record: @variable})
   end
 
