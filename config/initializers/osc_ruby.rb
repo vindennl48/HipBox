@@ -9,8 +9,9 @@ addr.each do |a|
 end
 
 puts "\n########################"
-puts "Host:      #{host}"
-puts "HipBox IP: #{local}:3002"
+puts "Host:       #{host}"
+puts "Ableton IP: #{local}:3002"
+puts "Host IP:    #{local}:3000"
 puts "########################\n\n"
 
 $OSCRUBY = OSC::Client.new 3001, host
