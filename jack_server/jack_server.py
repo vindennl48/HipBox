@@ -4,14 +4,29 @@ from pythonosc import osc_server
 import jack, threading, numpy
 
 inputs = [
-    {"system": "system:capture_1", "hb": "james",    "pan":  "L"},
-    {"system": "system:capture_2", "hb": "jesse",    "pan":  "R"},
-    {"system": "system:capture_3", "hb": "mitch",    "pan":  "C"},
+    {"system": "james_fx:out_0",   "hb": "james",    "pan":  "L"},
+    {"system": "jesse_fx:out_0",   "hb": "jesse",    "pan":  "R"},
+    {"system": "mitch_fx:out_0",   "hb": "mitch",    "pan":  "C"},
     {"system": "system:capture_4", "hb": "talkback", "pan":  "C"},
+    {"system": "system:capture_5", "hb": "sean",     "pan":  "C"},
 ]
 
 outputs = [
-    {"system": ["system:playback_7","system:playback_8"], "hb": "mitch"},
+    {"system": ["system:playback_3", "system:playback_4"],  "hb": "mitch"},
+    {"system": ["system:playback_7", "system:playback_8"],  "hb": "james"},
+    {"system": ["system:playback_9", "system:playback_10"], "hb": "jesse"},
+]
+
+extra_connections = [
+    # guitarix focusrite->head connections
+    {"input": "system:capture_1",  "output": "james_amp:in_0"},
+    {"input": "system:capture_2",  "output": "jesse_amp:in_0"},
+    {"input": "system:capture_3",  "output": "mitch_amp:in_0"},
+
+    # guitarix head->fx connections
+    {"input": "james_amp:out_0", "output": "james_fx:in_0"},
+    {"input": "jesse_amp:out_0", "output": "jesse_fx:in_0"},
+    {"input": "mitch_amp:out_0", "output": "mitch_fx:in_0"},
 ]
 
 class HIPBOX:
@@ -21,7 +36,7 @@ class HIPBOX:
     event   = None
     client  = None
 
-    def run(inputs, outputs):
+    def run(inputs, outputs, extra_connections):
         from pythonosc import dispatcher
 
         HIPBOX.client  = jack.Client("hipbox")
@@ -52,12 +67,13 @@ class HIPBOX:
         def _callback(path, value):
             # print(f"path: {path}")
             outp, inp, kind = tuple(path[1:].split('_'))
-            name = f"{outp}_{inp}"
+            if kind == "vol":
+                name = f"{outp}_{inp}"
 
-            if name in HIPBOX.gvars:
-                db = int((value * 40) - 30)
-                HIPBOX.gvars[name] = db
-                # print(f"mitch_mitch_vol: {db}")
+                if name in HIPBOX.gvars:
+                    db = int((value * 40) - 30)
+                    HIPBOX.gvars[name] = db
+                    print(f"path: {path} | {name}: {db}")
 
         disp = dispatcher.Dispatcher()
         disp.map("/*_*_*", _callback)
@@ -73,6 +89,8 @@ class HIPBOX:
             for o in outputs:
                 HIPBOX.client.connect(f"hipbox:out_{o['hb']}_L", o['system'][0])
                 HIPBOX.client.connect(f"hipbox:out_{o['hb']}_R", o['system'][1])
+            for p in extra_connections:
+                HIPBOX.client.connect(p['input'],p['output'])
 
             print("Press Ctrl+C to stop")
             try:
@@ -117,4 +135,4 @@ class HIPBOX:
         print("reason:", reason)
         HIPBOX.event.set()
 
-HIPBOX.run(inputs, outputs)
+HIPBOX.run(inputs, outputs, extra_connections)
