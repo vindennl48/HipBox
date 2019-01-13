@@ -109,25 +109,20 @@ class HIPBOX:
         for outp_key in HIPBOX.outputs:
             output_array_L = None
             output_array_R = None
-            outp           = HIPBOX.outputs[outp_key]
-            outp_name      = outp_key.split('_')[1]
 
             for i, inp_key in enumerate(HIPBOX.inputs):
-                inp_name = inp_key.split('_')[1]
-                db       = (10 ** (HIPBOX.gvars[f"{outp_name}_{inp_name}"] / 20) )
-                inp      = HIPBOX.inputs[inp_key]
+                db = (10 ** (HIPBOX.gvars[f"{HIPBOX.outputs[outp_key]['hb']}_{HIPBOX.inputs[inp_key]['hb']}"] / 20) )
 
-                for port in outp['port']:
-                    if inp['pan'] == 'L':
-                        output_array_L = HIPBOX.add_audio(output_array_L, (inp['port'].get_array()*db) )
-                    elif inp['pan'] == 'R':
-                        output_array_R = HIPBOX.add_audio(output_array_R, (inp['port'].get_array()*db) )
-                    elif inp['pan'] == 'C':
-                        output_array_L = HIPBOX.add_audio(output_array_L, (inp['port'].get_array()*db) )
-                        output_array_R = HIPBOX.add_audio(output_array_R, (inp['port'].get_array()*db) )
+                if HIPBOX.inputs[inp_key]['pan'] == 'L':
+                    output_array_L = HIPBOX.add_audio(output_array_L, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
+                elif HIPBOX.inputs[inp_key]['pan'] == 'R':
+                    output_array_R = HIPBOX.add_audio(output_array_R, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
+                elif HIPBOX.inputs[inp_key]['pan'] == 'C':
+                    output_array_L = HIPBOX.add_audio(output_array_L, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
+                    output_array_R = HIPBOX.add_audio(output_array_R, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
 
-            outp['port'][0].get_array()[:] = output_array_L
-            outp['port'][1].get_array()[:] = output_array_R
+            HIPBOX.outputs[outp_key]['port'][0].get_array()[:] = output_array_L
+            HIPBOX.outputs[outp_key]['port'][1].get_array()[:] = output_array_R
 
     def _shutdown_callback(status, reason):
         print("JACK shutdown!")
