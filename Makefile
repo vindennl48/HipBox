@@ -1,4 +1,5 @@
 run:
+	./jack_server/start_jack.sh
 	guitarix -N -J --name=james -p 4000 &
 	guitarix -N -J --name=jesse -p 4001 &
 	guitarix -N -J --name=mitch -p 4002 &
