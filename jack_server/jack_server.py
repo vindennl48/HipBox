@@ -3,131 +3,116 @@
 from pythonosc import osc_server
 import jack, threading, numpy
 
-inputs = [
-    {"system": "james_fx:out_0",   "hb": "james",    "pan":  "L"},
-    {"system": "jesse_fx:out_0",   "hb": "jesse",    "pan":  "R"},
-    {"system": "mitch_fx:out_0",   "hb": "mitch",    "pan":  "C"},
-    {"system": "system:capture_4", "hb": "talkback", "pan":  "C"},
-    {"system": "system:capture_5", "hb": "sean",     "pan":  "C"},
-]
+class OSC:
+    osc = {}
 
-outputs = [
-    {"system": ["system:playback_3", "system:playback_4"],  "hb": "mitch"},
-    {"system": ["system:playback_7", "system:playback_8"],  "hb": "james"},
-    {"system": ["system:playback_9", "system:playback_10"], "hb": "jesse"},
-]
-
-extra_connections = [
-    # guitarix focusrite->head connections
-    {"input": "system:capture_1",  "output": "james_amp:in_0"},
-    {"input": "system:capture_2",  "output": "jesse_amp:in_0"},
-    {"input": "system:capture_3",  "output": "mitch_amp:in_0"},
-
-    # guitarix head->fx connections
-    {"input": "james_amp:out_0", "output": "james_fx:in_0"},
-    {"input": "jesse_amp:out_0", "output": "jesse_fx:in_0"},
-    {"input": "mitch_amp:out_0", "output": "mitch_fx:in_0"},
-]
-
-class HIPBOX:
-    gvars   = {}
-    inputs  = {}
-    outputs = {}
-    event   = None
-    client  = None
-
-    def run(inputs, outputs, extra_connections):
+    def __init__(self):
         from pythonosc import dispatcher
 
-        HIPBOX.client  = jack.Client("hipbox")
-        HIPBOX.client.set_process_callback(HIPBOX._process_callback)
-        HIPBOX.client.set_shutdown_callback(HIPBOX._shutdown_callback)
-
-        # Register inputs and outputs with JACK
-        for port in inputs:
-            name = f"in_{port['hb']}"
-            port['port'] = HIPBOX.client.inports.register(name)
-            HIPBOX.inputs[name] = port
-
-        for port in outputs:
-            name = f"out_{port['hb']}"
-            port['port'] = [
-                HIPBOX.client.outports.register(name+"_L"),
-                HIPBOX.client.outports.register(name+"_R"),
-            ]
-            HIPBOX.outputs[name] = port
-
-        # Create the connection variables to change settings
-        for o in outputs:
-            for i in inputs:
-                HIPBOX.gvars[f"{o['hb']}_{i['hb']}"] = 0
-
-        # OSC SERVER
-        ############
-        def _callback(path, value):
-            # print(f"path: {path}")
-            outp, inp, kind = tuple(path[1:].split('_'))
-            if kind == "vol":
-                name = f"{outp}_{inp}"
-
-                if name in HIPBOX.gvars:
-                    db = int((value * 40) - 30)
-                    HIPBOX.gvars[name] = db
-                    print(f"path: {path} | {name}: {db}")
-
         disp = dispatcher.Dispatcher()
-        disp.map("/*_*_*", _callback)
+        disp.map("/*_*_*", OSC._callback)
         server = osc_server.ThreadingOSCUDPServer(('0.0.0.0', 3001), disp)
         threading.Thread(target=server.serve_forever).start()
-        ################
-        # END OSC SERVER
 
-        HIPBOX.event = threading.Event()
-        with HIPBOX.client:
-            for i in inputs:
-                HIPBOX.client.connect(i['system'], f"hipbox:in_{i['hb']}")
-            for o in outputs:
-                HIPBOX.client.connect(f"hipbox:out_{o['hb']}_L", o['system'][0])
-                HIPBOX.client.connect(f"hipbox:out_{o['hb']}_R", o['system'][1])
-            for p in extra_connections:
-                HIPBOX.client.connect(p['input'],p['output'])
+    def _callback(path, value):
+        path = path[1:]
+        if path in OSC.osc:
+            if "vol" in path:
+                OSC.osc[path] = int((value * 40) - 30)
+            else:
+                if value >= .5: OSC.osc[path] = 1
+                else:           OSC.osc[path] = 0
+            print(f"path: {path} | value: {OSC.osc[path]}")
 
-            print("Press Ctrl+C to stop")
-            try:
-                HIPBOX.event.wait()
-            except KeyboardInterrupt:
-                print("\nInterrupted by user")
+class HIPBOX:
 
-    def add_audio(destination, audio):
-        if destination is None:
-            destination = audio
+    def connect(connections):
+        client = jack.Client("jack_connect_client_temp")
+        client.activate()
+        for c in connections: client.connect(c['input'],c['output'])
+        return client
+
+    # inp  = { "name": <name>, "port":  <port full>, "pan": <[R,L,C]> }
+    # outp = { "name": <name>, "ports": [<port full>,..] }
+    def __init__(self, inp, outp):
+        self.input         = inp
+        self.output        = outp
+        self.pan           = inp['pan']
+        self.var_name_base = f"{self.output['name']}_{self.input['name']}"
+
+        for n in ["vol","solo","mute"]:
+            var_name = f"{self.var_name_base}_{n}"
+            OSC.osc[var_name] = 0
+
+        self.client = jack.Client(self.var_name_base)
+        self.client.set_process_callback(self._process_callback)
+        self.client.set_shutdown_callback(self._shutdown_callback)
+
+        self.inport    = self.client.inports.register(f"in_{self.input['name']}")
+        self.outport_L = self.client.outports.register(f"out_{self.output['name']}_L")
+        self.outport_R = self.client.outports.register(f"out_{self.output['name']}_R")
+
+    def run(self):
+        self.client.activate()
+        self.client.connect(self.input['port'], f"{self.var_name_base}:in_{self.input['name']}")
+        for i, port in enumerate(self.output['ports']):
+            pan = "L" if i == 0 else "R"
+            self.client.connect(f"{self.var_name_base}:out_{self.output['name']}_{pan}", port)
+        return self
+
+    def _process_callback(self, frames):
+        if OSC.osc[f"{self.var_name_base}_mute"]:
+            db = 0
         else:
-            destination[:] = numpy.add(destination, audio)
-        return destination
+            db = (10 ** (OSC.osc[f"{self.var_name_base}_vol"] / 20) )
 
-    def _process_callback(frames):
-        for outp_key in HIPBOX.outputs:
-            output_array_L = None
-            output_array_R = None
+        if self.input['pan'] in ['L','C']:
+            self.outport_L.get_array()[:] = self.inport.get_array() * db
+        if self.input['pan'] in ['R','C']:
+            self.outport_R.get_array()[:] = self.inport.get_array() * db
 
-            for i, inp_key in enumerate(HIPBOX.inputs):
-                db = (10 ** (HIPBOX.gvars[f"{HIPBOX.outputs[outp_key]['hb']}_{HIPBOX.inputs[inp_key]['hb']}"] / 20) )
 
-                if HIPBOX.inputs[inp_key]['pan'] == 'L':
-                    output_array_L = HIPBOX.add_audio(output_array_L, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
-                elif HIPBOX.inputs[inp_key]['pan'] == 'R':
-                    output_array_R = HIPBOX.add_audio(output_array_R, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
-                elif HIPBOX.inputs[inp_key]['pan'] == 'C':
-                    output_array_L = HIPBOX.add_audio(output_array_L, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
-                    output_array_R = HIPBOX.add_audio(output_array_R, (HIPBOX.inputs[inp_key]['port'].get_array()*db) )
-
-            HIPBOX.outputs[outp_key]['port'][0].get_array()[:] = output_array_L
-            HIPBOX.outputs[outp_key]['port'][1].get_array()[:] = output_array_R
-
-    def _shutdown_callback(status, reason):
+    def _shutdown_callback(self, status, reason):
         print("JACK shutdown!")
         print("status:", status)
         print("reason:", reason)
-        HIPBOX.event.set()
 
-HIPBOX.run(inputs, outputs, extra_connections)
+if __name__ == "__main__":
+    event = threading.Event()
+
+    inputs = [
+        { "name": "james",    "port": "james_fx:out_0",   "pan": "L" },
+        { "name": "jesse",    "port": "jesse_fx:out_0",   "pan": "R" },
+        { "name": "mitch",    "port": "mitch_fx:out_0",   "pan": "C" },
+        { "name": "talkback", "port": "system:capture_4", "pan": "R" },
+    ]
+    outputs = [
+        { "name": "mitch", "ports": ["system:playback_3", "system:playback_4"] },
+        { "name": "james", "ports": ["system:playback_7", "system:playback_8"] },
+        { "name": "jesse", "ports": ["system:playback_9", "system:playback_10"] },
+    ]
+    connections = [
+        { "input": "system:capture_1", "output": "james_amp:in_0" },
+        { "input": "system:capture_2", "output": "jesse_amp:in_0" },
+        { "input": "system:capture_3", "output": "mitch_amp:in_0" },
+
+        { "input": "james_amp:out_0", "output": "james_fx:in_0" },
+        { "input": "jesse_amp:out_0", "output": "jesse_fx:in_0" },
+        { "input": "mitch_amp:out_0", "output": "mitch_fx:in_0" },
+    ]
+
+    boxes = []
+    osc_server = OSC()
+    for outp in outputs:
+        for inp in inputs:
+            boxes.append(HIPBOX(inp, outp).run())
+    boxes.append(HIPBOX.connect(connections))
+
+    print("Press Ctrl+C to stop")
+    try:
+        event.wait()
+    except KeyboardInterrupt:
+        for box in boxes:
+            box.client.deactivate()
+            box.client.close()
+        print("\nInterrupted by user")
