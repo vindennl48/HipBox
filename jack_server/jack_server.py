@@ -1,11 +1,27 @@
 #!/usr/bin/env python3
 
 from pythonosc import osc_server
+from scipy.io import wavfile
 import jack, threading, numpy
 
-def run():
-    event = threading.Event()
+event = threading.Event()
+# scale to -1.0 -- 1.0
+nb_bits = 16 # -> 16-bit wav files
+max_nb_bit = float(2 ** (nb_bits - 1))
 
+def run_test():
+    # aux = AUX("/home/mitch/hipbox/audio_files/blind2.wav")
+    # aux.run()
+
+    record = RECORD("/home/mitch/test.wav").run()
+
+    print("Press Ctrl+C to stop")
+    try:
+        event.wait()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
+
+def run():
     inputs = [
         { "name": "james",    "port": "james_fx:out_0",   "pan": "L" },
         { "name": "jesse",    "port": "jesse_fx:out_0",   "pan": "R" },
@@ -80,6 +96,76 @@ class OSC:
                 if value >= .5: OSC.osc[path] = 1
                 else:           OSC.osc[path] = 0
             # print(f"----> path: {path} | value: {OSC.osc[path]}")
+
+class AUX:
+    # outp = { "name": <name>, "port": <port full> }
+    def __init__(self, audio_file):
+        self.client         = jack.Client("AUX")
+        self.play_head      = 0
+        fs, self.audio_file = wavfile.read(audio_file)
+
+        self.audio_file = self.audio_file / (max_nb_bit + 1.0)
+
+        self.client.set_process_callback(self._process_callback)
+        self.client.set_shutdown_callback(self._shutdown_callback)
+
+        self.outport = self.client.outports.register("out_0")
+
+    def run(self):
+        self.client.activate()
+        return self
+
+    def _process_callback(self, frames):
+        bs = self.client.blocksize
+        db = (10 ** (-10 / 20) )
+
+        self.outport.get_array()[:] = self.audio_file[self.play_head:self.play_head+bs] * db
+        self.play_head += bs
+        if self.audio_file.size <= self.play_head:
+            self.client.deactivate()
+            self.client.close()
+
+    def _shutdown_callback(self, status, reason):
+        print("JACK shutdown!")
+        print("status:", status)
+        print("reason:", reason)
+        
+class RECORD:
+
+    # save: https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.write.html
+
+    # outp = { "name": <name>, "port": <port full> }
+    def __init__(self, filename):
+        self.client     = jack.Client("RECORD")
+        self.audio_file = None
+        self.filename   = filename
+
+        self.client.set_process_callback(self._process_callback)
+        self.client.set_shutdown_callback(self._shutdown_callback)
+
+        self.inport = self.client.inports.register("in_0")
+
+    def run(self):
+        self.client.activate()
+        self.client.connect("system:capture_4","RECORD:in_0")
+        return self
+
+    def _process_callback(self, frames):
+        bs = self.client.blocksize
+        db = (10 ** (-10 / 20) )
+
+        if self.audio_file is None:
+            self.audio_file = self.inport.get_array() * (max_nb_bit + 1.0)
+        else:
+            self.audio_file = numpy.concatenate((self.audio_file, self.inport.get_array() * (max_nb_bit + 1.0)))
+
+        print(self.audio_file.size)
+
+    def _shutdown_callback(self, status, reason):
+        print("JACK shutdown!")
+        print("status:", status)
+        print("reason:", reason)
+
 
 class HIPBOX:
     # connections = [{"input":"<port full>", "output": "<port full>"},..]
