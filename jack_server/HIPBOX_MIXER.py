@@ -103,9 +103,15 @@ class HIPBOX_CONNECT:
 
         if type(connections) is list:
             for c in connections:
-                self.client.connect(c['inport'],c['outport'])
+                try:
+                    self.client.connect(c['inport'],c['outport'])
+                except:
+                    print("Connection already exists or is impossible!!")
         else:
-            self.client.connect(connections['inport'],connections['outport'])
+            try:
+                self.client.connect(connections['inport'],connections['outport'])
+            except:
+                print("Connection already exists or is impossible!!")
 
     def run(self):
         self.client.activate()
