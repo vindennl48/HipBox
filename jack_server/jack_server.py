@@ -54,7 +54,7 @@ def run():
     for outp in outputs:
         for inp in inputs:
             boxes.append(HIPBOX(inp, outp).run())
-    # boxes.append(HIPBOX.connect(connections))
+    boxes.append(HIPBOX.connect(connections))
 
     print("Press Ctrl+C to stop")
     try:

@@ -12,11 +12,11 @@ output_ports = {
     "drums": {"L": "system:playback_5", "R": "system:playback_6"},
 }
 input_ports = {
-    "james":    {"port": "system: capture_1", "pan": "L"},
-    "jesse":    {"port": "system: capture_2", "pan": "R"},
-    "mitch":    {"port": "system: capture_3", "pan": "C"},
-    "talkback": {"port": "system: capture_4", "pan": "C"},
-    "drums":    {"port": "system: capture_5", "pan": "C"},
+    "james":    {"port": "system:capture_1", "pan": "L"},
+    "jesse":    {"port": "system:capture_2", "pan": "R"},
+    "mitch":    {"port": "system:capture_3", "pan": "C"},
+    "talkback": {"port": "system:capture_4", "pan": "C"},
+    "drums":    {"port": "system:capture_5", "pan": "C"},
 }
 
 
@@ -35,10 +35,10 @@ def run():
                 mute,
                 solo,
             ) )
-    boxes.append( HIPBOX_CONNECT(connections) )
 
     # -- Run Boxes -- 
     for box in boxes: box.run()
+    boxes.append( HIPBOX_CONNECT(connections).run() )
 
     # -- Wait For Stop -- 
     print("Press Ctrl+C to stop")
@@ -131,6 +131,6 @@ for outp in output_ports:
 #      { "inport": "drums_talkback_HB:out_0", "outport": "system:playback_5"},
 #      { "inport": "drums_talkback_HB:out_0", "outport": "system:playback_6"},
 #  ]
-#  
-#  if __name__ == "__main__":
-#      run()
+  
+if __name__ == "__main__":
+    run()

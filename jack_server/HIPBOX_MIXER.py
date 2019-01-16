@@ -1,15 +1,24 @@
 from OSC_SERVER import OSC
 import jack
 
+class HIPBOX_MIXER:
+    # inports = [ {"name": <port name>, "osc_vol": <osc value for vol>,
+    #     "osc_mute": <..for mute>, "osc_solo": <..for solo>, "pan": <L,R,C>} ]
+    def __init__(self, name, inports)
+        self.inports = inports
+        self.client  = jack.Client(self.client_name)
+
+
+
 class HIPBOX_VOLUME:
     def __init__(self, name, osc_vol, osc_mute=None, osc_solo=None):
-        self.inport      = self.client.inports.register(f"in_0")
-        self.outport     = self.client.outports.register(f"out_0")
         self.osc_vol     = osc_vol
         self.osc_mute    = osc_mute
         self.osc_solo    = osc_solo
         self.client_name = f"{name}_HB"
         self.client      = jack.Client(self.client_name)
+        self.inport      = self.client.inports.register(f"in_0")
+        self.outport     = self.client.outports.register(f"out_0")
 
         self.client.set_process_callback( self._process_callback )
         self.client.set_shutdown_callback( self._shutdown_callback )

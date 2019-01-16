@@ -7,10 +7,10 @@ class OSC:
     def run(grep="/*", port=3001, ip='0.0.0.0'):
         from pythonosc import dispatcher
 
-        disp = dispatcher.Dispatcher()
-        disp.map(grep, OSC._callback)
-        server = osc_server.ThreadingOSCUDPServer((ip, port), disp)
-        threading.Thread(target=server.serve_forever).start()
+        # disp = dispatcher.Dispatcher()
+        # disp.map(grep, OSC._callback)
+        # server = osc_server.ThreadingOSCUDPServer((ip, port), disp)
+        # threading.Thread(target=server.serve_forever).start()
 
     def get(name):
         if name in OSC.osc:
