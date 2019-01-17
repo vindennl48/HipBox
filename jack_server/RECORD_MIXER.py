@@ -10,7 +10,7 @@ class RECORD:
     # save_dir = "/home/user/saveaudio"
     def __init__(self, inports, mix, save_dir):
         self.client      = jack.Client("RECORD")
-        self.max_nb_bit  = float(2 ** (nb_bits - 1))
+        self.max_nb_bit  = float(2 ** (16 - 1))
         self.master_L    = []
         self.master_R    = []
         self.audio_files = {}
@@ -25,7 +25,6 @@ class RECORD:
 
     def run(self):
         self.client.activate()
-        self.client.connect("system:capture_4","RECORD:in_0")
         return self
 
     def _process_callback(self, frames):
@@ -43,6 +42,8 @@ class RECORD:
 
         self.master_L.append(audio_L)
         self.master_R.append(audio_R)
+
+        print(f"length: {len(self.master_L)}")
 
     def _shutdown_callback(self, status, reason):
         print("JACK shutdown!")
