@@ -24,12 +24,11 @@ MIXER = {
     "talkback": {"position": 5, "pan": "C", "inport": "system:capture_4"},
 }
 
-CONNECTIONS = []
-
 GUITARIX_START_PORT = 4000
 MIXER_START_PORT    = 5000
 OSC_INPORT          = 3001
 OSC_OUTPORT         = 3002
+OSC_VARS            = {}
 IP                  = '127.0.0.1'
 CLIENT              = None
 # -- End Globals --
@@ -58,18 +57,75 @@ def start_osc_server():
 
 
 def osc_callback(path, value):
-    path_split = path[1:].split("_")
+    global OSC_VARS
 
-    if len(path_split) == 3:
+    path       = path[1:]
+    path_split = path.split("_")
+
+    if len(path_split) == 2:
+        if path == "talkback_toggle":
+            if value >= .5: value = 1
+            else:           value = 0
+            OSC_VARS[path] = value
+            target         = "talkback"
+            pos            = MIXER[target]["position"]
+
+            for person in PEOPLE:
+                client = PEOPLE[person]["udpclient"]
+                vol    = f"{person}_{target}_vol"
+                value  = OSC_VARS[vol] if vol in OSC_VARS else -90
+
+                if  OSC_VARS[path]: value = -90
+                client.send_message("/mixer/channel/set_gain", [pos, value])
+
+    elif len(path_split) == 3:
         name, target, kind = path_split
 
         if target in MIXER and name in PEOPLE:
-            pos    = MIXER[target]["position"]
-            client = PEOPLE[name]["udpclient"]
+            pos  = MIXER[target]["position"]
+            mute = f"{name}_{target}_mute"
+            solo = f"{target}_{target}_solo"
 
             if kind == "vol":
-                value = int((value * 40) - 30) 
+                client         = PEOPLE[name]["udpclient"]
+                value          = int((value * 40) - 30)
+                OSC_VARS[path] = value
+
+                if "talkback" in path: mute = f"talkback_toggle"
+                
+                if  (mute in OSC_VARS and OSC_VARS[mute]) or \
+                    (solo in OSC_VARS and OSC_VARS[solo]):
+                    value = -90
                 client.send_message("/mixer/channel/set_gain", [pos, value])
+
+            elif kind == "mute":
+                if value >= .5: value = 1
+                else:           value = 0
+                client         = PEOPLE[name]["udpclient"]
+                OSC_VARS[path] = value
+                vol            = f"{name}_{target}_vol"
+                value          = OSC_VARS[vol] if vol in OSC_VARS else -90
+
+                if  (mute in OSC_VARS and OSC_VARS[mute]) or \
+                    (solo in OSC_VARS and OSC_VARS[solo]):
+                    value = -90
+                client.send_message("/mixer/channel/set_gain", [pos, value])
+
+            elif kind == "solo":
+                if value >= .5: value = 1
+                else:           value = 0
+                OSC_VARS[path] = value
+
+                for person in PEOPLE:
+                    if person != name:
+                        client = PEOPLE[person]["udpclient"]
+                        vol    = f"{person}_{target}_vol"
+                        value  = OSC_VARS[vol] if vol in OSC_VARS else -90
+
+                        if  (mute in OSC_VARS and OSC_VARS[mute]) or \
+                            (solo in OSC_VARS and OSC_VARS[solo]):
+                            value = -90
+                        client.send_message("/mixer/channel/set_gain", [pos, value])
 
 
 def start_mixers():
