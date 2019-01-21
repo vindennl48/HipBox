@@ -13,7 +13,7 @@ PEOPLE = {
     "james": {"guitarix": True,  "inport": "system:capture_1", "outports": ["system:playback_7","system:playback_8"]},
     "jesse": {"guitarix": True,  "inport": "system:capture_2", "outports": ["system:playback_9","system:playback_10"]},
     "mitch": {"guitarix": True,  "inport": "system:capture_3", "outports": ["system:playback_3","system:playback_4"]},
-    "drums": {"guitarix": False, "inport": "system:capture_5", "outports": ["system:playback_9","system:playback_10"]},
+    "drums": {"guitarix": False, "inport": "system:capture_5", "outports": ["system:playback_5","system:playback_6"]},
 }
 
 MIXER = {
@@ -23,6 +23,8 @@ MIXER = {
     "drums":    {"position": 4, "pan": "C", "inport": "system:capture_5"},
     "talkback": {"position": 5, "pan": "C", "inport": "system:capture_4"},
 }
+
+EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
 
 GUITARIX_START_PORT = 4000
 MIXER_START_PORT    = 5000
@@ -39,7 +41,7 @@ def run():
     start_guitarix()
     start_mixers()
     start_osc_server()
-    # create_connections()
+    start_extra_connections()
 
 
 def start_osc_server():
@@ -183,8 +185,9 @@ def start_client():
     CLIENT.activate()
 
 
-def create_connections():
-    pass
+def start_extra_connections():
+    for c in EXTRA_CONNECTIONS:
+        connect(c[0], c[1])
 
 
 if __name__ == "__main__":
