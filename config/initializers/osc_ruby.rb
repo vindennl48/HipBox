@@ -14,7 +14,7 @@ end
 puts "\n##############################"
 puts "Ableton IP: #{local}:3002"
 puts "------------------------------"
-puts "Hipbox IP:  #{local}:3000"
+puts "Hipbox IP:  #{local}"
 puts "##############################\n\n"
 
 # global variable to send osc data to host

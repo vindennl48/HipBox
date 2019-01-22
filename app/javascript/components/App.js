@@ -45,7 +45,9 @@ class App extends React.Component {
 
     } else {
       return (
-        <div className="bo-loading">loading..</div>
+        <div className="bo-loading">
+          <div>Loading..... <button onClick={()=> location.reload(true)}>RESET</button></div>
+        </div>
       )
     }
   }
