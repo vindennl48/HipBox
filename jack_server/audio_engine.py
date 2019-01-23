@@ -2,15 +2,10 @@ from scipy.io import wavfile
 import jack, threading, numpy, time
 
 
-# scale to -1.0 -- 1.0
-nb_bits = 16 # -> 16-bit wav files
-max_nb_bit = float(2 ** (nb_bits - 1))
-
-
 def run():
     event = threading.Event()
 
-    aux = AuxEngine(connections=["system:playback_7","system:playback_8"])
+    aux = AudioEngine(connections=["system:playback_7","system:playback_8"])
     aux.load_audio(
         name     = "blind",
         filepath = "/home/mitch/hipbox/audio_files/blind2.wav",
@@ -46,7 +41,7 @@ def run():
 
 
 class AudioClip:
-    def __init__(self, name, filepath, blocksize, start, end=None, loop=False):
+    def __init__(self, name, filepath, blocksize, start, end=None, loop=False, bitrate=16):
         self.name       = name
         self.filepath   = filepath
         self.start      = start
@@ -57,9 +52,10 @@ class AudioClip:
         self.is_reset   = False
         self.blocksize  = blocksize
         self.loop       = loop
+        self.max_nb_bit = float(2 ** (bitrate - 1))
 
         fs, audio       = wavfile.read(filepath)
-        self.data       = audio / (max_nb_bit + 1.0)
+        self.data       = audio / (self.max_nb_bit + 1.0)
 
         if self.end is None: self.end = len(self.data)
 
@@ -96,16 +92,17 @@ class AudioClip:
 
 
 
-class AuxEngine:
-    def __init__(self, connections):
+class AudioEngine:
+    def __init__(self, connections, bitrate=16, sample_rate=44100):
         self.client              = jack.Client("AUX")
         self.blocksize           = self.client.blocksize
         self.outport             = self.client.outports.register("out_0")
         self.bpm                 = 120
         self.timesig             = 4
         self.connections         = connections
+        self.bitrate             = bitrate
 
-        self.sample_rate         = 44100
+        self.sample_rate         = sample_rate
         self.samples_per_beat    = None
         self.samples_per_measure = None
         self.measure             = 0
@@ -124,7 +121,7 @@ class AuxEngine:
 
     def run(self):
         if "click_high" not in self.clips \
-            and "click_low" not in self.clips:
+            or "click_low" not in self.clips:
             raise Exception("####> No metronome clips found!")
 
         else:
@@ -136,7 +133,7 @@ class AuxEngine:
 
 
     def load_audio(self, name, filepath, start, end=None, loop=False):
-        self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop)
+        self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate)
 
 
     def _process_callback(self, frames):
