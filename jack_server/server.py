@@ -28,10 +28,40 @@ MIXER = {
 }
 
 MIDI_MAP = {
-    "note_10": ["metronome_off", "stop_all"],
-    "note_9":  ["timesig_3", "bpm_120", "metronome_toggle"],
-    "note_8":  ["timesig_3", "bpm_120", "play_blind"],
+    # -- FCB1010 --
     "note_6":  ["fcb_talkback_toggle"],
+    "note_10": ["metronome_off", "stop_all"],
+
+    # -- Sono --
+    "note_7":  ["timesig_3", "bpm_118", "play_sono"],
+    "note_8":  ["timesig_3", "bpm_118", "play_sono"],
+    "note_9":  ["timesig_3", "bpm_118", "metronome_toggle"],
+
+    # -- Chrono --
+    # "note_17":  ["timesig_3", "bpm_90", "play_chrono"],
+    # "note_18":  ["timesig_3", "bpm_90", "play_chrono"],
+    "note_19":  ["timesig_4", "bpm_90", "metronome_toggle"],
+
+    # -- Space --
+    # "note_27":  ["timesig_3", "bpm_120", "play_space"],
+    # "note_28":  ["timesig_3", "bpm_120", "play_space"],
+    "note_29":  ["timesig_4", "bpm_120", "metronome_toggle"],
+
+    # -- Petrichor --
+    "note_37":  ["timesig_3", "bpm_145", "play_petrichor"],
+    "note_38":  ["timesig_3", "bpm_145", "play_petrichor"],
+    "note_39":  ["timesig_4", "bpm_145", "metronome_toggle"],
+
+    # -- Blind --
+    "note_47":  ["timesig_3", "bpm_120", "play_blind"],
+    "note_48":  ["timesig_3", "bpm_120", "play_blind"],
+    "note_49":  ["timesig_3", "bpm_120", "metronome_toggle"],
+
+    # -- Old Pete --
+    "note_57":  ["timesig_4", "bpm_125", "play_oldpete"],
+    "note_58":  ["timesig_4", "bpm_125", "play_oldpete"],
+    "note_59":  ["timesig_4", "bpm_125", "metronome_toggle"],
+
 }
 
 EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
@@ -59,6 +89,44 @@ IS_RECORDING         = False
 # Options
 GUITARIX_IS_HEADLESS = True
 # -- End Globals --
+
+
+def start_audio_engine():
+    global AUDIO_ENGINE
+
+    AUDIO_ENGINE = AudioEngine(connections=[], osc_inport=AUDIO_ENGINE_PORT)
+    AUDIO_ENGINE.load_audio(
+        name     = "click_high",
+        filepath = "/home/mitch/hipbox/audio_files/click_high.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.load_audio(
+        name     = "click_low",
+        filepath = "/home/mitch/hipbox/audio_files/click_low.wav",
+        start    = 0,
+    )
+
+    AUDIO_ENGINE.load_audio(
+        name     = "blind",
+        filepath = "/home/mitch/hipbox/audio_files/blind2.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.load_audio(
+        name     = "sono",
+        filepath = "/home/mitch/hipbox/audio_files/sono2.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.load_audio(
+        name     = "oldpete",
+        filepath = "/home/mitch/hipbox/audio_files/old_pete2.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.load_audio(
+        name     = "petrichor",
+        filepath = "/home/mitch/hipbox/audio_files/petrichor2.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.run()
 
 
 def run():
@@ -258,35 +326,6 @@ def start_client():
     global CLIENT
     CLIENT = jack.Client("server")
     CLIENT.activate()
-
-
-def start_audio_engine():
-    global AUDIO_ENGINE
-
-    # set up outboard connections
-    connections = []
-    # for name in PEOPLE:
-        # for outp in PEOPLE[name]["outports"]:
-            # connections.append(outp)
-
-    AUDIO_ENGINE = AudioEngine(connections, osc_inport=AUDIO_ENGINE_PORT)
-    AUDIO_ENGINE.load_audio(
-        name     = "click_high",
-        filepath = "/home/mitch/hipbox/audio_files/click_high.wav",
-        start    = 0,
-    )
-    AUDIO_ENGINE.load_audio(
-        name     = "click_low",
-        filepath = "/home/mitch/hipbox/audio_files/click_low.wav",
-        start    = 0,
-    )
-
-    AUDIO_ENGINE.load_audio(
-        name     = "blind",
-        filepath = "/home/mitch/hipbox/audio_files/blind2.wav",
-        start    = 0,
-    )
-    AUDIO_ENGINE.run()
 
 
 def start_midi_engine():
