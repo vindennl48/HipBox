@@ -46,7 +46,7 @@ class Variable < ApplicationRecord
 
   def self.record_toggle
     record_toggle = Variable.find_by(name:'record_toggle')
-    $OSCRUBY.send OSC::Message.new('/record_button', 1.0)
+    $OSCRUBY.send OSC::Message.new('/record_toggle', 1.0)
 
     if not record_toggle.status
       record_toggle.update_attributes(status:true)

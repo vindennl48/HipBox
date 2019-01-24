@@ -31,6 +31,8 @@ class MidiEngine:
 
 
             if ntype is not None:
-                responses = self.midi_map[f"{ntype}_{note}"]
-                for response in responses:
-                    self.osc_client.send_message(f"/{response}", vel)
+                print(f"----> MIDI: type: {ntype}, note: {note}, vel: {vel}")
+                if f"{ntype}_{note}" in self.midi_map:
+                    responses = self.midi_map[f"{ntype}_{note}"]
+                    for response in responses:
+                        self.osc_client.send_message(f"/{response}", vel)

@@ -35,16 +35,28 @@ MIDI_MAP = {
 
 EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
 
-GUITARIX_START_PORT = 4000
-MIXER_START_PORT    = 5000
-AUDIO_ENGINE_PORT   = 6000
-OSC_INPORT          = 3001
-OSC_OUTPORT         = 3002
-OSC_VARS            = {}
-IP                  = '127.0.0.1'
-CLIENT              = None
-AUDIO_ENGINE        = None
-MIDI_ENGINE         = None
+# Ports
+OSC_INPORT           = 3001  # Receiving osc from rails
+OSC_OUTPORT          = 3002  # Sending osc to rails
+GUITARIX_START_PORT  = 4000
+MIXER_START_PORT     = 5000
+AUDIO_ENGINE_PORT    = 6000
+REC_START_PORT       = 7000
+IP                   = '127.0.0.1'
+
+# Clients
+CLIENT               = None
+REC_CLIENTS          = []
+AUDIO_ENGINE         = None
+MIDI_ENGINE          = None
+RAILS_CLIENT         = None
+
+# Vars
+OSC_VARS             = {}
+IS_RECORDING         = False
+
+# Options
+GUITARIX_IS_HEADLESS = True
 # -- End Globals --
 
 
@@ -69,6 +81,8 @@ def run():
 
 
 def start_osc_server():
+    global RAILS_CLIENT
+
     ########################################################
     # I hate importing inside a function but it doesn't seem
     #  to want to work any other way..
@@ -82,11 +96,17 @@ def start_osc_server():
     print(f"----> Listening on port udp:{OSC_INPORT}")
 
 
+    RAILS_CLIENT = udp_client.SimpleUDPClient(IP, OSC_OUTPORT)
+    print(f"----> UDP client to rails active")
+
+
 def osc_callback(path, value):
     global OSC_VARS
 
+    print(f"----> OSC: {path}, value: {value}")
     path       = path[1:]
     path_split = path.split("_")
+
 
     if path == "fcb_talkback_toggle":
         path       = "talkback_toggle"
@@ -108,6 +128,17 @@ def osc_callback(path, value):
 
                 if  OSC_VARS[path]: value = -90
                 client.send_message("/mixer/channel/set_gain", [pos, value])
+
+        elif path == "record_toggle":
+            start_rec()
+
+        elif path == "stop_all":
+            stop_rec()
+            if RAILS_CLIENT is not None:
+                print(f"####> STOP_ALL, path: /{path}")
+                RAILS_CLIENT.send_message(f"/{path}", 0)
+            if AUDIO_ENGINE is not None:
+                AUDIO_ENGINE.osc_client.send_message(f"/{path}", 0)
 
         elif path_split[0] in ["play","stop","timesig","bpm","metronome"]:
             if AUDIO_ENGINE is not None:
@@ -195,7 +226,9 @@ def start_guitarix():
             guitarix_port                 = GUITARIX_START_PORT + i
             PEOPLE[name]["guitarix_port"] = guitarix_port
 
-            os.system(f"guitarix -N -J -D --name={name}_guitarix -p {guitarix_port} &")
+            headless = "-N"
+            if not GUITARIX_IS_HEADLESS: headless = ""
+            os.system(f"guitarix {headless} -J -D --name={name}_guitarix -p {guitarix_port} &")
             time.sleep(1) # give guitarix a second to load
             connect(inport,f"{name}_guitarix:in_0")
 
@@ -256,6 +289,44 @@ def start_midi_engine():
     global MIDI_ENGINE
     connections = ["system:midi_capture_1"]
     MIDI_ENGINE = MidiEngine(connections, MIDI_MAP, IP, OSC_INPORT).run()
+
+
+def start_rec():
+    global IS_RECORDING
+    global REC_CLIENTS
+
+    print("####> RECORDING")
+
+    if not IS_RECORDING:
+
+        IS_RECORDING = True
+        port_offset  = 0
+        make_clients = False
+
+        if not REC_CLIENTS: make_clients = True
+
+        for name in PEOPLE:
+            port   = REC_START_PORT + port_offset
+            inport = PEOPLE[name]['inport']
+
+            if PEOPLE[name]['guitarix']:
+                inport = f"{name}_guitarix:out_0"
+
+            os.system(f"jack_capture -ns -b 16 -c 1 --osc {port} -mp3 -p {inport} -fp recorded/{name}_ &")
+
+            if make_clients:
+                REC_CLIENTS.append( udp_client.SimpleUDPClient(IP, port) )
+
+            port_offset += 1
+
+
+def stop_rec():
+    global IS_RECORDING
+    global REC_CLIENTS
+
+    for client in REC_CLIENTS:
+        client.send_message("/jack_capture/stop", [])
+    IS_RECORDING = False
 
 
 def start_extra_connections():
