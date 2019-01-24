@@ -236,15 +236,15 @@ def start_guitarix():
 def connect(port1, port2):
     success = False
     i = 0
-    while not success and i < 5:
+    while not success and i < 20:
         try:
             CLIENT.connect(port1,port2)
             success = True
         except:
-            print(f"####> error trying to connect ports attempt {i}-5: {port1} -> {port2}")
+            print(f"####> error trying to connect ports attempt {i}-20: {port1} -> {port2}")
             i += 1
             time.sleep(1)
-    if i >= 5:
+    if i >= 20:
         raise Exception(f">>>>> Can not connect ports in 5 attempts: {port1} -> {port2}")
     else:
         print(f"----> ports successfully connected: {port1} -> {port2}")
