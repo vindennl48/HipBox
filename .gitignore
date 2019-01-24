@@ -17,6 +17,7 @@
 /storage/*
 
 /audio_files
+/recorded
 /node_modules
 /yarn-error.log
 

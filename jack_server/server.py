@@ -300,7 +300,7 @@ def start_rec():
     if not IS_RECORDING:
 
         IS_RECORDING = True
-        port_offset  = 0
+        port_offset  = 1
         make_clients = False
 
         if not REC_CLIENTS: make_clients = True
@@ -318,6 +318,10 @@ def start_rec():
                 REC_CLIENTS.append( udp_client.SimpleUDPClient(IP, port) )
 
             port_offset += 1
+
+        os.system(f"jack_capture -ns -b 16 -c 2 --osc {REC_START_PORT} -mp3 -p mitch_mix:out_left -p mitch_mix:out_right -fp recorded/scratch_ &")
+        if make_clients:
+            REC_CLIENTS.append( udp_client.SimpleUDPClient(IP, REC_START_PORT) )
 
 
 def stop_rec():
