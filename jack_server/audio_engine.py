@@ -1,43 +1,7 @@
+from pythonosc import osc_server
+from pythonosc import udp_client
 from scipy.io import wavfile
 import jack, threading, numpy, time
-
-
-def run():
-    event = threading.Event()
-
-    aux = AudioEngine(connections=["system:playback_7","system:playback_8"])
-    aux.load_audio(
-        name     = "blind",
-        filepath = "/home/mitch/hipbox/audio_files/blind2.wav",
-        start    = 0,
-    )
-
-    aux.run()
-    print("aux ran")
-
-    time.sleep(5)
-    print("slept 5sec")
-
-    aux.play("blind")
-    print("played blind")
-
-    time.sleep(5)
-    print("slept 5sec")
-
-    aux.play("blind")
-    print("played blind")
-
-    time.sleep(5)
-    print("slept 5sec")
-
-    aux.stop()
-    print("stopped")
-
-    print("Press Ctrl+C to stop")
-    try:
-        event.wait()
-    except KeyboardInterrupt:
-        print("\nInterrupted by user")
 
 
 class AudioClip:
@@ -59,18 +23,20 @@ class AudioClip:
 
         if self.end is None: self.end = len(self.data)
 
-    def get_next_block():
+    def get_next_block(self):
         audio_out = numpy.zeros(self.blocksize)
         if self.is_playing:
-            if self.playhead >= self.end and not self.loop:
+            if self.is_reset:
+                self.is_reset = False
+                self.playhead = self.start
+
+            if self.playhead+self.blocksize >= self.end and self.loop:
+                self.playhead = self.start
+
+            if self.playhead+self.blocksize >= self.end and not self.loop:
                 self.is_playing = False
                 self.playhead   = self.start
                 return audio_out
-
-            if (self.playhead >= self.end and self.loop) \
-                or self.is_reset:
-                self.is_reset = False
-                self.playhead = self.start
 
             audio_out[:] = self.data[self.playhead:self.playhead+self.blocksize]
             self.playhead += self.blocksize
@@ -79,7 +45,7 @@ class AudioClip:
 
     def play(self):
         if self.is_playing:
-            self.is_reset = False
+            self.is_reset = True
         else:
             self.is_playing = True
 
@@ -93,8 +59,9 @@ class AudioClip:
 
 
 class AudioEngine:
-    def __init__(self, connections, bitrate=16, sample_rate=44100):
-        self.client              = jack.Client("AUX")
+    def __init__(self, connections, bitrate=16, sample_rate=44100, ip='127.0.0.1', osc_inport=4000):
+        self.client              = jack.Client("AudioEngine")
+        self.osc_client          = udp_client.SimpleUDPClient(ip, osc_inport)
         self.blocksize           = self.client.blocksize
         self.outport             = self.client.outports.register("out_0")
         self.bpm                 = 120
@@ -108,9 +75,13 @@ class AudioEngine:
         self.measure             = 0
         self.beat                = 0
         self.metronome_on        = False
+        self.metronome_outport   = self.client.outports.register("out_click")
 
         self.queue               = []
         self.clips               = {}
+
+        self.ip                  = ip
+        self.osc_inport          = osc_inport
 
         self.client.set_process_callback(self._process_callback)
         self.client.set_shutdown_callback(self._shutdown_callback)
@@ -126,8 +97,10 @@ class AudioEngine:
 
         else:
             self.client.activate()
-            for connection in connections:
-                self.client.connect("AUX:out_0", connection)
+            for connection in self.connections:
+                self.client.connect("AudioEngine:out_0", connection)
+                self.client.connect("AudioEngine:out_click", connection)
+            self.osc_server()
 
         return self
 
@@ -138,33 +111,76 @@ class AudioEngine:
 
     def _process_callback(self, frames):
         audio_out = numpy.zeros(self.blocksize)
+        click_out = numpy.zeros(self.blocksize)
 
         if self.advance_measure():
             # click high for metronome beat 1
             self.advance_beat()
             if self.metronome_on:
-                clips["click_high"].play()
+                self.clips["click_high"].play()
 
             while self.queue:
                 name = self.queue.pop()
-                clips[name].play()
+                self.clips[name].play()
 
         elif self.advance_beat():
             # click low for metronome other beats
             if self.metronome_on:
-                clips["click_low"].play()
+                self.clips["click_low"].play()
 
-        for name in clips:
-            if clips[name].is_playing:
-                audio_out += clips[name].get_next_block()
+        for name in self.clips:
+            if self.clips[name].is_playing:
+                if "click" in name:
+                    click_out += self.clips[name].get_next_block()
+                else:
+                    audio_out += self.clips[name].get_next_block()
 
-        self.outport.get_array()[:] = audio_out
+        self.outport.get_array()[:]           = audio_out
+        self.metronome_outport.get_array()[:] = click_out
 
 
     def _shutdown_callback(self, status, reason):
         print("JACK shutdown!")
         print("status:", status)
         print("reason:", reason)
+
+
+    def osc_server(self):
+        from pythonosc import dispatcher
+
+        disp = dispatcher.Dispatcher()
+        disp.map("/*", self._osc_callback)
+        server = osc_server.ThreadingOSCUDPServer((self.ip, self.osc_inport), disp)
+        threading.Thread(target=server.serve_forever).start()
+        print(f"----> Listening on port udp:{self.osc_inport}")
+
+
+    def _osc_callback(self, path, value):
+        path = path[1:]
+        path_split = path.split("_")
+
+        if path_split[0] == "metronome":
+            if path_split[1] == "toggle":
+                self.metronome_on = False if self.metronome_on else True
+            elif path_split[1] == "on":
+                self.metronome_on = True
+            elif path_split[1] == "off":
+                self.metronome_on = False
+
+        elif path_split[0] == "play":
+            self.play(path_split[1])
+
+        elif path_split[0] == "stop":
+            if path_split[1] == "all":
+                self.stop_all()
+            else:
+                self.stop(path_split[1])
+
+        elif path_split[0] == "timesig":
+            self.set_time_sig(int(path_split[1]))
+
+        elif path_split[0] == "bpm":
+            self.set_bpm(int(path_split[1]))
 
 
     def advance_measure(self):
@@ -179,22 +195,23 @@ class AudioEngine:
         self.beat += self.blocksize
         if self.beat >= self.samples_per_beat:
             self.beat = self.beat - self.samples_per_beat
+            # print("click")
             return True
         return False
 
 
     def stop(self, name):
-        if name in clips:
-            clips[name].stop()
+        if name in self.clips:
+            self.clips[name].stop()
 
 
     def stop_all(self):
-        for name in clips:
-            clips[name].stop()
+        for name in self.clips:
+            self.clips[name].stop()
 
 
     def play(self, name):
-        if name in clips:
+        if name in self.clips:
             self.queue.append(name)
 
 
@@ -215,37 +232,3 @@ class AudioEngine:
 
     def set_samples_per_measure(self):
         self.samples_per_measure = self.samples_per_beat * self.timesig
-
-
-#
-#    def _process_callback(self, frames):
-#        audio_out = numpy.zeros(self.blocksize)
-#
-#        if self.advance_playhead():
-#            if self.audiofile_next_target is not None:
-#                self.audiofile_target      = self.audiofile_next_target
-#                self.audiofile_next_target = None
-#                self.audiofile_playhead    = self.clips[self.audiofile_target]["start"]
-#                self.is_playing            = True
-#                print(f"Playing song: {self.audiofile_target}")
-#
-#        if self.is_playing:
-#            if self.audiofile_playhead >= self.clips[self.audiofile_target]["end"]:
-#                self.is_playing = False
-#            else:
-#                audio_out += self.clips[
-#                    self.audiofile_target]["data"][
-#                    self.audiofile_playhead:self.audiofile_playhead+self.blocksize]
-#                self.audiofile_playhead += self.blocksize
-#
-#        else:
-#            self.audiofile_playhead = None
-#            self.audiofile_target   = None
-#
-#        self.outport.get_array()[:] = audio_out
-#
-#    
-
-
-if __name__ == "__main__":
-    run()

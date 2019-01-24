@@ -1,5 +1,7 @@
 from pythonosc import osc_server
 from pythonosc import udp_client
+from audio_engine import AudioEngine
+from midi_engine import MidiEngine
 import jack, os, time, threading
 
 # we need to take in osc messages from rails and translate
@@ -20,28 +22,50 @@ MIXER = {
     "james":    {"position": 1, "pan": "L", "inport": "james_guitarix:out_0"},
     "jesse":    {"position": 2, "pan": "R", "inport": "jesse_guitarix:out_0"},
     "mitch":    {"position": 3, "pan": "C", "inport": "mitch_guitarix:out_0"},
-    "drums":    {"position": 4, "pan": "C", "inport": "system:capture_5"},
+    "drums":    {"position": 4, "pan": "C", "inport": ["system:capture_5", "AudioEngine:out_0"]},
     "talkback": {"position": 5, "pan": "C", "inport": "system:capture_4"},
+    "click":    {"position": 6, "pan": "C", "inport": "AudioEngine:out_click"},
+}
+
+MIDI_MAP = {
+    "note_10": ["metronome_off", "stop_all"],
+    "note_9":  ["timesig_3", "bpm_120", "metronome_toggle"],
+    "note_8":  ["timesig_3", "bpm_120", "play_blind"],
 }
 
 EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
 
 GUITARIX_START_PORT = 4000
 MIXER_START_PORT    = 5000
+AUDIO_ENGINE_PORT   = 6000
 OSC_INPORT          = 3001
 OSC_OUTPORT         = 3002
 OSC_VARS            = {}
 IP                  = '127.0.0.1'
 CLIENT              = None
+AUDIO_ENGINE        = None
+MIDI_ENGINE         = None
 # -- End Globals --
 
 
 def run():
+    event = threading.Event()
+
+    # -- MAIN EVENT --
     start_client()
+    start_audio_engine()
+    start_midi_engine()
     start_guitarix()
     start_mixers()
     start_osc_server()
     start_extra_connections()
+    # -- #### --
+
+    print("Press Ctrl+C to stop")
+    try:
+        event.wait()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
 
 
 def start_osc_server():
@@ -64,6 +88,11 @@ def osc_callback(path, value):
     path       = path[1:]
     path_split = path.split("_")
 
+    if path == "fcb_talkback_toggle":
+        path       = "talkback_toggle"
+        path_split = path.split("_")
+        value = 1 if OSC_VARS[path] else 0
+
     if len(path_split) == 2:
         if path == "talkback_toggle":
             if value >= .5: value = 1
@@ -79,6 +108,10 @@ def osc_callback(path, value):
 
                 if  OSC_VARS[path]: value = -90
                 client.send_message("/mixer/channel/set_gain", [pos, value])
+
+        elif path_split[0] in ["play","stop","timesig","bpm","metronome"]:
+            if AUDIO_ENGINE is not None:
+                AUDIO_ENGINE.osc_client.send_message(f"/{path}", 0)
 
     elif len(path_split) == 3:
         name, target, kind = path_split
@@ -146,8 +179,13 @@ def start_mixers():
             pos    = MIXER[mix]["position"]
             pan    = MIXER[mix]["pan"]
             inport = MIXER[mix]["inport"]
-            if pan in ["L","C"]: connect(inport,f"{name}_mix:in{pos}_left")
-            if pan in ["R","C"]: connect(inport,f"{name}_mix:in{pos}_right")
+            if type(inport) is list:
+                for i in inport:
+                    if pan in ["L","C"]: connect(i,f"{name}_mix:in{pos}_left")
+                    if pan in ["R","C"]: connect(i,f"{name}_mix:in{pos}_right")
+            else:
+                if pan in ["L","C"]: connect(inport,f"{name}_mix:in{pos}_left")
+                if pan in ["R","C"]: connect(inport,f"{name}_mix:in{pos}_right")
 
 
 def start_guitarix():
@@ -185,6 +223,41 @@ def start_client():
     CLIENT.activate()
 
 
+def start_audio_engine():
+    global AUDIO_ENGINE
+
+    # set up outboard connections
+    connections = []
+    # for name in PEOPLE:
+        # for outp in PEOPLE[name]["outports"]:
+            # connections.append(outp)
+
+    AUDIO_ENGINE = AudioEngine(connections, osc_inport=AUDIO_ENGINE_PORT)
+    AUDIO_ENGINE.load_audio(
+        name     = "click_high",
+        filepath = "/home/mitch/hipbox/audio_files/click_high.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.load_audio(
+        name     = "click_low",
+        filepath = "/home/mitch/hipbox/audio_files/click_low.wav",
+        start    = 0,
+    )
+
+    AUDIO_ENGINE.load_audio(
+        name     = "blind",
+        filepath = "/home/mitch/hipbox/audio_files/blind2.wav",
+        start    = 0,
+    )
+    AUDIO_ENGINE.run()
+
+
+def start_midi_engine():
+    global MIDI_ENGINE
+    connections = ["system:midi_capture_1"]
+    MIDI_ENGINE = MidiEngine(connections, MIDI_MAP, IP, OSC_INPORT).run()
+
+
 def start_extra_connections():
     for c in EXTRA_CONNECTIONS:
         connect(c[0], c[1])
@@ -192,3 +265,10 @@ def start_extra_connections():
 
 if __name__ == "__main__":
     run()
+
+    if AUDIO_ENGINE is not None:
+        AUDIO_ENGINE.client.deactivate()
+        AUDIO_ENGINE.client.close()
+    if MIDI_ENGINE is not None:
+        MIDI_ENGINE.client.deactivate()
+        MIDI_ENGINE.client.close()
