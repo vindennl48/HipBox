@@ -31,6 +31,7 @@ MIDI_MAP = {
     "note_10": ["metronome_off", "stop_all"],
     "note_9":  ["timesig_3", "bpm_120", "metronome_toggle"],
     "note_8":  ["timesig_3", "bpm_120", "play_blind"],
+    "note_6":  ["fcb_talkback_toggle"],
 }
 
 EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
@@ -111,7 +112,11 @@ def osc_callback(path, value):
     if path == "fcb_talkback_toggle":
         path       = "talkback_toggle"
         path_split = path.split("_")
-        value = 1 if OSC_VARS[path] else 0
+        if path not in OSC_VARS:
+            OSC_VARS[path] = 1
+        else:
+            value = 1 if OSC_VARS[path] == 0 else 0
+        RAILS_CLIENT.send_message("/talkback_toggle", value)
 
     if len(path_split) == 2:
         if path == "talkback_toggle":
@@ -135,7 +140,6 @@ def osc_callback(path, value):
         elif path == "stop_all":
             stop_rec()
             if RAILS_CLIENT is not None:
-                print(f"####> STOP_ALL, path: /{path}")
                 RAILS_CLIENT.send_message(f"/{path}", 0)
             if AUDIO_ENGINE is not None:
                 AUDIO_ENGINE.osc_client.send_message(f"/{path}", 0)
