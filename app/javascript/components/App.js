@@ -16,11 +16,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("/api/v1/users")
-      .then((response) => { return response.json() })
-      .then((user) => {
-        this.setState({ currentUser: user })
-      })
+    this.setState({ currentUser: this.props.user })
   }
 
   setValue() { console.log('not working') }
@@ -28,7 +24,7 @@ class App extends React.Component {
   render () {
     const { currentUser } = this.state
 
-    if (currentUser) {
+    if (currentUser != null) {
 
       return (
         <div className="bo-wrapper">
@@ -36,7 +32,9 @@ class App extends React.Component {
           <ChanStrip    user={currentUser.name} chan="jesse" />
           <ChanStrip    user={currentUser.name} chan="mitch" />
           <ChanStrip    user={currentUser.name} chan="drums" />
-          <ChanStripSys user={currentUser.name} chan="hp"       label="HPVol" />
+          {
+            //<ChanStripSys user={currentUser.name} chan="hp"       label="HPVol" />
+          }
           <ChanStripSys user={currentUser.name} chan="click"    label="Click" />
           <ChanStripSys user={currentUser.name} chan="talkback" label="Tlkbk" />
           <ChanStripExtra />

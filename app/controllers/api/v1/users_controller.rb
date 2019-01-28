@@ -1,6 +1,7 @@
 class Api::V1::UsersController < Api::V1::BaseController
 
   def index
+    puts "current_user: #{current_user}"
     render json: User.find(current_user.id)
   end
 

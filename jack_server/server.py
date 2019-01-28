@@ -317,7 +317,7 @@ def connect(port1, port2):
             i += 1
             time.sleep(1)
     if i >= 20:
-        raise Exception(f">>>>> Can not connect ports in 5 attempts: {port1} -> {port2}")
+        raise Exception(f">>>>> Can not connect ports in 20 attempts: {port1} -> {port2}")
     else:
         print(f"----> ports successfully connected: {port1} -> {port2}")
 
