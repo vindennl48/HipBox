@@ -18,6 +18,7 @@ PEOPLE = {
     "drums": {"guitarix": False, "inport": "system:capture_5", "outports": ["system:playback_5","system:playback_6"]},
 }
 
+# personal mixer inputs, panning, and order
 MIXER = {
     "james":    {"position": 1, "pan": "L", "inport": "james_guitarix:out_0"},
     "jesse":    {"position": 2, "pan": "R", "inport": "jesse_guitarix:out_0"},
@@ -27,8 +28,8 @@ MIXER = {
     "click":    {"position": 6, "pan": "C", "inport": "AudioEngine:out_click"},
 }
 
+# -- FCB1010 --
 MIDI_MAP = {
-    # -- FCB1010 --
     "note_6":  ["fcb_talkback_toggle"],
     "note_10": ["metronome_off", "stop_all"],
 
@@ -67,8 +68,8 @@ MIDI_MAP = {
 EXTRA_CONNECTIONS = [["system:midi_capture_1","mitch_guitarix:midi_in_1"]]
 
 # Ports
-OSC_INPORT           = 3001  # Receiving osc from rails
-OSC_OUTPORT          = 3002  # Sending osc to rails
+OSC_INPORT           = 3001     # Receiving osc from rails
+OSC_OUTPORT          = 3002     # Sending osc to rails
 GUITARIX_START_PORT  = 4000
 MIXER_START_PORT     = 5000
 AUDIO_ENGINE_PORT    = 6000
@@ -83,7 +84,7 @@ MIDI_ENGINE          = None
 RAILS_CLIENT         = None
 
 # Vars
-OSC_VARS             = {}
+OSC_VARS             = {}       # holds latest osc variables
 IS_RECORDING         = False
 
 # Options
@@ -158,6 +159,7 @@ def start_osc_server():
     from pythonosc import dispatcher
     ########################################################
 
+    # accept osc data from rails
     disp = dispatcher.Dispatcher()
     disp.map("/*", osc_callback)
     server = osc_server.ThreadingOSCUDPServer((IP, OSC_INPORT), disp)
@@ -165,10 +167,13 @@ def start_osc_server():
     print(f"----> Listening on port udp:{OSC_INPORT}")
 
 
+    # send osc data to rails
     RAILS_CLIENT = udp_client.SimpleUDPClient(IP, OSC_OUTPORT)
     print(f"----> UDP client to rails active")
 
 
+# a lot of this code is unnecessary but I would need to rewrite the
+#  backend of the rails app to clean this up.. version v7 right? :)
 def osc_callback(path, value):
     global OSC_VARS
 
@@ -186,6 +191,9 @@ def osc_callback(path, value):
             value = 1 if OSC_VARS[path] == 0 else 0
         RAILS_CLIENT.send_message("/talkback_toggle", value)
 
+    # there are 2 types of osc messages,
+    #   "xxx_xxx"
+    #   "xxx_xxx_xxx"
     if len(path_split) == 2:
         if path == "talkback_toggle":
             if value >= .5: value = 1
@@ -216,6 +224,7 @@ def osc_callback(path, value):
             if AUDIO_ENGINE is not None:
                 AUDIO_ENGINE.osc_client.send_message(f"/{path}", 0)
 
+    # these all have to do with volume, mute, or solo
     elif len(path_split) == 3:
         name, target, kind = path_split
 
@@ -276,6 +285,7 @@ def start_mixers():
 
         PEOPLE[name]["udpclient"] = udp_client.SimpleUDPClient(IP, mixer_port)
 
+        # start instance of jackminimix
         os.system(f"jackminimix -c {num_ports} -n {name}_mix -p {mixer_port} -l {out_L} -r {out_R} &")
         time.sleep(1)  # give jackminimix a second to load
         for mix in MIXER:
@@ -300,6 +310,7 @@ def start_guitarix():
 
             headless = "-N"
             if not GUITARIX_IS_HEADLESS: headless = ""
+            # start instance of guitarix
             os.system(f"guitarix {headless} -J -D --name={name}_guitarix -p {guitarix_port} &")
             time.sleep(1) # give guitarix a second to load
             connect(inport,f"{name}_guitarix:in_0")
@@ -346,6 +357,8 @@ def start_rec():
         port_offset  = 1
         make_clients = False
 
+        # after we create the clients, we don't want to make any more unless
+        #  they close.  This ensures that they only are created once.
         if not REC_CLIENTS: make_clients = True
 
         for name in PEOPLE:
@@ -384,6 +397,7 @@ def start_extra_connections():
 if __name__ == "__main__":
     run()
 
+    # -- cleanup --
     if AUDIO_ENGINE is not None:
         AUDIO_ENGINE.client.deactivate()
         AUDIO_ENGINE.client.close()
