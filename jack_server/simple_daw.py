@@ -1,9 +1,9 @@
-from scipy.io import wavfile
-import jack, threading, numpy, time
+from scipy.io import scipy
+import jack, numpy
 
 
 class SimpleDAW:
-    def __init__(self, bitrate=16, sample_rate=44100):
+    def __init__(self, click_high, click_low, audio_files=[], bitrate=16, sample_rate=44100):
         self.client              = jack.Client("SimpleDAW")
         self.blocksize           = self.client.blocksize
         self.outport             = self.client.outports.register("out_0")
@@ -18,6 +18,7 @@ class SimpleDAW:
         self.beat                = 0            # counter
         self.click_on            = False
         self.click_outport       = self.client.outports.register("out_click")
+        self.is_playing          = False
 
         self.queue               = []
         self.clips               = {}
@@ -28,47 +29,59 @@ class SimpleDAW:
         self.set_samples_per_beat()
         self.set_samples_per_measure()
 
+        for audio_file in (audio_files+click_high+click_low):
+            self.load_audio(audio_file)
+
 
     def run(self):
         if "click_high" not in self.clips \
             or "click_low" not in self.clips:
             raise Exception("####> No click clips found!")
-
         else:
             self.client.activate()
 
         return self
 
 
-    def load_audio(self, name, filepath, start, end=None, loop=False):
-        self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate)
+    def load_audio(self, audio_file):
+        if all(key in audio_file for key in ["name","filepath"]):
+            start = audio_file["start"] if "start" in audio_file else 0
+            end   = audio_file["end"] if "end" in audio_file else None
+            loop  = audio_file["loop"] if "loop" in audio_file else False
+            self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate)
+        else:
+            raise Exception(f"####> Error loading audio file into SimpleDAW: {audio_file}")
 
 
     def _process_callback(self, frames):
         audio_out = numpy.zeros(self.blocksize)
         click_out = numpy.zeros(self.blocksize)
 
-        if self.advance_measure():
-            # click high for click beat 1
-            self.advance_beat()
-            if self.click_on:
-                self.clips["click_high"].play()
+        if self.is_playing:
+            if self.advance_measure():
+                # click high for click beat 1
+                if self.click_on:
+                    self.clips["click_high"].play()
 
-            while self.queue:
-                name = self.queue.pop()
-                self.clips[name].play()
+                # only start new clips on beat 1
+                while self.queue:
+                    name = self.queue.pop()
+                    self.clips[name].play()
 
-        elif self.advance_beat():
-            # click low for click other beats
-            if self.click_on:
-                self.clips["click_low"].play()
+            elif self.advance_beat():
+                # click low for click other beats
+                if self.click_on:
+                    self.clips["click_low"].play()
 
-        for name in self.clips:
-            if self.clips[name].is_playing:
-                if "click" in name:
-                    click_out += self.clips[name].get_next_block()
-                else:
-                    audio_out += self.clips[name].get_next_block()
+            for name in self.clips:
+                if self.clips[name].is_playing:
+                    if "click" in name:
+                        click_out += self.clips[name].get_next_block()
+                    else:
+                        audio_out += self.clips[name].get_next_block()
+        else:
+            self.measure = 0
+            self.beat    = 0
 
         self.outport.get_array()[:]       = audio_out
         self.click_outport.get_array()[:] = click_out
@@ -81,34 +94,43 @@ class SimpleDAW:
 
 
     def process_osc(self, path, value):
-        path = path[1:]
-        path_split = path.split("_")
+        path_sp = path[1:].split('/')
 
-        if path_split[0] == "click":
-            if path_split[1] == "toggle":
-                self.click_on = False if self.click_on else True
-            elif path_split[1] == "on":
-                self.click_on = True
-            elif path_split[1] == "off":
-                self.click_on = False
+        # This only processes osc that are prefaced by 'simpledaw'
+        if path_sp[0] != "simpledaw": return None
 
-        elif path_split[0] == "play":
-            self.play(path_split[1])
+        # remove 'simpledaw' from path
+        path_sp.pop(0)
 
-        elif path_split[0] == "stop":
-            if path_split[1] == "all":
+        # handle different length paths
+        if len(path_sp) == 1:
+            kind = path_sp
+            name = False
+        elif len(path_sp) == 2:
+            kind, name = path_sp
+
+        if kind == "click":
+            self.click_on = False if self.click_on else True
+
+        elif kind == "play":
+            if name:
+                self.play(name)
+
+        elif kind == "stop":
+            if name == "all":
                 self.stop_all()
-            else:
-                self.stop(path_split[1])
+            elif name:
+                self.stop(name)
 
-        elif path_split[0] == "timesig":
-            self.set_time_sig(int(path_split[1]))
+        elif kind == "timesig" or kind == "timesignature":
+            self.set_time_sig(int(value))
 
-        elif path_split[0] == "bpm":
-            self.set_bpm(int(path_split[1]))
+        elif kind == "bpm":
+            self.set_bpm(int(value))
 
 
     def advance_measure(self):
+        self.advance_measure()
         self.measure += self.blocksize
         if self.measure >= self.samples_per_measure:
             self.measure = self.measure - self.samples_per_measure
@@ -120,7 +142,6 @@ class SimpleDAW:
         self.beat += self.blocksize
         if self.beat >= self.samples_per_beat:
             self.beat = self.beat - self.samples_per_beat
-            # print("click")
             return True
         return False
 
@@ -131,11 +152,13 @@ class SimpleDAW:
 
 
     def stop_all(self):
+        self.is_playing = False
         for name in self.clips:
             self.clips[name].stop()
 
 
     def play(self, name):
+        self.is_playing = True
         if name in self.clips:
             self.queue.append(name)
 
@@ -160,7 +183,7 @@ class SimpleDAW:
 
 
 class AudioClip:
-    def __init__(self, name, filepath, blocksize, start, end=None, loop=False, bitrate=16):
+    def __init__(self, name, filepath, blocksize, start=0, end=None, loop=False, bitrate=16):
         self.name       = name
         self.filepath   = filepath
         self.start      = start
@@ -173,7 +196,7 @@ class AudioClip:
         self.loop       = loop
         self.max_nb_bit = float(2 ** (bitrate - 1))
 
-        fs, audio       = wavfile.read(filepath)
+        fs, audio       = scipy.read(filepath)
         self.data       = audio / (self.max_nb_bit + 1.0)
 
         if self.end is None: self.end = len(self.data)

@@ -56,6 +56,8 @@ class Mixes:
 
             self.mixes[person] = result
 
+        self.create_mixes()
+
 
     def create_mixes(self):
         port = self.start_port
