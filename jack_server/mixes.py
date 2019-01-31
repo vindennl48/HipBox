@@ -1,33 +1,10 @@
 from pythonosc import udp_client
-import jack, os, time
-
-
-class JackHelp:
-    CLIENT = None
-
-    def init():
-        JackHelp.CLIENT = jack.Client("server")
-        JackHelp.CLIENT.activate()
-
-    def connect_port(port1, port2):
-        success = False
-        i = 0
-        while not success and i < 20:
-            try:
-                JackHelp.CLIENT.connect(port1,port2)
-                success = True
-            except:
-                print(f"####> error trying to connect ports attempt {i}-20: {port1} -> {port2}")
-                i += 1
-                time.sleep(1)
-        if i >= 20:
-            raise Exception(f">>>>> Can not connect ports in 20 attempts: {port1} -> {port2}")
-        else:
-            print(f"----> ports successfully connected: {port1} -> {port2}")
+from jack_help import JackHelp
+import os, time
 
 
 class Mixes:
-    # people = { <name>: [<headphone port left>,<headphone port right>],.. }
+    # people = { <name>: [<headphone port left>,<headphone port right>] OR [],.. }
     # inputs = { <name>: {
     #     "port":        <audio_port> OR [<audio_port>,<audio_port>],
     #     "pan":         <L,R,C>,
@@ -53,7 +30,11 @@ class Mixes:
         for person in people:
             # for solo to work, person and input must have matching names
             self.solos[person] = False
-            result = { "outports": people[person] }
+            result             = {}
+
+            # only create outports if they are included in args
+            if people[person]:
+                result["outports"] = people[person]
 
             for i, name in enumerate(self.inputs):
                 inp = self.inputs[name]
@@ -67,13 +48,14 @@ class Mixes:
                     mute = False
 
                 # if you want a mixer for a scratch recording mix, add it to list of people
-                if person != "record" or inp["record"]:
+                if (person == "record" and inp["record"]) or person != "record":
                     result[name] = {
                         "vol":  0,
                         "mute": mute,
                     }
 
             self.mixes[person] = result
+
 
     def create_mixes(self):
         port = self.start_port
@@ -82,8 +64,8 @@ class Mixes:
             num_inputs    = f"-c {len(mix)}"
             mix_name      = f"-n {name}_mix"
             mix_port      = f"-p {port}"
-            mix_left_out  = f"-l {mix['outports'][0]}"
-            mix_right_out = f"-r {mix['outports'][1]}"
+            mix_left_out  = f"-l {mix['outports'][0]}" if "outports" in mix else ""
+            mix_right_out = f"-r {mix['outports'][1]}" if "outports" in mix else ""
 
             # start up instance of jackminimix
             self.mixes[name]["osc"] = udp_client.SimpleUDPClient(self.ip, port)
@@ -106,6 +88,7 @@ class Mixes:
 
             port += 1
 
+
     def process_osc(self, path, value):
         path_sp = path[1:].split('/')
 
@@ -115,7 +98,13 @@ class Mixes:
         # remove 'mixer' from path
         path_sp.pop(0)
 
-        kind, name, inp = path_sp
+        # handle different length paths
+        if len(path_sp) == 3:
+            kind, name, inp = path_sp
+            toggle = False
+        elif len(path_sp) == 4:
+            kind, name, inp, toggle = path_sp
+
         pos = self.inputs[inp]["pos"]
 
         if kind == "vol":
@@ -123,34 +112,64 @@ class Mixes:
             #  this gives +10/-30 db for the sliders
             value = int((value * 40) - 30)
 
-            # we want an accurate value from slider irregardless of mute/solo
             self.mixes[name][inp][kind] = value
 
-            # solo mutes your instrument for everyone but yourself
-            if name != inp and self.solos.get(inp,False):
-                value = -90 # muted
-
-            # check if mute both local and global
-            mute = self.mixes[name][inp]["mute"]
-            if mute != "global" and mute:
-                value = -90 # muted
-            elif mute == "global" and self.mutes.get(inp,False):
-                value = -90 # muted
-
-            self.mixes[name]["osc"].send_message("/mixer/channel/set_gain", [pos, value])
+            self.set_gain(name, inp)
 
         elif kind == "mute":
-            if value >= .5: value = True
-            else:           value = False
+            if toggle:
+                value = False if self.mixes[name][inp][kind] else True
+            else:
+                if value >= .5: value = True
+                else:           value = False
+
             self.mixes[name][inp][kind] = value
 
-            if value: value = self.mixes[name][inp]["vol"]
-            else:     value = -90
-
-            self.mixes[name]["osc"].send_message("/mixer/channel/set_gain", [pos, value])
+            self.set_gain(name, inp)
 
         elif kind == "solo":
-            pass
+            # Solo only works if the instrument matches the person
+            if name != inp: return None
+
+            if toggle:
+                value = False if self.solos[name] else True
+            else:
+                if value >= .5: value = True
+                else:           value = False
+
+            self.solos[name] = value
+
+            for mix_name in self.mixes:
+                self.set_gain(mix_name, inp)
+
         else:
             print("####> Error processing osc in mixer")
 
+
+    def set_gain(self, mix_name, input_name):
+
+        # dont process anything for the record mix
+        if mix_name == "record": return None
+
+        value = self.mixes[mix_name][input_name]["vol"]
+        pos   = self.inputs[input_name]["pos"]
+
+        # solo mutes your instrument for everyone but yourself
+        if mix_name != input_name and self.solos.get(input_name,False):
+            value = -90 # muted
+
+        # check if mute both local and global
+        mute = self.mixes[mix_name][input_name]["mute"]
+        if mute != "global" and mute:
+            value = -90 # muted
+        elif mute == "global" and self.mutes.get(input_name,False):
+            value = -90 # muted
+
+        self.mixes[mix_name]["osc"].send_message("/mixer/channel/set_gain", [pos, value])
+
+
+    def get_output_names(self, mix_name):
+        if mix_name in self.mixes:
+            return [f"{mix_name}:out_left",f"{mix_name}:out_right"]
+        else:
+            return []
