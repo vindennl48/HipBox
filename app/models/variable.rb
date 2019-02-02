@@ -14,13 +14,12 @@ class Variable < ApplicationRecord
   def self.update_record(variable)
     if variable["kind"] == "mute" and variable["global"]
       self.update_global(variable)
-    elsif variable["kind"] == "solo" or variable["kind"] = "record"
+    elsif variable["kind"] == "solo" or variable["kind"] == "record"
       self.update_global(variable)
     else
       record = Variable.find(variable["id"])
       record.update_attributes({ value: variable["value"] })
     end
-    puts "variable name: #{variable['name']}, value: #{variable['value']}"
   end
 
   def self.update_global(variable)
@@ -31,10 +30,29 @@ class Variable < ApplicationRecord
 
   private
     def broadcast_variable
+      user = User.find(self.user_id)
+
       if self.kind != "vol"
-        user = User.find(self.user_id)
         UserChannel.broadcast_to(user, { records: [self] })
       end
+
+      if $OSCRUBY != nil
+        if self.kind == "record"
+          preface = "record"
+        else
+          preface = "mixer"
+        end
+        path = "/#{preface}/#{self.kind}/#{user.name}/#{self.name}"
+        $OSCRUBY.send OSC::Message.new(path, self.value)
+        puts "====> OSCPATH: #{path}, VALUE: #{self.value}"
+      else
+        puts "##################################"
+        puts "##################################"
+        puts "####> ERROR: OSC doesnt work.."
+        puts "##################################"
+        puts "##################################"
+      end
+
     end
 
 end
