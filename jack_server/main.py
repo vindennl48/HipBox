@@ -34,6 +34,9 @@ AUDIO_FILES = [
     {"name": "petrichor", "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
 ]
 
+CLICK_HIGH = {"name": "click_high", "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
+CLICK_LOW  = {"name": "click_low",  "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
+
 # Ports
 OSC_INPORT           = 3001     # Receiving osc from rails
 RAILS_OUTPORT        = 3002     # Sending osc to rails
@@ -67,9 +70,7 @@ def start_mixes():
     return Mixes(PEOPLE, INPUTS, MIXER_START_PORT, IP, RAILS_OUTPORT)
 
 def start_simpledaw():
-    click_high = {"name": "click_high", "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
-    click_low  = {"name": "click_low",  "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
-    return SimpleDAW(click_high, click_low, AUDIO_FILES)
+    return SimpleDAW(CLICK_HIGH, CLICK_LOW, AUDIO_FILES)
 
 
 if __name__ == "__main__":

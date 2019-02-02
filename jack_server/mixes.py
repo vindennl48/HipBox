@@ -34,7 +34,8 @@ class Mixes:
 
             # only create outports if they are included in args
             if people[person]:
-                result["outports"] = people[person]
+                result["outports"]   = people[person]
+                result["hp"] = 0
 
             for i, name in enumerate(self.inputs):
                 inp = self.inputs[name]
@@ -91,6 +92,8 @@ class Mixes:
             port += 1
 
 
+    # /vol/mitch/james
+    # /mute/mitch/james/toggle
     def process_osc(self, path, value):
         path_sp = path[1:].split('/')
 
@@ -109,23 +112,35 @@ class Mixes:
 
         pos = self.inputs[inp]["pos"]
 
+        # /vol/mitch/hp
         if kind == "vol":
             # value from rails comes in 0.0->1.0 so
             #  this gives +10/-30 db for the sliders
             value = int((value * 40) - 30)
 
-            self.mixes[name][inp][kind] = value
+            if inp == "hp":
+                self.mixes[name]["hp"] = value
+            else:
+                self.mixes[name][inp][kind] = value
 
             self.set_gain(name, inp)
 
         elif kind == "mute":
+            mute = self.mixes[name][inp][kind]
+
             if toggle:
-                value = False if self.mixes[name][inp][kind] else True
+                if mute == "global":
+                    value = False if self.mutes[inp] else True
+                else:
+                    value = False if self.mixes[name][inp][kind] else True
             else:
                 if value >= .5: value = True
                 else:           value = False
 
-            self.mixes[name][inp][kind] = value
+            if mute == "global":
+                self.mutes[inp] = value
+            else:
+                self.mixes[name][inp][kind] = value
 
             self.set_gain(name, inp)
 
@@ -153,19 +168,23 @@ class Mixes:
         # dont process anything for the record mix
         if mix_name == "record": return None
 
-        value = self.mixes[mix_name][input_name]["vol"]
-        pos   = self.inputs[input_name]["pos"]
+        if input_name == "hp":
+            value = self.mixes[mix_name]["hp"]
+            pos = 0
+        else:
+            value = self.mixes[mix_name][input_name]["vol"]
+            pos = self.inputs[input_name]["pos"]
 
-        # solo mutes your instrument for everyone but yourself
-        if mix_name != input_name and self.solos.get(input_name,False):
-            value = -90 # muted
+            # solo mutes your instrument for everyone but yourself
+            if mix_name != input_name and self.solos.get(input_name,False):
+                value = -90 # muted
 
-        # check if mute both local and global
-        mute = self.mixes[mix_name][input_name]["mute"]
-        if mute != "global" and mute:
-            value = -90 # muted
-        elif mute == "global" and self.mutes.get(input_name,False):
-            value = -90 # muted
+            # check if mute both local and global
+            mute = self.mixes[mix_name][input_name]["mute"]
+            if mute != "global" and mute:
+                value = -90 # muted
+            elif mute == "global" and self.mutes.get(input_name,False):
+                value = -90 # muted
 
         self.mixes[mix_name]["osc"].send_message("/mixer/channel/set_gain", [pos, value])
 
