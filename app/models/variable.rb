@@ -43,7 +43,17 @@ class Variable < ApplicationRecord
           preface = "mixer"
         end
         path = "/#{preface}/#{self.kind}/#{user.name}/#{self.name}"
-        $OSCRUBY.send OSC::Message.new(path, self.value)
+
+        begin
+          $OSCRUBY.send OSC::Message.new(path, self.value)
+        rescue => ex
+          puts "###########################################"
+          puts "###########################################"
+          puts "####> ERROR: OSC connection refused.."
+          puts "###########################################"
+          puts "###########################################"
+        end
+
         puts "====> OSCPATH: #{path}, VALUE: #{self.value}"
       else
         puts "##################################"
