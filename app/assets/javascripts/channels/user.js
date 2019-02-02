@@ -1,4 +1,4 @@
-//App.osc_data = App.cable.subscriptions.create("OscDataChannel", {
+//App.user = App.cable.subscriptions.create("UserChannel", {
   //connected: function() {
     //// Called when the subscription is ready for use on the server
   //},
@@ -11,8 +11,7 @@
     //// Called when there's incoming data on the websocket for this channel
   //},
 
-  ////speak: function(data) {
-    ////return this.perform('speak', { data: data })
-  ////}
-
+  //askForData: function() {
+    //return this.perform('askForData');
+  //}
 //});

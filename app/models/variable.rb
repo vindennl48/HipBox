@@ -1,81 +1,39 @@
 class Variable < ApplicationRecord
   after_save :broadcast_variable
 
-  def self.process_incoming(record:nil, name:nil, value:nil)
-    if record
-      variable = Variable.find(record["id"])
-      name = variable.name
-      if record.key?("value")
-        value = record["value"]
-      else
-        value = record["status"]
-      end
+  def self.process_osc(path, value)
+    path_split     = path[1..-1].split("/")
+    kind name inp  = path_split
+    user           = User.find_by(name: name)
+    variable       = Variable.find_by(user_id: user.id, name:inp)
+    variable.value = value
+
+    self.update_record(variable)
+  end
+
+  def self.update_record(variable)
+    if variable["kind"] == "mute" and variable["global"]
+      self.update_global(variable)
+    elsif variable["kind"] == "solo" or variable["kind"] = "record"
+      self.update_global(variable)
     else
-      variable = Variable.find_by(name:name)
-      record = variable.attributes
-      if record["type_of"] == 'boolean'
-        record["status"] = value
-      else
-        record["value"] = value
-      end
+      record = Variable.find(variable["id"])
+      record.update_attributes({ value: variable["value"] })
     end
-
-    if name == "stop_all"
-      self.stop_all
-
-    elsif name == "record_toggle"
-      self.record_toggle
-
-    else
-      variable.update_attributes(record)
-      self.send_to_daw(variable)
-    end
-
+    puts "variable name: #{variable['name']}, value: #{variable['value']}"
   end
 
-  def self.stop_all
-    Variable.find_by(name:'play_toggle').update_attributes(status:false)
-    Variable.find_by(name:'record_toggle').update_attributes(status:false)
-
-    $OSCRUBY.send OSC::Message.new('/stop_playhead', 127)
-    sleep(0.05)
-    $OSCRUBY.send OSC::Message.new('/stop_loops', 1.0)
-    sleep(0.05)
-    $OSCRUBY.send OSC::Message.new('/advance_playhead', 1.0)
-  end
-
-  def self.record_toggle
-    record_toggle = Variable.find_by(name:'record_toggle')
-    $OSCRUBY.send OSC::Message.new('/record_toggle', 1.0)
-
-    if not record_toggle.status
-      record_toggle.update_attributes(status:true)
-    #else # remove this in production
-      #self.stop_all
-    end
-
-  end
-
-  def self.send_to_daw(variable)
-    $OSCRUBY.send OSC::Message.new(self.get_osc(variable), self.parse_data(variable))
-  end
-
-  def self.get_osc(variable)
-    return "/#{variable.name}"
-  end
-
-  def self.parse_data(variable)
-    if variable.type_of == 'boolean'
-      return (variable.status ? 1.0 : 0.0)
-    else #elsif variable.type_of == 'value'
-      return (variable.value.to_f / 127.0).round(3)
+  def self.update_global(variable)
+    Variable.where(kind: variable["kind"], name: variable["name"]).each do |v|
+      v.update_attributes({ value: variable["value"] })
     end
   end
 
   private
     def broadcast_variable
-      if self.type_of == 'boolean'
-        OscDataChannel.broadcast_to(self, { record: self })
+      if self.kind != "vol"
+        user = User.find(self.user_id)
+        UserChannel.broadcast_to(user, { records: [self] })
       end
     end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_11_11_044451) do
+ActiveRecord::Schema.define(version: 2019_02_02_152603) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -29,12 +29,15 @@ ActiveRecord::Schema.define(version: 2018_11_11_044451) do
   end
 
   create_table "variables", force: :cascade do |t|
-    t.string "name"
-    t.boolean "status", default: false
+    t.string "name", null: false
     t.integer "value", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "type_of"
+    t.bigint "user_id"
+    t.boolean "global", default: false
+    t.string "kind", null: false
+    t.index ["user_id"], name: "index_variables_on_user_id"
   end
 
+  add_foreign_key "variables", "users"
 end

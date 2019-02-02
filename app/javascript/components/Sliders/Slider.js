@@ -26,12 +26,14 @@ class Slider extends React.Component {
   }
 
   change = (value) => {
-    this.setState({ value: value, })
+    //this.setState({ value: value, })
     this.props.callback(value)
   }
 
   render () {
-    const { value } = this.state
+    //const { value } = this.state
+    const { value } = this.props
+
     return (
       <ReactSlider
         value       = {value}

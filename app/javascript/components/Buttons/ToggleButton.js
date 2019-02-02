@@ -3,40 +3,24 @@ import PropTypes from "prop-types"
 
 
 class ToggleButton extends React.Component {
-
   static defaultProps = {
-    setValue:   () => {},
-    callback:   () => {},
-  }
-
-  constructor (props) {
-    super(props)
-    this.state = {
-      value: false,
-    }
-  }
-
-  componentDidMount() {
-    this.props.setValue((value) => {
-      this.setState({ value: value })
-    })
-  }
-
-  click = () => {
-    let { value } = this.state
-    value = value ? false : true
-    this.setState({ value: value, })
-    this.props.callback(value)
+    value:      0,
+    name:       "name",
+    isDisabled: false,
+    callback:   ()=>{},
   }
 
   render () {
-    const { value } = this.state
+    const { value, name, isDisabled, callback } = this.props
+    let classExtra  = isDisabled ? 'disabled' : `toggle ${name}`
+    let className   = `cs-btn ${classExtra}`
+
     return (
       <div
-        className = {`${this.props.className} ${value}`}
-        onClick   = {this.props.isDisabled ? ()=>{} : this.click}
+        className = {`${className} ${value ? 'true' : 'false'}`}
+        onClick   = { isDisabled ? ()=>{} : ()=>{callback(value ? 0 : 1)} }
       >
-        {this.props.children}
+        {name}
       </div>
     );
   }

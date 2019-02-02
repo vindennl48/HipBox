@@ -1,10 +1,8 @@
 import React from "react"
 import PropTypes from "prop-types"
 
-import MuteButton from "../Buttons/MuteButton"
-import SoloButton from "../Buttons/SoloButton"
-import ValueDisplay from "../Displays/ValueDisplay"
-import ChanStripSlider from "../Sliders/ChanStripSlider"
+import ReactSlider from "react-rangeslider"
+import ToggleButton from "../Buttons/ToggleButton"
 
 
 class ChanStrip extends React.Component {
@@ -18,7 +16,7 @@ class ChanStrip extends React.Component {
 
   render () {
 
-    const { user, chan } = this.props
+    const { user, chan, volu, mute, solo, callback } = this.props
 
     return (
       <div className="channel-strip">
@@ -30,26 +28,47 @@ class ChanStrip extends React.Component {
         <div className="body">
 
           <div className="slider">
-            <ChanStripSlider
-              variable = {`${user}_${chan}_vol`}
-              setValue = {(func)  => { this.setVolume = func }}
-              callback = {(value) => { this.setDisplay(value) }}
+            <ReactSlider
+              value       = {volu["value"]}
+              min         = {0}
+              max         = {127}
+              tooltip     = {false}
+              orientation = "vertical"
+              onChange    = {(value) => {
+                callback(chan, "vol", value)
+              }}
             />
           </div>
 
           <div className="buttons">
             <div className="wrapper">
-              <ValueDisplay
-                setValue = {(func)  => { this.setDisplay = func }}
-                callback = {(value) => { this.setVolume(value) }}
+
+              <div className="cs-value-display">
+                <div onClick={ ()=>{callback(chan, "vol", 84)} }>
+                  {`${volu["value"] !=84 ? '*' : ''}${volu["value"]}`}
+                </div>
+              </div>
+
+              <ToggleButton
+                name       = "mute"
+                value      = {mute != null ? mute["value"] : 0}
+                isDisabled = {
+                  user == chan ||
+                  mute == null
+                    ? true : false
+                }
+                callback   = { (value)=>{callback(chan, "mute", value)} }
               />
-              <SoloButton
-                isDisabled = {user == chan ? false : true}
-                variable   = {`${chan}_${chan}_solo`}
-              />
-              <MuteButton
-                isDisabled = {user == chan ? true : false}
-                variable   = {user == chan ? '' : `${user}_${chan}_mute`}
+
+              <ToggleButton
+                name       = "solo"
+                value      = {solo != null ? solo["value"] : 0}
+                isDisabled = {
+                  user != chan ||
+                  solo == null
+                    ? true : false
+                }
+                callback   = { (value)=>{callback(chan, "solo", value)} }
               />
             </div>
           </div>

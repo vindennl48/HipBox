@@ -1,7 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 
-import RecButton from "../Buttons/RecButton"
+import ToggleButton from "../Buttons/ToggleButton"
 
 
 class ChanStrip extends React.Component {
@@ -14,6 +14,8 @@ class ChanStrip extends React.Component {
   }
 
   render () {
+    const { chan, rec, callback } = this.props
+
     return (
       <div className="channel-strip">
 
@@ -25,7 +27,12 @@ class ChanStrip extends React.Component {
 
           <div className="buttons">
             <div className="wrapper">
-              <RecButton />
+              <ToggleButton
+                name       = "REC"
+                value      = {rec != null ? rec["value"] : 0}
+                isDisabled = {rec == null ? true : false}
+                callback   = { (value)=>{callback(chan, "record", 1)} }
+              />
             </div>
           </div>
 
