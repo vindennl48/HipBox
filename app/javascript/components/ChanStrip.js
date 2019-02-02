@@ -2,7 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 
 import ReactSlider from "react-rangeslider"
-import ToggleButton from "../Buttons/ToggleButton"
+import ToggleButton from "./ToggleButton"
 
 
 class ChanStrip extends React.Component {

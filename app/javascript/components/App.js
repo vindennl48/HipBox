@@ -1,9 +1,8 @@
 import React from "react"
 import PropTypes from "prop-types"
 
-import ChanStrip from "./ChanStrips/ChanStrip"
-import ChanStripExtra from "./ChanStrips/ChanStripExtra"
-//import ChanStripSys from "./ChanStrips/ChanStripSys"
+import ChanStrip from "./ChanStrip"
+import ChanStripExtra from "./ChanStripExtra"
 
 
 class App extends React.Component {
