@@ -10,18 +10,19 @@ class Variable < ApplicationRecord
       path_split.shift(1)
     end
 
-    if length(path_split) == 3
-      kind name inp = path_split
+    if path_split.size == 3
+      kind, name, inp = path_split
       toggle = false
     else
-      kind name inp toggle = path_split
+      kind, name, inp, toggle = path_split
     end
 
     user     = User.find_by(name: name)
-    variable = Variable.find_by(user_id: user.id, name:inp)
+    variable = Variable.find_by(user_id: user.id, name: inp, kind: kind)
+    puts "----> VARIABLE: #{variable.inspect}"
 
     if toggle
-      variable.value = value ? 0 : 1
+      variable.value = variable.value == 0 ? 1 : 0
     else
       variable.value = value
     end
@@ -36,7 +37,9 @@ class Variable < ApplicationRecord
       self.update_global(variable)
     else
       record = Variable.find(variable["id"])
-      record.update_attributes({ value: variable["value"] })
+      record.value = variable["value"]
+      record.save
+      #record.update_attributes({ value: variable["value"] })
     end
   end
 
@@ -48,9 +51,16 @@ class Variable < ApplicationRecord
 
   private
     def broadcast_variable
+      puts "====> BROADCASTING! "
+      puts "====> BROADCASTING! "
+
       user = User.find(self.user_id)
 
+      puts "====> SELF: #{self.inspect}"
       if self.kind != "vol"
+        puts "====> BROADCASTING TO USER! "
+        puts "====> BROADCASTING TO USER! "
+
         UserChannel.broadcast_to(user, { records: [self] })
       end
 

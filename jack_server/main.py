@@ -31,6 +31,41 @@ GUITARIX_INPUTS = {
     "mitch": {"port": "system:capture_3", "midi_port": "system:midi_capture_1"},
 }
 
+MIDI_MAP = {
+    "note_6": ["/rails/mute/mitch/talkback/toggle"],
+#    "note_10": ["/simpledaw/stop/all"],
+#
+#    # -- Sono --
+#    "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
+#    "note_8":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
+#    "note_9":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
+#
+#    # -- Chrono --
+#    # "note_17":  ["timesig_3", "bpm_90", "play_chrono"],
+#    # "note_18":  ["timesig_3", "bpm_90", "play_chrono"],
+#    "note_19":  ["timesig_4", "bpm_90", "metronome_toggle"],
+#
+#    # -- Space --
+#    # "note_27":  ["timesig_3", "bpm_120", "play_space"],
+#    # "note_28":  ["timesig_3", "bpm_120", "play_space"],
+#    "note_29":  ["timesig_4", "bpm_120", "metronome_toggle"],
+#
+#    # -- Petrichor --
+#    "note_37":  ["timesig_3", "bpm_145", "play_petrichor"],
+#    "note_38":  ["timesig_3", "bpm_145", "play_petrichor"],
+#    "note_39":  ["timesig_4", "bpm_145", "metronome_toggle"],
+#
+#    # -- Blind --
+#    "note_47":  ["timesig_3", "bpm_120", "play_blind"],
+#    "note_48":  ["timesig_3", "bpm_120", "play_blind"],
+#    "note_49":  ["timesig_3", "bpm_120", "metronome_toggle"],
+#
+#    # -- Old Pete --
+#    "note_57":  ["timesig_4", "bpm_125", "play_oldpete"],
+#    "note_58":  ["timesig_4", "bpm_125", "play_oldpete"],
+#    "note_59":  ["timesig_4", "bpm_125", "metronome_toggle"],
+}
+
 AUDIO_FILES = [
     {"name": "blind",     "filepath": "/home/mitch/hipbox/audio_files/blind2.wav"},
     {"name": "sono",      "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
@@ -67,7 +102,7 @@ def run():
     GLOBAL.guitarix    = start_guitarix( isHeadless = True )
     GLOBAL.mixes       = start_mixes()
     # GLOBAL.simpledaw   = start_simpledaw()
-    # GLOBAL.midi_engine = start_midi_engine()
+    GLOBAL.midi_engine = start_midi_engine()
 
     start_osc_server()
     # -- #### --
@@ -89,29 +124,31 @@ def start_simpledaw():
     return SimpleDAW(CLICK_HIGH, CLICK_LOW, AUDIO_FILES)
 
 def start_midi_engine():
-    return MidiEngine(MIDI_CONNECTIONS, MIDI_MAP, IP, OSC_INPORT).run()
+    connections = ["system:midi_capture_1"]
+    return MidiEngine(connections, MIDI_MAP, IP, OSC_INPORT).run()
 
 def rails_process_osc(path, value):
-    path_sp = path[1:0].split('/')
+    path_sp = path[1:].split('/')
 
     # This only processes osc that are prefaced by 'simpledaw'
     if path_sp[0] != "rails": return 0
 
     if RAILS_CLIENT is not None:
         RAILS_CLIENT.send_message(path, value)
+    return 1
 
 def start_osc_server():
     global RAILS_CLIENT
 
     def osc_callback(path, value):
-        print(f"====> OSC path: {path}, value: {value}")
+        print(f"----> OSC path: {path}, value: {value}")
         if rails_process_osc(path, value):
             return 1
         if GLOBAL.mixes is not None and GLOBAL.mixes.process_osc(path, value):
             return 1
         if GLOBAL.simpledaw is not None and GLOBAL.simpledaw.process_osc(path, value):
             return 1
-        print("====> OSC missed")
+        print("----> OSC missed")
 
     ########################################################
     # I hate importing inside a function but it doesn't seem

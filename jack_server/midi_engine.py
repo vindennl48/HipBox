@@ -21,7 +21,11 @@ class MidiEngine:
 
     def _process_callback(self, frames):
         for offset, data in self.inport.incoming_midi_events():
-            status, note, vel = struct.unpack('3B', data)
+            try:
+                status, note, vel = struct.unpack('3B', data)
+            except:
+                return 0
+
             if status == 176:
                 ntype = "cc"
             elif status == 144:
@@ -35,4 +39,10 @@ class MidiEngine:
                 if f"{ntype}_{note}" in self.midi_map:
                     responses = self.midi_map[f"{ntype}_{note}"]
                     for response in responses:
-                        self.osc_client.send_message(f"{response}", vel)
+                        path = response
+
+                        if type(response) == list:
+                            path = response[0]
+                            vel  = response[1:]
+
+                        self.osc_client.send_message(path, vel)

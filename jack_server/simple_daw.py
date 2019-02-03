@@ -119,7 +119,7 @@ class SimpleDAW:
         elif kind == "stop":
             if name == "all":
                 self.stop_all()
-            elif name:
+            else:
                 self.stop(name)
 
         elif kind == "timesig" or kind == "timesignature":
