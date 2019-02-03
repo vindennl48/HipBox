@@ -1,6 +1,7 @@
 from mixes import Mixes
 from simple_daw import SimpleDAW
 from guitarix import Guitarix
+from midi_engine import MidiEngine
 
 # names and headphone outputs
 PEOPLE = {
@@ -38,21 +39,33 @@ CLICK_HIGH = {"name": "click_high", "filepath": "/home/mitch/hipbox/audio_files/
 CLICK_LOW  = {"name": "click_low",  "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
 
 # Ports
-OSC_INPORT           = 3001     # Receiving osc from rails
-RAILS_OUTPORT        = 3002     # Sending osc to rails
-GUITARIX_START_PORT  = 4000
-MIXER_START_PORT     = 5000
-REC_START_PORT       = 6000
-IP                   = '127.0.0.1'
+OSC_INPORT          = 3001     # Receiving osc from rails
+RAILS_OUTPORT       = 3002     # Sending osc to rails
+GUITARIX_START_PORT = 4000
+MIXER_START_PORT    = 5000
+REC_START_PORT      = 6000
+IP                  = '127.0.0.1'
+
+# Clients
+RAILS_CLIENT        = None
+
+# Other Globals
+guitarix            = None
+mixes               = None
+simpledaw           = None
+midi_engine         = None
 
 
 def run():
     event = threading.Event()
 
     # -- MAIN EVENT --
-    guitarix  = start_guitarix()
-    mixes     = start_mixes()
-    simpledaw = start_simpledaw()
+    guitarix    = start_guitarix( isHeadless = True )
+    mixes       = start_mixes()
+    simpledaw   = start_simpledaw()
+    midi_engine = start_midi_engine()
+
+    start_osc_server()
     # -- #### --
 
     print("Press Ctrl+C to stop")
@@ -62,15 +75,54 @@ def run():
         print("\nInterrupted by user")
 
 
-def start_guitarix():
-    return Guitarix(GUITARIX_INPUTS, GUITARIX_START_PORT)
-
+def start_guitarix(isHeadless=True):
+    return Guitarix(GUITARIX_INPUTS, GUITARIX_START_PORT, isHeadless=isHeadless)
 
 def start_mixes():
     return Mixes(PEOPLE, INPUTS, MIXER_START_PORT, IP, RAILS_OUTPORT)
 
 def start_simpledaw():
     return SimpleDAW(CLICK_HIGH, CLICK_LOW, AUDIO_FILES)
+
+def start_midi_engine():
+    return MidiEngine(MIDI_CONNECTIONS, MIDI_MAP, IP, OSC_INPORT).run()
+
+def rails_process_osc(path, value):
+    path_sp = path[1:0].split('/')
+
+    # This only processes osc that are prefaced by 'simpledaw'
+    if path_sp[0] != "rails": return 0
+
+    if RAILS_CLIENT is not None:
+        RAILS_CLIENT.send_message(path, value)
+
+def start_osc_server():
+    global RAILS_CLIENT
+
+    def osc_callback(path, value):
+        if rails_process_osc(path, value):
+            return 1
+        if mixes is not None and mixes.process_osc(path, value):
+            return 1
+        if simpledaw is not None and simpledaw.process_osc(path, value):
+            return 1
+
+    ########################################################
+    # I hate importing inside a function but it doesn't seem
+    #  to want to work any other way..
+    from pythonosc import dispatcher
+    ########################################################
+
+    # accept osc data from rails
+    disp = dispatcher.Dispatcher()
+    disp.map("/*", osc_callback)
+    server = osc_server.ThreadingOSCUDPServer((IP, OSC_INPORT), disp)
+    threading.Thread(target=server.serve_forever).start()
+    print(f"----> Listening on port udp:{OSC_INPORT}")
+
+    # send osc data to rails
+    RAILS_CLIENT = udp_client.SimpleUDPClient(IP, OSC_OUTPORT)
+    print(f"----> UDP client to rails active")
 
 
 if __name__ == "__main__":

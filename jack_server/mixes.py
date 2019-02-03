@@ -98,7 +98,7 @@ class Mixes:
         path_sp = path[1:].split('/')
 
         # This only processes osc that are prefaced by 'mixer'
-        if path_sp[0] != "mixer": return None
+        if path_sp[0] != "mixer": return 0
 
         # remove 'mixer' from path
         path_sp.pop(0)
@@ -161,6 +161,8 @@ class Mixes:
 
         else:
             print("####> Error processing osc in mixer")
+
+        return 1
 
 
     def set_gain(self, mix_name, input_name):

@@ -97,7 +97,7 @@ class SimpleDAW:
         path_sp = path[1:].split('/')
 
         # This only processes osc that are prefaced by 'simpledaw'
-        if path_sp[0] != "simpledaw": return None
+        if path_sp[0] != "simpledaw": return 0
 
         # remove 'simpledaw' from path
         path_sp.pop(0)
@@ -127,6 +127,8 @@ class SimpleDAW:
 
         elif kind == "bpm":
             self.set_bpm(int(value))
+
+        return 1
 
 
     def advance_measure(self):

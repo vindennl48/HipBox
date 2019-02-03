@@ -4,13 +4,13 @@ import os, time
 
 class Guitarix:
     # inputs = { <name>: {"port":<audio port>,"midi_port"(only if needed):<midi port>} }
-    def __init__(self, inputs, start_port=5000):
+    def __init__(self, inputs, isHeadless=True, start_port=5000):
         self.inputs     = inputs
         self.start_port = start_port
 
         for i, name in enumerate(inputs):
             inport      = inputs[name]["port"]
-            headless    = f"-N"
+            headless    = f"-N" if isHeadless else ""
             no_connect  = f"-J"
             multiclient = f"-D"
             amp_name    = f"--name={name}_guitarix"

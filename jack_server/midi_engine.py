@@ -35,4 +35,4 @@ class MidiEngine:
                 if f"{ntype}_{note}" in self.midi_map:
                     responses = self.midi_map[f"{ntype}_{note}"]
                     for response in responses:
-                        self.osc_client.send_message(f"/{response}", vel)
+                        self.osc_client.send_message(f"{response}", vel)
