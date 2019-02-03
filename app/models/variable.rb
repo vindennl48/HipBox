@@ -19,7 +19,6 @@ class Variable < ApplicationRecord
 
     user     = User.find_by(name: name)
     variable = Variable.find_by(user_id: user.id, name: inp, kind: kind)
-    puts "----> VARIABLE: #{variable.inspect}"
 
     if toggle
       variable.value = variable.value == 0 ? 1 : 0
@@ -51,16 +50,8 @@ class Variable < ApplicationRecord
 
   private
     def broadcast_variable
-      puts "====> BROADCASTING! "
-      puts "====> BROADCASTING! "
-
       user = User.find(self.user_id)
-
-      puts "====> SELF: #{self.inspect}"
       if self.kind != "vol"
-        puts "====> BROADCASTING TO USER! "
-        puts "====> BROADCASTING TO USER! "
-
         UserChannel.broadcast_to(user, { records: [self] })
       end
 

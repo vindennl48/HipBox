@@ -3,7 +3,7 @@ import jack, threading, struct, mido
 
 
 class MidiEngine:
-    def __init__(self, connections, midi_map, ip='127.0.0.1', osc_return_port=4000):
+    def __init__(self, connections, midi_map, osc_return_port=4000, ip='127.0.0.1'):
         self.name        = f"MIDI_TO_OSC"
         self.client      = jack.Client(self.name)
         self.inport      = self.client.midi_inports.register('in_0')

@@ -46,8 +46,8 @@ class Mixes:
 
             # only create outports if they are included in args
             if people[person]:
-                result["outports"]   = people[person]
-                result["hp"] = 0
+                result["outports"] = people[person]
+                result["hp"]       = 0
 
             for i, name in enumerate(self.inputs):
                 inp = self.inputs[name]
@@ -152,7 +152,7 @@ class Mixes:
 
         elif kind == "solo":
             # Solo only works if the instrument matches the person
-            if name != inp: return None
+            if name != inp: return 1
 
             if toggle:
                 value = False if self.solos[name] else True

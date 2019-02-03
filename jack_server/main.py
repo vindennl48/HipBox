@@ -4,6 +4,7 @@ from mixes import Mixes
 from simple_daw import SimpleDAW
 from guitarix import Guitarix
 from midi_engine import MidiEngine
+from recording_engine import RecordingEngine
 import threading
 
 # names and headphone outputs
@@ -12,6 +13,7 @@ PEOPLE = {
     "jesse": ["system:playback_9","system:playback_10"],
     "mitch": ["system:playback_3","system:playback_4"],
     "sean":  ["system:playback_5","system:playback_6"],
+    "record":[],
 }
 
 # mixer inputs
@@ -21,8 +23,8 @@ INPUTS = {
     "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C", "record": True},
     "talkback": {"port": "system:capture_4",     "pan": "C", "record": False},
     "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
-
-    "sean": {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"], "pan": "C", "record": True},
+    "sean":     {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"],
+                                                 "pan": "C", "record": True},
 }
 
 GUITARIX_INPUTS = {
@@ -33,7 +35,7 @@ GUITARIX_INPUTS = {
 
 MIDI_MAP = {
     "note_6":  ["/rails/mute/mitch/talkback/toggle"],
-    "note_10": ["/simpledaw/stop/all"],
+    "note_10": ["/simpledaw/stop/all","/record/stop"],
 
     # -- Sono --
     "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
@@ -89,20 +91,24 @@ RAILS_CLIENT        = None
 
 # Other Globals
 class GLOBAL:
-    guitarix    = None
-    mixes       = None
-    simpledaw   = None
-    midi_engine = None
+    # need to do it this way so the osc_callback
+    #  function can actually use them.
+    guitarix         = None
+    mixes            = None
+    simpledaw        = None
+    midi_engine      = None
+    recording_engine = None
 
 
 def run():
     event = threading.Event()
 
     # -- MAIN EVENT --
-    GLOBAL.guitarix    = start_guitarix( isHeadless = True )
-    GLOBAL.simpledaw   = start_simpledaw()
-    GLOBAL.mixes       = start_mixes()
-    GLOBAL.midi_engine = start_midi_engine()
+    GLOBAL.guitarix         = start_guitarix( isHeadless = True )
+    GLOBAL.simpledaw        = start_simpledaw()
+    GLOBAL.mixes            = start_mixes()
+    GLOBAL.midi_engine      = start_midi_engine()
+    GLOBAL.recording_engine = start_recording_engine()
 
     start_osc_server()
     # -- #### --
@@ -125,7 +131,12 @@ def start_simpledaw():
 
 def start_midi_engine():
     connections = ["system:midi_capture_1"]
-    return MidiEngine(connections, MIDI_MAP, IP, OSC_INPORT).run()
+    return MidiEngine(connections, MIDI_MAP, OSC_INPORT, IP).run()
+
+def start_recording_engine():
+    filename_prepend = "recorded/scratch_"
+    mixed_rec_ports  = ["record_mix:out_left","record_mix:out_right"]
+    return RecordingEngine(INPUTS, filename_prepend, mixed_rec_ports, REC_START_PORT, IP).run()
 
 def rails_process_osc(path, value):
     path_sp = path[1:].split('/')
@@ -147,6 +158,8 @@ def start_osc_server():
         if GLOBAL.mixes is not None and GLOBAL.mixes.process_osc(path, value):
             return 1
         if GLOBAL.simpledaw is not None and GLOBAL.simpledaw.process_osc(path, value):
+            return 1
+        if GLOBAL.recording_engine is not None and GLOBAL.recording_engine.process_osc(path, value):
             return 1
         print("----> OSC missed")
 
