@@ -12,8 +12,8 @@ class SimpleDAW:
         self.bitrate             = bitrate
 
         self.sample_rate         = sample_rate
-        self.samples_per_beat    = None
-        self.samples_per_measure = None
+        self.samples_per_beat    = 0
+        self.samples_per_measure = 0
         self.measure             = 0            # counter
         self.beat                = 0            # counter
         self.click_on            = False
@@ -29,7 +29,10 @@ class SimpleDAW:
         self.set_samples_per_beat()
         self.set_samples_per_measure()
 
-        for audio_file in (audio_files+click_high+click_low):
+        audio_files.append(click_high)
+        audio_files.append(click_low)
+
+        for audio_file in (audio_files):
             self.load_audio(audio_file)
 
 
@@ -45,9 +48,11 @@ class SimpleDAW:
 
     def load_audio(self, audio_file):
         if all(key in audio_file for key in ["name","filepath"]):
-            start = audio_file["start"] if "start" in audio_file else 0
-            end   = audio_file["end"] if "end" in audio_file else None
-            loop  = audio_file["loop"] if "loop" in audio_file else False
+            name     = audio_file["name"]
+            filepath = audio_file["filepath"]
+            start    = audio_file["start"] if "start" in audio_file else 0
+            end      = audio_file["end"] if "end" in audio_file else None
+            loop     = audio_file["loop"] if "loop" in audio_file else False
             self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate)
         else:
             raise Exception(f"####> Error loading audio file into SimpleDAW: {audio_file}")
@@ -80,8 +85,8 @@ class SimpleDAW:
                     else:
                         audio_out += self.clips[name].get_next_block()
         else:
-            self.measure = 0
-            self.beat    = 0
+            self.measure = None
+            self.beat    = None
 
         self.outport.get_array()[:]       = audio_out
         self.click_outport.get_array()[:] = click_out
@@ -104,13 +109,14 @@ class SimpleDAW:
 
         # handle different length paths
         if len(path_sp) == 1:
-            kind = path_sp
+            kind = path_sp[0]
             name = False
         elif len(path_sp) == 2:
             kind, name = path_sp
 
         if kind == "click":
-            self.click_on = False if self.click_on else True
+            self.is_playing = True
+            self.click_on   = False if self.click_on else True
 
         elif kind == "play":
             if name:
@@ -132,15 +138,25 @@ class SimpleDAW:
 
 
     def advance_measure(self):
-        self.advance_measure()
+        if self.measure is None:
+            self.measure = 0
+            self.advance_beat()
+            return True
+
         self.measure += self.blocksize
         if self.measure >= self.samples_per_measure:
             self.measure = self.measure - self.samples_per_measure
+            self.advance_beat()
             return True
+
         return False
 
 
     def advance_beat(self):
+        if self.beat is None:
+            self.beat = 0
+            return True
+
         self.beat += self.blocksize
         if self.beat >= self.samples_per_beat:
             self.beat = self.beat - self.samples_per_beat
@@ -155,6 +171,7 @@ class SimpleDAW:
 
     def stop_all(self):
         self.is_playing = False
+        self.click_on   = False
         for name in self.clips:
             self.clips[name].stop()
 

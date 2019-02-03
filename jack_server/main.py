@@ -20,9 +20,9 @@ INPUTS = {
     "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R", "record": True},
     "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C", "record": True},
     "talkback": {"port": "system:capture_4",     "pan": "C", "record": False},
-    # "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
+    "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
 
-    "sean": {"port": ["system:capture_5","system:capture_6"], "pan": "C", "record": True},
+    "sean": {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"], "pan": "C", "record": True},
 }
 
 GUITARIX_INPUTS = {
@@ -32,13 +32,13 @@ GUITARIX_INPUTS = {
 }
 
 MIDI_MAP = {
-    "note_6": ["/rails/mute/mitch/talkback/toggle"],
-#    "note_10": ["/simpledaw/stop/all"],
-#
-#    # -- Sono --
-#    "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
-#    "note_8":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
-#    "note_9":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
+    "note_6":  ["/rails/mute/mitch/talkback/toggle"],
+    "note_10": ["/simpledaw/stop/all"],
+
+    # -- Sono --
+    "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
+    "note_8":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
+    "note_9":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
 #
 #    # -- Chrono --
 #    # "note_17":  ["timesig_3", "bpm_90", "play_chrono"],
@@ -100,8 +100,8 @@ def run():
 
     # -- MAIN EVENT --
     GLOBAL.guitarix    = start_guitarix( isHeadless = True )
+    GLOBAL.simpledaw   = start_simpledaw()
     GLOBAL.mixes       = start_mixes()
-    # GLOBAL.simpledaw   = start_simpledaw()
     GLOBAL.midi_engine = start_midi_engine()
 
     start_osc_server()
@@ -121,7 +121,7 @@ def start_mixes():
     return Mixes(PEOPLE, INPUTS, MIXER_START_PORT, IP, RAILS_OUTPORT)
 
 def start_simpledaw():
-    return SimpleDAW(CLICK_HIGH, CLICK_LOW, AUDIO_FILES)
+    return SimpleDAW(CLICK_HIGH, CLICK_LOW, AUDIO_FILES).run()
 
 def start_midi_engine():
     connections = ["system:midi_capture_1"]
