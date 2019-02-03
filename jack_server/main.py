@@ -1,7 +1,10 @@
+from pythonosc import osc_server
+from pythonosc import udp_client
 from mixes import Mixes
 from simple_daw import SimpleDAW
 from guitarix import Guitarix
 from midi_engine import MidiEngine
+import threading
 
 # names and headphone outputs
 PEOPLE = {
@@ -17,7 +20,7 @@ INPUTS = {
     "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R", "record": True},
     "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C", "record": True},
     "talkback": {"port": "system:capture_4",     "pan": "C", "record": False},
-    "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
+    # "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
 
     "sean": {"port": ["system:capture_5","system:capture_6"], "pan": "C", "record": True},
 }
@@ -50,20 +53,21 @@ IP                  = '127.0.0.1'
 RAILS_CLIENT        = None
 
 # Other Globals
-guitarix            = None
-mixes               = None
-simpledaw           = None
-midi_engine         = None
+class GLOBAL:
+    guitarix    = None
+    mixes       = None
+    simpledaw   = None
+    midi_engine = None
 
 
 def run():
     event = threading.Event()
 
     # -- MAIN EVENT --
-    guitarix    = start_guitarix( isHeadless = True )
-    mixes       = start_mixes()
-    simpledaw   = start_simpledaw()
-    midi_engine = start_midi_engine()
+    GLOBAL.guitarix    = start_guitarix( isHeadless = True )
+    GLOBAL.mixes       = start_mixes()
+    # GLOBAL.simpledaw   = start_simpledaw()
+    # GLOBAL.midi_engine = start_midi_engine()
 
     start_osc_server()
     # -- #### --
@@ -75,7 +79,7 @@ def run():
         print("\nInterrupted by user")
 
 
-def start_guitarix(isHeadless=True):
+def start_guitarix(isHeadless):
     return Guitarix(GUITARIX_INPUTS, GUITARIX_START_PORT, isHeadless=isHeadless)
 
 def start_mixes():
@@ -100,12 +104,14 @@ def start_osc_server():
     global RAILS_CLIENT
 
     def osc_callback(path, value):
+        print(f"====> OSC path: {path}, value: {value}")
         if rails_process_osc(path, value):
             return 1
-        if mixes is not None and mixes.process_osc(path, value):
+        if GLOBAL.mixes is not None and GLOBAL.mixes.process_osc(path, value):
             return 1
-        if simpledaw is not None and simpledaw.process_osc(path, value):
+        if GLOBAL.simpledaw is not None and GLOBAL.simpledaw.process_osc(path, value):
             return 1
+        print("====> OSC missed")
 
     ########################################################
     # I hate importing inside a function but it doesn't seem
@@ -121,7 +127,7 @@ def start_osc_server():
     print(f"----> Listening on port udp:{OSC_INPORT}")
 
     # send osc data to rails
-    RAILS_CLIENT = udp_client.SimpleUDPClient(IP, OSC_OUTPORT)
+    RAILS_CLIENT = udp_client.SimpleUDPClient(IP, RAILS_OUTPORT)
     print(f"----> UDP client to rails active")
 
 

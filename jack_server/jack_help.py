@@ -9,6 +9,9 @@ class JackHelp:
         JackHelp.CLIENT.activate()
 
     def connect_port(port1, port2):
+        if JackHelp.CLIENT is None:
+            JackHelp.init()
+
         success = False
         i = 0
         while not success and i < 20:

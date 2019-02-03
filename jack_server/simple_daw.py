@@ -1,4 +1,4 @@
-from scipy.io import scipy
+from scipy.io import wavfile
 import jack, numpy
 
 
@@ -198,7 +198,7 @@ class AudioClip:
         self.loop       = loop
         self.max_nb_bit = float(2 ** (bitrate - 1))
 
-        fs, audio       = scipy.read(filepath)
+        fs, audio       = wavfile.read(filepath)
         self.data       = audio / (self.max_nb_bit + 1.0)
 
         if self.end is None: self.end = len(self.data)

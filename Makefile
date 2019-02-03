@@ -8,4 +8,5 @@ rails:
 	sleep 20
 
 server:
-	python3 jack_server/server.py
+	#python3 jack_server/server.py
+	python3 jack_server/main.py

@@ -4,7 +4,7 @@ import os, time
 
 class Guitarix:
     # inputs = { <name>: {"port":<audio port>,"midi_port"(only if needed):<midi port>} }
-    def __init__(self, inputs, isHeadless=True, start_port=5000):
+    def __init__(self, inputs, start_port=5000, isHeadless=True):
         self.inputs     = inputs
         self.start_port = start_port
 
@@ -15,7 +15,9 @@ class Guitarix:
             multiclient = f"-D"
             amp_name    = f"--name={name}_guitarix"
             port        = f"-p {start_port+i}"
+
             os.system(f"guitarix {headless} {no_connect} {multiclient} {amp_name} {port} &")
+
             time.sleep(1) # give guitarix a second to load
             JackHelp.connect_port(inport,f"{name}_guitarix:in_0")
 

@@ -27,6 +27,18 @@ class Mixes:
         for i, name in enumerate(inputs, 1):
             self.inputs[name]["pos"] = i
 
+        # self.mixes = {
+        #     "mitch": {
+        #         "james": {
+        #             "vol":  0,
+        #             "mute": false,
+        #         },
+        #         "jesse": {
+        #             "vol":  0,
+        #             "mute": false,
+        #         },
+        #     }
+        # } ...
         for person in people:
             # for solo to work, person and input must have matching names
             self.solos[person] = False
@@ -72,12 +84,12 @@ class Mixes:
 
             # start up instance of jackminimix
             self.mixes[name]["osc"] = udp_client.SimpleUDPClient(self.ip, port)
-            os.system(f"jackminimix {num_inputs} {mix_name} {mix_port} {mix_left_out} {mix_right_out}")
+            os.system(f"jackminimix {num_inputs} {mix_name} {mix_port} {mix_left_out} {mix_right_out} &")
 
             time.sleep(1) # give jackminimix a second to load
 
             # make all the jack connections
-            for inp in mix:
+            for inp in self.inputs:
                 pos    = self.inputs[inp]["pos"]
                 pan    = self.inputs[inp]["pan"]
                 inport = self.inputs[inp]["port"]
@@ -110,14 +122,8 @@ class Mixes:
         elif len(path_sp) == 4:
             kind, name, inp, toggle = path_sp
 
-        pos = self.inputs[inp]["pos"]
-
         # /vol/mitch/hp
         if kind == "vol":
-            # value from rails comes in 0.0->1.0 so
-            #  this gives +10/-30 db for the sliders
-            value = int((value * 40) - 30)
-
             if inp == "hp":
                 self.mixes[name]["hp"] = value
             else:
@@ -166,15 +172,14 @@ class Mixes:
 
 
     def set_gain(self, mix_name, input_name):
-
         # dont process anything for the record mix
         if mix_name == "record": return None
 
         if input_name == "hp":
-            value = self.mixes[mix_name]["hp"]
+            value = self.midi_to_db(self.mixes[mix_name]["hp"])
             pos = 0
         else:
-            value = self.mixes[mix_name][input_name]["vol"]
+            value = self.midi_to_db(self.mixes[mix_name][input_name]["vol"])
             pos = self.inputs[input_name]["pos"]
 
             # solo mutes your instrument for everyone but yourself
@@ -190,6 +195,10 @@ class Mixes:
 
         self.mixes[mix_name]["osc"].send_message("/mixer/channel/set_gain", [pos, value])
 
+    def midi_to_db(self, value):
+        # this will give a +10 -> -40 db spread
+        result = (0.3149606 * value) - 30
+        return result
 
     def get_output_names(self, mix_name):
         if mix_name in self.mixes:
