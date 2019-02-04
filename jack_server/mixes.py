@@ -61,11 +61,11 @@ class Mixes:
                     mute = False
 
                 # if you want a mixer for a scratch recording mix, add it to list of people
-                if (person == "record" and inp["record"]) or person != "record":
-                    result[name] = {
-                        "vol":  0,
-                        "mute": mute,
-                    }
+                # if (person == "record" and inp["record"]) or person != "record":
+                result[name] = {
+                    "vol":  0,
+                    "mute": mute,
+                }
 
             self.mixes[person] = result
 
@@ -76,7 +76,7 @@ class Mixes:
         port = self.start_port
         for i, name in enumerate(self.mixes):
             mix           = self.mixes[name]
-            num_inputs    = f"-c {len(mix)}"
+            num_inputs    = f"-c {len(self.inputs)}"
             mix_name      = f"-n {name}_mix"
             mix_port      = f"-p {port}"
             mix_left_out  = f"-l {mix['outports'][0]}" if "outports" in mix else ""
@@ -93,13 +93,15 @@ class Mixes:
                 pos    = self.inputs[inp]["pos"]
                 pan    = self.inputs[inp]["pan"]
                 inport = self.inputs[inp]["port"]
-                if type(inport) is list:
-                    for p in inport:
-                        if pan in ["L","C"]: JackHelp.connect_port(p,f"{name}_mix:in{pos}_left")
-                        if pan in ["R","C"]: JackHelp.connect_port(p,f"{name}_mix:in{pos}_right")
-                else:
-                    if pan in ["L","C"]: JackHelp.connect_port(inport,f"{name}_mix:in{pos}_left")
-                    if pan in ["R","C"]: JackHelp.connect_port(inport,f"{name}_mix:in{pos}_right")
+
+                if name != "record" or (name == "record" and self.inputs[inp]["record"]):
+                    if type(inport) is list:
+                        for p in inport:
+                            if pan in ["L","C"]: JackHelp.connect_port(p,f"{name}_mix:in{pos}_left")
+                            if pan in ["R","C"]: JackHelp.connect_port(p,f"{name}_mix:in{pos}_right")
+                    else:
+                        if pan in ["L","C"]: JackHelp.connect_port(inport,f"{name}_mix:in{pos}_left")
+                        if pan in ["R","C"]: JackHelp.connect_port(inport,f"{name}_mix:in{pos}_right")
 
             port += 1
 

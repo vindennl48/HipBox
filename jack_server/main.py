@@ -21,10 +21,9 @@ INPUTS = {
     "james":    {"port": "james_guitarix:out_0", "pan": "L", "record": True},
     "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R", "record": True},
     "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C", "record": True},
+    "sean":     {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"], "pan": "C", "record": True},
     "talkback": {"port": "system:capture_4",     "pan": "C", "record": False},
     "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
-    "sean":     {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"],
-                                                 "pan": "C", "record": True},
 }
 
 GUITARIX_INPUTS = {
@@ -35,7 +34,7 @@ GUITARIX_INPUTS = {
 
 MIDI_MAP = {
     "note_6":  ["/rails/mute/mitch/talkback/toggle"],
-    "note_10": ["/simpledaw/stop/all","/record/stop"],
+    "note_10": [["/rails/record/mitch/record",0],"/simpledaw/stop/all","/record/stop"],
 
     # -- Sono --
     "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
@@ -136,7 +135,7 @@ def start_midi_engine():
 def start_recording_engine():
     filename_prepend = "recorded/scratch_"
     mixed_rec_ports  = ["record_mix:out_left","record_mix:out_right"]
-    return RecordingEngine(INPUTS, filename_prepend, mixed_rec_ports, REC_START_PORT, IP).run()
+    return RecordingEngine(INPUTS, filename_prepend, mixed_rec_ports, REC_START_PORT, IP)
 
 def rails_process_osc(path, value):
     path_sp = path[1:].split('/')

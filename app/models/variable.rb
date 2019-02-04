@@ -57,7 +57,11 @@ class Variable < ApplicationRecord
 
       if $OSCRUBY != nil
         if self.kind == "record"
-          preface = "record"
+          if self.value != 0
+            preface = "record"
+          else
+            return 0
+          end
         else
           preface = "mixer"
         end
