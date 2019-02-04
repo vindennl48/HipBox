@@ -110,6 +110,7 @@ def run():
     GLOBAL.recording_engine = start_recording_engine()
 
     start_osc_server()
+    load_user_mixer_presets()
     # -- #### --
 
     print("Press Ctrl+C to stop")
@@ -136,6 +137,10 @@ def start_recording_engine():
     filename_prepend = "recorded/scratch_"
     mixed_rec_ports  = ["record_mix:out_left","record_mix:out_right"]
     return RecordingEngine(INPUTS, filename_prepend, mixed_rec_ports, REC_START_PORT, IP)
+
+def load_user_mixer_presets():
+    if RAILS_CLIENT is not None:
+        RAILS_CLIENT.send_message("/rails/maintenance/dump_vars", 0)
 
 def rails_process_osc(path, value):
     path_sp = path[1:].split('/')

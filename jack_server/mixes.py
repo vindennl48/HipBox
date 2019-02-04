@@ -167,6 +167,9 @@ class Mixes:
             for mix_name in self.mixes:
                 self.set_gain(mix_name, inp)
 
+        elif kind == "record":
+            print("----> Ignoring kind:'record' in mixes:process_osc()")
+
         else:
             print("####> Error processing osc in mixer")
 
