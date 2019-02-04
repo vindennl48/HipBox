@@ -5,7 +5,7 @@ from simple_daw import SimpleDAW
 from guitarix import Guitarix
 from midi_engine import MidiEngine
 from recording_engine import RecordingEngine
-import threading
+import threading, argparse
 
 # names and headphone outputs
 PEOPLE = {
@@ -68,14 +68,14 @@ MIDI_MAP = {
 }
 
 AUDIO_FILES = [
-    {"name": "blind",     "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/blind2.wav"},
-    {"name": "sono",      "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
-    {"name": "old_pete",  "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/old_pete2.wav"},
-    {"name": "petrichor", "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
+    {"name": "blind",     "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/blind2.wav"},
+    {"name": "sono",      "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
+    {"name": "old_pete",  "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/old_pete2.wav"},
+    {"name": "petrichor", "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
 ]
 
-CLICK_HIGH = {"name": "click_high", "gain": -15, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
-CLICK_LOW  = {"name": "click_low",  "gain": -15, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
+CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
+CLICK_LOW  = {"name": "click_low",  "gain": -20, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
 
 # Ports
 OSC_INPORT          = 3001     # Receiving osc from rails
@@ -99,11 +99,14 @@ class GLOBAL:
     recording_engine = None
 
 
-def run():
-    event = threading.Event()
+parser = argparse.ArgumentParser()
+parser.add_argument("--no-headless", action="store_false", help="Display Guitarix UI")
+ARGS = parser.parse_args()
 
+
+def run():
     # -- MAIN EVENT --
-    GLOBAL.guitarix         = start_guitarix( isHeadless = True )
+    GLOBAL.guitarix         = start_guitarix( isHeadless=ARGS.no_headless )
     GLOBAL.simpledaw        = start_simpledaw()
     GLOBAL.mixes            = start_mixes()
     GLOBAL.midi_engine      = start_midi_engine()
@@ -111,14 +114,9 @@ def run():
 
     start_osc_server()
     load_user_mixer_presets()
+
+    wait_for_interrupt()
     # -- #### --
-
-    print("Press Ctrl+C to stop")
-    try:
-        event.wait()
-    except KeyboardInterrupt:
-        print("\nInterrupted by user")
-
 
 def start_guitarix(isHeadless):
     return Guitarix(GUITARIX_INPUTS, GUITARIX_START_PORT, isHeadless=isHeadless)
@@ -151,6 +149,14 @@ def rails_process_osc(path, value):
     if RAILS_CLIENT is not None:
         RAILS_CLIENT.send_message(path, value)
     return 1
+
+def wait_for_interrupt():
+    event = threading.Event()
+    print("Press Ctrl+C to stop")
+    try:
+        event.wait()
+    except KeyboardInterrupt:
+        print("\nInterrupted by user")
 
 def start_osc_server():
     global RAILS_CLIENT
