@@ -50,10 +50,11 @@ class SimpleDAW:
         if all(key in audio_file for key in ["name","filepath"]):
             name     = audio_file["name"]
             filepath = audio_file["filepath"]
+            gain     = audio_file["gain"]  if "gain"  in audio_file else 0
             start    = audio_file["start"] if "start" in audio_file else 0
-            end      = audio_file["end"] if "end" in audio_file else None
-            loop     = audio_file["loop"] if "loop" in audio_file else False
-            self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate)
+            end      = audio_file["end"]   if "end"   in audio_file else None
+            loop     = audio_file["loop"]  if "loop"  in audio_file else False
+            self.clips[name] = AudioClip(name, filepath, self.blocksize, start, end, loop, self.bitrate, gain)
         else:
             raise Exception(f"####> Error loading audio file into SimpleDAW: {audio_file}")
 
@@ -202,7 +203,7 @@ class SimpleDAW:
 
 
 class AudioClip:
-    def __init__(self, name, filepath, blocksize, start=0, end=None, loop=False, bitrate=16):
+    def __init__(self, name, filepath, blocksize, start=0, end=None, loop=False, bitrate=16, gain=0):
         self.name       = name
         self.filepath   = filepath
         self.start      = start
@@ -216,7 +217,7 @@ class AudioClip:
         self.max_nb_bit = float(2 ** (bitrate - 1))
 
         fs, audio       = wavfile.read(filepath)
-        self.data       = audio / (self.max_nb_bit + 1.0)
+        self.data       = (audio / (self.max_nb_bit + 1.0)) * (10 ** (gain / 20))
 
         if self.end is None: self.end = len(self.data)
 

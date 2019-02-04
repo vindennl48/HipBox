@@ -40,42 +40,42 @@ MIDI_MAP = {
     "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
     "note_8":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
     "note_9":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
-#
-#    # -- Chrono --
-#    # "note_17":  ["timesig_3", "bpm_90", "play_chrono"],
-#    # "note_18":  ["timesig_3", "bpm_90", "play_chrono"],
-#    "note_19":  ["timesig_4", "bpm_90", "metronome_toggle"],
-#
-#    # -- Space --
-#    # "note_27":  ["timesig_3", "bpm_120", "play_space"],
-#    # "note_28":  ["timesig_3", "bpm_120", "play_space"],
-#    "note_29":  ["timesig_4", "bpm_120", "metronome_toggle"],
-#
-#    # -- Petrichor --
-#    "note_37":  ["timesig_3", "bpm_145", "play_petrichor"],
-#    "note_38":  ["timesig_3", "bpm_145", "play_petrichor"],
-#    "note_39":  ["timesig_4", "bpm_145", "metronome_toggle"],
-#
-#    # -- Blind --
-#    "note_47":  ["timesig_3", "bpm_120", "play_blind"],
-#    "note_48":  ["timesig_3", "bpm_120", "play_blind"],
-#    "note_49":  ["timesig_3", "bpm_120", "metronome_toggle"],
-#
-#    # -- Old Pete --
-#    "note_57":  ["timesig_4", "bpm_125", "play_oldpete"],
-#    "note_58":  ["timesig_4", "bpm_125", "play_oldpete"],
-#    "note_59":  ["timesig_4", "bpm_125", "metronome_toggle"],
+
+    # -- Chrono --
+    # "note_17":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/play/chrono"],
+    # "note_18":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/play/chrono"],
+    "note_19":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/click"],
+
+    # -- Space --
+    # "note_27":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    # "note_28":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    "note_29":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/click"],
+
+    # -- Petrichor --
+    "note_37":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/play/petrichor"],
+    "note_38":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/play/petrichor"],
+    "note_39":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/click"],
+
+    # -- Blind --
+    "note_47":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/play/blind"],
+    "note_48":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/play/blind"],
+    "note_49":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/click"],
+
+    # -- Blind --
+    "note_57":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/play/old_pete"],
+    "note_58":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/play/old_pete"],
+    "note_59":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/click"],
 }
 
 AUDIO_FILES = [
-    {"name": "blind",     "filepath": "/home/mitch/hipbox/audio_files/blind2.wav"},
-    {"name": "sono",      "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
-    {"name": "old_pete",  "filepath": "/home/mitch/hipbox/audio_files/old_pete2.wav"},
-    {"name": "petrichor", "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
+    {"name": "blind",     "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/blind2.wav"},
+    {"name": "sono",      "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
+    {"name": "old_pete",  "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/old_pete2.wav"},
+    {"name": "petrichor", "gain": -5, "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
 ]
 
-CLICK_HIGH = {"name": "click_high", "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
-CLICK_LOW  = {"name": "click_low",  "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
+CLICK_HIGH = {"name": "click_high", "gain": -15, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
+CLICK_LOW  = {"name": "click_low",  "gain": -15, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
 
 # Ports
 OSC_INPORT          = 3001     # Receiving osc from rails
