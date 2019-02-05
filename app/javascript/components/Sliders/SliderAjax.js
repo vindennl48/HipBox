@@ -19,10 +19,12 @@ const SliderAjax = (WrappedComponent) => {
 
     pollServer = () => {
       const { record } = this.state
-      if (record) {
+      if (record != null) {
         this.osc_data.sendData(record)
+      } else {
+        this.osc_data.askForData()
       }
-      setTimeout(this.pollServer, 5000)
+      setTimeout(this.pollServer, 1000)
     }
 
     componentDidMount() {
@@ -39,7 +41,7 @@ const SliderAjax = (WrappedComponent) => {
         }, {
           connected: () => {
             console.log(`ActionCable: connection established for "${variable}"`)
-            this.osc_data.askForData()
+            //this.osc_data.askForData()
             this.pollServer()
           },
           disconnected: () => {

@@ -16,11 +16,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("/api/v1/users")
-      .then((response) => { return response.json() })
-      .then((user) => {
-        this.setState({ currentUser: user })
-      })
+    this.setState({ currentUser: this.props.user })
   }
 
   setValue() { console.log('not working') }
@@ -28,7 +24,7 @@ class App extends React.Component {
   render () {
     const { currentUser } = this.state
 
-    if (currentUser) {
+    if (currentUser != null) {
 
       return (
         <div className="bo-wrapper">
