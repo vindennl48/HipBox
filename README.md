@@ -1,24 +1,16 @@
-# README
+# HipBox with Ableton v5.0.1
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+### Hotfix Branch
 
-Things you may want to cover:
+This is a full rails + react web application that integrates with Ableton Live to provide an in-ear monitoring system for bands.  This app communicates via OSC streams with max4live plugins.
 
-* Ruby version
+Since Ableton Live does not run on linux, this app must be run within a virtual box.
 
-* System dependencies
+## Previous Versions
 
-* Configuration
+### v4.0
+ - https://github.com/vindennl48/hipbox_v4
 
-* Database creation
+### Legacy
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Legacy versions were not recorded on github because they were created using other programs and means.  The first few were done with TouchOSC + Bome Midi Translator.  These options worked well for a while, however, my band wanted more functionality than what those programs could offer.
