@@ -83,7 +83,8 @@ class Mixes:
             mix_right_out = f"-r {mix['outports'][1]}" if "outports" in mix else ""
 
             # start up instance of jackminimix
-            self.mixes[name]["osc"] = udp_client.SimpleUDPClient(self.ip, port)
+            client = udp_client.SimpleUDPClient(self.ip, port)
+            self.mixes[name]["osc"] = client
             os.system(f"jackminimix {num_inputs} {mix_name} {mix_port} {mix_left_out} {mix_right_out} &")
 
             time.sleep(1) # give jackminimix a second to load
@@ -95,6 +96,8 @@ class Mixes:
                 inport = self.inputs[inp]["port"]
 
                 if name != "record" or (name == "record" and self.inputs[inp]["record"]):
+                    if name == "record":
+                        client.send_message(f"/mixer/channel/set_gain", [pos, 0])
                     if type(inport) is list:
                         for p in inport:
                             if pan in ["L","C"]: JackHelp.connect_port(p,f"{name}_mix:in{pos}_left")
