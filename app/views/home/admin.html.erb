@@ -1,0 +1,9 @@
+<div class=" admin-wrapper ">
+  <div class=" admin-title ">
+    <h1>Admin</h1>
+  </div>
+  <div class=" admin-button-group ">
+    <%= button_to "Upload Recorded Files", home_upload_files_path, method: :post, remote: true, class: "button" %>
+    <%= button_to "Edit Networks",         networks_path,          method: :get,  class: "button" %>
+  </div>
+</div>

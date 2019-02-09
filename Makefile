@@ -1,4 +1,10 @@
-run: jack rails_detach server
+run: wifi jack rails_detach server
+
+wifi:
+	rails hipbox:wifi
+
+upload:
+	rails hipbox:upload
 
 jack:
 	./jack_server/start_jack.sh

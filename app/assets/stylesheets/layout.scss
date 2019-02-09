@@ -22,3 +22,23 @@
     border-radius: 5px;
   }
 }
+
+.admin-wrapper {
+  display:     grid;
+  place-items: center;
+
+  .admin-button-group {
+    display:  grid;
+    grid-gap: 10px;
+
+    .button {
+      border-radius:    5px;
+      width:            70vw;
+      padding:          20px;
+      outline:          0px;
+      border:           1px solid #ccc;
+      color:            #fff;
+      background-color: transparent;
+    }
+  }
+}

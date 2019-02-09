@@ -35,3 +35,7 @@ yarn-debug.log*
 # Ignore vagrant files
 /VAGRANT
 *.bat
+
+# Ignore Google Drive login info
+client_id.json
+token.yaml
