@@ -22,4 +22,15 @@ class HomeController < ApplicationController
     UploadRecordJob.perform_later
   end
 
+  def delete_files
+    if current_user.name != "mitch"
+      redirect_to root_path
+    end
+
+    respond_to do |format|
+      format.js
+    end
+    DeleteFilesJob.perform_later
+  end
+
 end

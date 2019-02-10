@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   namespace :home do
     get  'index',        to: 'index'
     post 'upload_files', to: 'upload_files'
+    post 'delete_files', to: 'delete_files'
   end
 
   root "home#index"

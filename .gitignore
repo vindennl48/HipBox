@@ -18,6 +18,7 @@
 
 /audio_files
 /recorded
+/recorded_bup
 /node_modules
 /yarn-error.log
 
