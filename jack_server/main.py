@@ -18,18 +18,20 @@ PEOPLE = {
 
 # mixer inputs
 INPUTS = {
-    "james":    {"port": "james_guitarix:out_0", "pan": "L", "record": True},
-    "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R", "record": True},
-    "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C", "record": True},
-    "sean":     {"port": ["system:capture_5","system:capture_6","SimpleDAW:out_0"], "pan": "C", "record": True},
-    "talkback": {"port": "system:capture_4",     "pan": "C", "record": False},
-    "click":    {"port": "SimpleDAW:out_click",  "pan": "C", "record": False},
+    "james":    {"port": "james_guitarix:out_0", "pan": "L",         "record": True},
+    # "jesse":    {"port": "system:capture_2",       "pan": "R",         "record": True},
+    "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R",         "record": True},
+    # "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C",         "record": True},
+    "mitch":    {"port": "system:capture_3",     "pan": "C",         "record": True},
+    "sean":     {"port": ["system:capture_5",    "system:capture_6", "SimpleDAW:out_0"], "pan": "C", "record": True},
+    "talkback": {"port": "system:capture_4",     "pan": "C",         "record": False},
+    "click":    {"port": "SimpleDAW:out_click",  "pan": "C",         "record": False},
 }
 
 GUITARIX_INPUTS = {
     "james": {"port": "system:capture_1"},
     "jesse": {"port": "system:capture_2"},
-    "mitch": {"port": "system:capture_3", "midi_port": "system:midi_capture_1"},
+    # "mitch": {"port": "system:capture_3", "midi_port": "system:midi_capture_1"},
 }
 
 MIDI_MAP = {

@@ -209,8 +209,8 @@ class UploadRecordJob < ApplicationJob
       end
 
       puts "----> Connect and Upload in progress.."
-      is_connected    = false
-      connect_default = true
+      is_connected    = false  # is connected to uploadable network
+      connect_default = true   # recconect to default network after uploading
 
       10.times do
         cmd = `nmcli device wifi list`
