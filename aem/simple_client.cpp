@@ -2,11 +2,7 @@
 #include <string>
 #include <vector>
 #include <jack/jack.h>
-//#include "db.h"
-
-jack_port_t   *input_port;
-jack_port_t   *output_port_L, *output_port_R;
-jack_client_t *client;
+#include "db.h"
 
 // These structs are for the hipbox mixer.
 
@@ -14,17 +10,16 @@ struct OutPortGroup {
   jack_port_t                 *port_left;
   jack_port_t                 *port_right;
   jack_default_audio_sample_t *output_left, *output_right;
-  const char                  *port_name_left;
-  const char                  *port_name_right;
-  const char                  *hardware_port_path_left;
-  const char                  *hardware_port_path_right;
 
-  double gain      = 0.0;
-  bool   is_active = false;
+  std::string port_name_left;
+  std::string port_name_right;
+  std::string hardware_port_path_left;
+  std::string hardware_port_path_right;
+  bool        is_active = false;
 
   void initialize(jack_client_t *client) {
-    port_left  = jack_port_register(client, port_name_left,  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-    port_right = jack_port_register(client, port_name_right, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    port_left  = jack_port_register(client, port_name_left.c_str(),  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+    port_right = jack_port_register(client, port_name_right.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
     if ((port_left == NULL) || (port_right == NULL)) {
       fprintf(stderr, "no more JACK ports available\n");
@@ -36,10 +31,10 @@ struct OutPortGroup {
 
   void connect(jack_client_t *client) {
     if (is_active) {
-      if (jack_connect(client, jack_port_name(port_left), hardware_port_path_left)) {
+      if (jack_connect(client, jack_port_name(port_left), hardware_port_path_left.c_str())) {
         fprintf (stderr, "cannot connect input ports\n");
       }
-      if (jack_connect(client, jack_port_name(port_right), hardware_port_path_right)) {
+      if (jack_connect(client, jack_port_name(port_right), hardware_port_path_right.c_str())) {
         fprintf (stderr, "cannot connect input ports\n");
       }
     }
@@ -61,13 +56,13 @@ struct InPort {
   jack_port_t *port;
   jack_default_audio_sample_t *input;
 
-  double     pan       = 0.5;  // 0.0: Left, 1.0: Right
-  bool       is_active = false;
-  const char *port_name;
-  const char *hardware_port_path;
+  double      pan       = 0.0;  // -1.0: Left, 1.0: Right
+  bool        is_active = false;
+  std::string port_name;
+  std::string hardware_port_path;
 
   void initialize(jack_client_t *client) {
-    port = jack_port_register(client, port_name, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+    port = jack_port_register(client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
     if (port == NULL) {
       fprintf(stderr, "no more JACK ports available\n");
@@ -79,7 +74,7 @@ struct InPort {
 
   void connect(jack_client_t *client) {
     if (is_active) {
-      if (jack_connect(client, hardware_port_path, jack_port_name(port))) {
+      if (jack_connect(client, hardware_port_path.c_str(), jack_port_name(port))) {
         fprintf (stderr, "cannot connect input ports\n");
       }
     }
@@ -114,7 +109,7 @@ struct InPortGroup {
 struct Channel {
   InPortGroup *in_port_group;
   double      gain      = 0.0;
-  double      pan       = 0.5;  // 0.0: Left, 1.0: Right
+  double      pan       = 0.0;  // -1.0: Left, 1.0: Right
   bool        is_mute   = false;
   bool        is_active = false;
 };
@@ -125,21 +120,25 @@ struct Mixer {
   Channel      channels[NUM_MIXER_CHANNELS];
   OutPortGroup *out_port_group;
   bool         is_active = false;
+  double       gain      = 0.0;
 };
 
 // End hipbox mixer structs
 
+// These are based on an 8 input / 10 output audio interface
 #define NUM_IN_PORTS         8
 #define NUM_IN_PORT_GROUPS   8
 #define NUM_OUT_PORT_GROUPS  5
 
-InPort       in_ports[NUM_IN_PORTS];
-InPortGroup  in_port_groups[NUM_IN_PORT_GROUPS];
-OutPortGroup out_port_groups[NUM_OUT_PORT_GROUPS];
-Mixer        mixers[NUM_OUT_PORT_GROUPS];
+jack_client_t *client;
+InPort        in_ports[NUM_IN_PORTS];
+InPortGroup   in_port_groups[NUM_IN_PORT_GROUPS];
+OutPortGroup  out_port_groups[NUM_OUT_PORT_GROUPS];
+Mixer         mixers[NUM_OUT_PORT_GROUPS];
 
 int
 process (jack_nframes_t nframes, void *arg) {
+
   /* Loop through all Mixers */
   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
     Mixer        *mixer          = &mixers[i];
@@ -161,9 +160,22 @@ process (jack_nframes_t nframes, void *arg) {
             InPort *in_port = in_port_group->ports[k];
             in_port->initPort(nframes);
 
+            double in_port_pan_left = 1, in_port_pan_right = 1;
+            if (in_port->pan < 0)
+              in_port_pan_right += in_port->pan;
+            else
+              in_port_pan_left -= in_port->pan;
+
+            double channel_pan_left = 1, channel_pan_right = 1;
+            if (channel->pan < 0)
+              channel_pan_right += channel->pan;
+            else
+              channel_pan_left -= channel->pan;
+
             for (int l=0; l<nframes; l++) {
-              out_port_group->output_left[l]  += in_port->input[l];
-              out_port_group->output_right[l] += in_port->input[l];
+                                              //    raw audio           in port pan          channel pan                 channel gain             mixer gain
+              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
+              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
             }
           }
 
@@ -172,14 +184,6 @@ process (jack_nframes_t nframes, void *arg) {
 
     }
   }
-
-  // in_port.initPort(nframes);
-  // out_port.initPort(nframes);
-
-  // for (int i=0; i<nframes; i++) {
-  //   out_port.output_left[i]  += in_port.input[i];
-  //   out_port.output_right[i] += in_port.input[i];
-  // }
 
 	return 0;      
 }
@@ -197,14 +201,14 @@ jack_shutdown (void *arg)
 int
 main (int argc, char *argv[])
 {
-	const char     *client_name = "hipbox";
-	const char     *server_name = NULL;
-	jack_options_t options      = JackNullOption;
+  std::string    client_name = "hipbox";
+	std::string    server_name = NULL;
+	jack_options_t options     = JackNullOption;
 	jack_status_t  status;
 	
 	/* open a client connection to the JACK server */
 
-	client = jack_client_open (client_name, options, &status, server_name);
+	client = jack_client_open (client_name.c_str(), options, &status, server_name);
 	if (client == NULL) {
 		fprintf (stderr, "jack_client_open() failed, "
 			 "status = 0x%2.0x\n", status);
@@ -254,6 +258,7 @@ main (int argc, char *argv[])
   // of testing, here goes..
 
   in_ports[0].port_name          = "mic";
+  in_ports[0].pan                = 0;
   in_ports[0].hardware_port_path = "system:capture_1";
   //in_ports[0].initialize(client);
   in_ports[1].port_name          = "mic2";
@@ -271,7 +276,10 @@ main (int argc, char *argv[])
 
   mixers[0].out_port_group            = &out_port_groups[0];
   mixers[0].channels[0].in_port_group = &in_port_groups[0];
+  mixers[0].channels[0].gain          = 0;
+  mixers[0].channels[0].pan           = 0;
   mixers[0].channels[0].is_active     = true;
+  mixers[0].gain                      = 0;
   mixers[0].is_active                 = true;
 
 
