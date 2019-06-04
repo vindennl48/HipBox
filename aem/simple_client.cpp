@@ -152,7 +152,7 @@ process (jack_nframes_t nframes, void *arg) {
         Channel     *channel       = &mixer->channels[j];
         InPortGroup *in_port_group = channel->in_port_group;
 
-        if (channel->is_active) {
+        if (channel->is_active && !channel->is_mute) {
 
           /* Loop through all InPorts in Channel */
           int in_port_group_size = in_port_group->ports.size();
@@ -201,14 +201,14 @@ jack_shutdown (void *arg)
 int
 main (int argc, char *argv[])
 {
-  std::string    client_name = "hipbox";
-	std::string    server_name = NULL;
+  const char     *client_name = "hipbox";
+	const char     *server_name = NULL;
 	jack_options_t options     = JackNullOption;
 	jack_status_t  status;
 	
 	/* open a client connection to the JACK server */
 
-	client = jack_client_open (client_name.c_str(), options, &status, server_name);
+	client = jack_client_open (client_name, options, &status, server_name);
 	if (client == NULL) {
 		fprintf (stderr, "jack_client_open() failed, "
 			 "status = 0x%2.0x\n", status);
@@ -278,6 +278,7 @@ main (int argc, char *argv[])
   mixers[0].channels[0].in_port_group = &in_port_groups[0];
   mixers[0].channels[0].gain          = 0;
   mixers[0].channels[0].pan           = 0;
+  mixers[0].channels[0].is_mute       = false;
   mixers[0].channels[0].is_active     = true;
   mixers[0].gain                      = 0;
   mixers[0].is_active                 = true;
