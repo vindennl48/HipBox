@@ -25,3 +25,8 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Ignore cmake files
+aem/build
+aem/bin
+aem/simple_client
