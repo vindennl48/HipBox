@@ -10,10 +10,45 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_04_211707) do
+ActiveRecord::Schema.define(version: 2019_06_05_120945) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "channels", force: :cascade do |t|
+    t.bigint "user_id"
+    t.bigint "port_group_id"
+    t.decimal "gain"
+    t.decimal "pan"
+    t.boolean "is_mute"
+    t.boolean "is_solo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["port_group_id"], name: "index_channels_on_port_group_id"
+    t.index ["user_id"], name: "index_channels_on_user_id"
+  end
+
+  create_table "port_groups", force: :cascade do |t|
+    t.string "name"
+    t.boolean "io"
+    t.boolean "is_global"
+    t.boolean "is_global_mute"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_port_groups_on_user_id"
+  end
+
+  create_table "ports", force: :cascade do |t|
+    t.string "name"
+    t.boolean "io"
+    t.string "path"
+    t.decimal "pan"
+    t.bigint "port_group_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["port_group_id"], name: "index_ports_on_port_group_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
@@ -27,4 +62,8 @@ ActiveRecord::Schema.define(version: 2019_06_04_211707) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "channels", "port_groups"
+  add_foreign_key "channels", "users"
+  add_foreign_key "port_groups", "users"
+  add_foreign_key "ports", "port_groups"
 end
