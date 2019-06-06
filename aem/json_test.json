@@ -1,0 +1,49 @@
+{
+  "mixers": [
+    {
+      "name": "Mitch",
+      "out_port_group": "mitch_output_group",
+      "channels": [
+        {
+          "name": "Drums",
+          "in_port_group": "sean_input_group",
+          "gain": 0.0,
+          "pan": 0.5,
+          "mute": false
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "name": "mitch_input",
+      "path": "system:capture_1",
+      "pan": 0.5
+    },
+    {
+      "name": "sean_input_L",
+      "path": "system:capture_2",
+      "pan": 0.0
+    },
+    {
+      "name": "sean_input_R",
+      "path": "system:capture_3",
+      "pan": 1.0
+    }
+  ],
+  "input_groups": [
+    {
+      "name": "mitch_input_group",
+      "inputs": [
+        "mitch_input"
+      ]
+    },
+    {
+      "name": "sean_input_group",
+      "inputs": [
+        "sean_input_L",
+        "sean_input_R"
+      ]
+    }
+  ]
+}

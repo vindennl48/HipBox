@@ -1,0 +1,24 @@
+#user_name {
+  width:   50vw;
+  padding: 10px;
+}
+
+#user_submit {
+  width: 50vw;
+}
+
+.title {
+  position: relative;
+  &::before {
+    content:          "beta";
+    position:         absolute;
+    //border:         1px solid $border-dim;
+    //border-radius:  5px;
+    font-size:        12px;
+    padding:          2px;
+    color:            $font-color-dim;
+    background-color: transparent;
+    top:            5px;
+    left:           88px;
+  }
+}

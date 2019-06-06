@@ -1,0 +1,86 @@
+<div class=" menu-bar ">
+
+  <div class=" user-name ">
+    <h1><%= @user.name %></h1>
+  </div>
+
+  <% if @user.name == "Mitch" %>
+    <div class=" admin-link ">
+      <%= link_to "Admin" %>
+    </div>
+  <% end %>
+
+  <div class=" log-out ">
+    <%= link_to "Log Out", destroy_user_session_path, method: :delete %>
+  </div>
+
+</div>
+
+<div class=" channel master ">
+
+  <div class=" ch-title "><strong>Master:</strong></div>
+
+  <div id="range_slider_master_value"
+       data-target="range_slider_master"
+       class=" ch-value "
+       onclick="resetRangeSliderValue(this)">50</div>
+
+  <div class=" ch-body ">
+    <input id="range_slider_master"
+           data-target="range_slider_master_value"
+           class="form-control ng-valid ng-scope ng-dirty"
+           oninput="rangeSlider(this)"
+           type="range" min="0" max="100" step="1">
+  </div>
+
+</div>
+
+<% @channels.each do |channel| %>
+  <div class=" channel ">
+
+    <div class=" ch-title "><strong><%= channel.port_group.name %>:</strong></div>
+
+    <div class=" ch-buttons ">
+      <% if channel.port_group.user == @user %>
+        <button class=" solo " onclick="toggleButton(this)">Solo</button>
+      <% else %>
+        <button class=" mute " onclick="toggleButton(this)">Mute</button>
+      <% end %>
+    </div>
+
+    <div id=<%= "range_slider_#{channel.port_group.name}_value" %>
+         data-target=<%= "range_slider_#{channel.port_group.name}" %>
+         class=" ch-value "
+         onclick="resetRangeSliderValue(this)">50</div>
+
+    <div class=" ch-body ">
+      <input id=<%= "range_slider_#{channel.port_group.name}" %>
+             data-target=<%= "range_slider_#{channel.port_group.name}_value" %>
+             class="form-control ng-valid ng-scope ng-dirty"
+             oninput="rangeSlider(this)"
+             type="range" min="0" max="100" step="1">
+    </div>
+
+  </div>
+
+<% end %>
+
+<script>
+  function rangeSlider(slider) {
+    document.getElementById(slider.dataset.target).innerHTML = slider.value
+  }
+
+  function resetRangeSliderValue(number) {
+    number.innerHTML = 50
+    document.getElementById(number.dataset.target).value = 50
+  }
+
+  function toggleButton(button) {
+    if (button.classList.contains('active')) {
+      button.classList.remove('active')
+    }
+    else {
+      button.classList.add('active')
+    }
+  }
+</script>

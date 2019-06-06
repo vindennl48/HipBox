@@ -1,0 +1,23 @@
+<div class=" center column horizontal ">
+
+  <h1 class=" pad title ">HipBox v7.0.0</h1>
+
+  <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+    <div class="field pad center column horizontal">
+      <%= f.select :name, options_from_collection_for_select(User.all, :name, :name) %>
+    </div>
+
+    <div hidden><%= f.email_field :email, autofocus: true, autocomplete: "email" %></div>
+    <div hidden><%= f.password_field :password, value: "password", autocomplete: "current-password" %></div>
+
+    <% if devise_mapping.rememberable? %>
+      <div hidden><%= f.check_box :remember_me %></div>
+    <% end %>
+
+    <div class="actions pad center column horizontal">
+      <%= f.submit "Log in", { id: "user_submit" } %>
+    </div>
+  <% end %>
+
+</div>
