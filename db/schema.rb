@@ -18,10 +18,10 @@ ActiveRecord::Schema.define(version: 2019_06_05_123926) do
   create_table "channels", force: :cascade do |t|
     t.bigint "user_id"
     t.bigint "port_group_id"
-    t.decimal "gain"
-    t.decimal "pan"
-    t.boolean "is_mute"
-    t.boolean "is_solo"
+    t.decimal "gain", default: "0.0"
+    t.decimal "pan", default: "0.0"
+    t.boolean "is_mute", default: false
+    t.boolean "is_solo", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["port_group_id"], name: "index_channels_on_port_group_id"
@@ -29,10 +29,10 @@ ActiveRecord::Schema.define(version: 2019_06_05_123926) do
   end
 
   create_table "port_groups", force: :cascade do |t|
-    t.string "name"
-    t.boolean "io"
-    t.boolean "is_global"
-    t.boolean "is_global_mute"
+    t.string "name", null: false
+    t.boolean "io", default: true
+    t.boolean "is_global", default: false
+    t.boolean "is_global_mute", default: false
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -40,10 +40,10 @@ ActiveRecord::Schema.define(version: 2019_06_05_123926) do
   end
 
   create_table "ports", force: :cascade do |t|
-    t.string "name"
-    t.boolean "io"
-    t.string "path"
-    t.decimal "pan"
+    t.string "name", null: false
+    t.boolean "io", default: true
+    t.string "path", default: ""
+    t.decimal "pan", default: "0.0"
     t.bigint "port_group_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
