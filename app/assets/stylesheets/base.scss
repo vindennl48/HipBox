@@ -5,6 +5,7 @@ html {
   box-sizing:  border-box;
   font-family: $font;
   font-size:   $font-size;
+  color:       $font-color;
   //line-height: 1.5;
 }
 
@@ -17,9 +18,14 @@ html {
 }
 
 body {
-  display:          grid;
+  //display:          grid;
+  //display:          flex;
+  //flex-direction:   column;
+  //align-items:      center;
+  //justify-content:  center;
+  //padding:          15px;
   background-color: $bg-color;
-  padding:          15px;
+  //height:           80vh;
 }
 
 div {
@@ -104,6 +110,7 @@ input, textarea, select {
   font-size:        $font-size;
   border:           1px solid $border-light;
   border-radius:    5px;
+  color:            $font-color;
   background-color: $bg-color;
 
   &:focus {
@@ -114,11 +121,11 @@ input, textarea, select {
   //auto-forms use input[type=submit] to submit forms for
   // some weird reason... so here it is.
   &[type=submit] {
-    padding: 5px;
+    padding: 10px;
     width:   auto;
 
     &:hover {
-      border: 1px solid black;
+      border: 1px solid white;
     }
   }
 }
@@ -130,6 +137,28 @@ pre {
   border:      initial;
   padding:     initial;
   font-family: inherit;
+}
+
+.center {
+  display: flex;
+
+  .pad {
+    padding: 10px;
+  }
+
+  &.row {
+    flex-direction: row;
+  }
+  &.column {
+    flex-direction: column;
+  }
+  &.horizontal {
+    align-items: center;
+  }
+  &.vertical {
+    justify-content: center;
+    height:          80vh;
+  }
 }
 
 //This is the banner thing at the top after saving
