@@ -1,9 +1,34 @@
 // VARIABLES
 //////////////////////////////
 
-$font:         helvetica;
-$font-size:    18px;
-$border-light: #aaa;
-$bg-color:     #090909;
-$font-color:   #eee;
-$focus-color:  blue;
+// -- Colors --
+$font:                   helvetica;
+$font-size:              18px;
+$font-color:             #eee;
+$font-color-dim:         #777;
+$font-color-dark:        #222;
+
+$link-color:             #6689ff;
+
+$border-light:           #ccc;
+$border-dim:             #777;
+
+$focus-color:            blue;
+
+$bg-color-menu:          #202020;
+$bg-color-channel:       #181818;
+$bg-color-ch-master:     #22385e;
+$bg-color:               #090909;
+
+$color-mute:             #c43a3a;
+$color-solo:             #dbd230;
+$color-mute-dim:         #3a1f1f;
+$color-solo-dim:         #3a391f;
+
+// -- Borders --
+$border-style-ch:        1px solid $border-dim;
+$border-style-ch-master: 1px solid $border-light;
+
+
+// -- Transitions --
+$TFade:                  all 0.3s ease;

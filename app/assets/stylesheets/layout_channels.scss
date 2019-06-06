@@ -1,0 +1,111 @@
+.menu-bar {
+  display: grid;
+  grid-template: 50px / 40% auto 100px;
+  align-items: center;
+  background-color: $bg-color-menu;
+
+  .user-name {
+    padding-left: 10px;
+    grid-column: 1;
+  }
+
+  .admin-link {
+    text-align: center;
+    grid-column: 2;
+  }
+
+  .log-out {
+    text-align:  center;
+    grid-column: 3;
+  }
+
+  a {
+    color:    $link-color;
+    &:visited { color: $link-color; }
+  }
+}
+
+.channel {
+  display:          grid;
+  width:            85vw;
+  grid-template:    1fr 1fr / 40% auto 60px;
+  margin:           10px;
+  border:           $border-style-ch;
+  border-radius:    10px;
+  background-color: $bg-color-channel;
+
+  .ch-title {
+    padding:      12px;
+    grid-row:     1;
+    grid-column:  1;
+  }
+  .ch-buttons {
+    padding:      4px;
+    grid-row:     1;
+    grid-column:  2;
+    text-align:   center;
+  }
+  .ch-value {
+    padding:      12px;
+    grid-row:     1;
+    grid-column:  3;
+    text-align:   center;
+    border-left:  $border-style-ch;
+  }
+  .ch-body {
+    border-top:   $border-style-ch;
+    padding:      5px;
+    grid-row:     2;
+    grid-column:  1 / span 3;
+  }
+
+  &.master {
+    border:           $border-style-ch-master;
+    background-color: $bg-color-ch-master;
+
+    .ch-value {
+      border-left:  $border-style-ch-master;
+    }
+    .ch-body {
+      border-top:   $border-style-ch-master;
+    }
+  }
+
+  .ch-buttons>button {
+    width:         20vw;
+    padding:       10px;
+    border:        1px solid $border-dim;
+    border-radius: 10px;
+    font-weight:   bold;
+    &:focus        { outline: 0; }
+
+    &.mute {
+      color:            $font-color-dim;
+      background-color: $color-mute-dim;
+      box-shadow:       inset 2px 2px 5px #000;
+      transition:       $TFade;
+
+      &.active {
+        color:            $font-color;
+        background-color: $color-mute;
+        box-shadow:       0px 0px 3px #fff;
+        border:           1px solid $border-light;
+        transition:       $TFade;
+      }
+    }
+    &.solo {
+      color:            $font-color-dim;
+      background-color: $color-solo-dim;
+      box-shadow:       inset 2px 2px 5px #000;
+      transition:       $TFade;
+
+      &.active {
+        color:            $font-color-dark;
+        background-color: $color-solo;
+        box-shadow:       0px 0px 3px #fff;
+        border:           1px solid $border-light;
+        transition:       $TFade;
+      }
+    }
+  }
+}

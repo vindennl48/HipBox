@@ -4,7 +4,7 @@ class ChannelsController < ApplicationController
 
   def index
     @channels  = Channel.where(user: current_user)
-    @user_name = current_user.name
+    @user = current_user
   end
 
   private
