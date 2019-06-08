@@ -114,5 +114,19 @@
         transition:       $TFade;
       }
     }
+    &.record {
+      color:            $font-color-dim;
+      background-color: $color-mute-dim;
+      box-shadow:       inset 2px 2px 5px #000;
+      transition:       $TFade;
+
+      &.active {
+        color:            $font-color;
+        background-color: $color-mute;
+        box-shadow:       0px 0px 3px #fff;
+        border:           1px solid $border-light;
+        transition:       $TFade;
+      }
+    }
   }
 }
