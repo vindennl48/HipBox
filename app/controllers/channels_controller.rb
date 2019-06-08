@@ -3,8 +3,8 @@ class ChannelsController < ApplicationController
   before_action :generate_channels
 
   def index
-    @channels  = Channel.where(user: current_user)
-    @user = current_user
+    @channels = Channel.where(user: current_user).order("id")
+    @user     = current_user
   end
 
   private

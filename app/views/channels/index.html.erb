@@ -23,6 +23,7 @@
   <div  id="range_slider_master_value"
         data-target="range_slider_master"
         data-type="volume-value-master"
+        data-user=<%= @user.id %>
         class=" ch-value "
         onclick="resetRangeSliderValue(this)">50</div>
 
@@ -30,6 +31,7 @@
     <input  id="range_slider_master"
             data-target="range_slider_master_value"
             data-type="volume-slider-master"
+            data-user=<%= @user.id %>
             class="form-control ng-valid ng-scope ng-dirty"
             oninput="rangeSlider(this)"
             type="range" min="0" max="100" step="1">
@@ -40,7 +42,7 @@
 <% @channels.each do |channel| %>
   <div class=" channel ">
 
-    <div class=" ch-title "><strong><%= channel.port_group.name %>:</strong></div>
+    <div class=" ch-title "><strong><%= channel.port_group.name %>: <%= channel.id %></strong></div>
 
     <div class=" ch-buttons ">
       <% if channel.port_group.user == @user %>
@@ -53,6 +55,7 @@
     <div  id=<%= "range_slider_#{channel.port_group.name}_value" %>
           data-target=<%= "range_slider_#{channel.port_group.name}" %>
           data-type="volume-value"
+          data-channel=<%= channel.id %>
           class=" ch-value "
           onclick="resetRangeSliderValue(this)">50</div>
 
@@ -72,6 +75,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', (event) => {
-    loadActionCable()
+    loadActionCableSliders()
+    loadActionCableSlidersMaster()
   })
 </script>

@@ -1,7 +1,7 @@
 class Channel < ApplicationRecord
   belongs_to    :user
   belongs_to    :port_group
-  before_update :updateActionCable
+  # before_update :updateActionCable
 
   def self.generate_channels(user)
     PortGroup.all.each do |port_group|
@@ -12,10 +12,10 @@ class Channel < ApplicationRecord
     end
   end
 
-  private
+  # private
 
-  def updateActionCable
-    ChannelsChannel.broadcast_to(self, {data: "hey"})
-  end
+  # def updateActionCable
+  #   ChannelsChannel.broadcast_to(self, {type: 'update', data: 'hey'})
+  # end
 
 end
