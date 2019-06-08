@@ -27,6 +27,44 @@ function toggleButton(button) {
   }
 }
 
+function setButton(button, value) {
+  if (value === true) {
+    if (!button.classList.contains("active")) {
+      button.classList.add("active")
+    }
+  }
+  else {
+    if (button.classList.contains("active")) {
+      button.classList.remove("active")
+    }
+  }
+}
+
+function setChanStrip(chanStrip, value) {
+  if (value === true) {
+    if (!chanStrip.classList.contains("soloed")) {
+      chanStrip.classList.add("soloed")
+
+      chanStrip.querySelectorAll("input, button, div[data-type=volume-value]")
+        .forEach(function(elm) { elm.hidden = true })
+
+      chanStrip.querySelectorAll("div[data-type=hidden-label]")
+        .forEach(function(div) { div.hidden = false })
+    }
+  }
+  else {
+    if (chanStrip.classList.contains("soloed")) {
+      chanStrip.classList.remove("soloed")
+
+      chanStrip.querySelectorAll("input, button, div[data-type=volume-value]")
+        .forEach(function(elm) { elm.hidden = false })
+
+      chanStrip.querySelectorAll("div[data-type=hidden-label]")
+        .forEach(function(div) { div.hidden = true })
+    }
+  }
+}
+
 function loadActionCableSliders() {
   let sliders = document.querySelectorAll("[data-type=volume-slider]")
   sliders.forEach(function(slider){
@@ -46,31 +84,37 @@ function loadActionCableSliders() {
       disconnected: function() {
         // Called when the subscription has been terminated by the server
         console.log("Actioncable: Channel #"+ID+" is disconnected..")
+        location.reload(true)
       },
 
       received: function(data) {
         // Called when there"s incoming data on the websocket for this channel
         if (data["type"] === "update") {
-          data = data["data"]
-          let element = document.querySelectorAll("[data-channel='"+ID+"']")
+          let channel = data["channel"]
+          let element = document.querySelectorAll("[data-channel = '"+ID+"']")
+
           element.forEach(function(a){
+
+            // Slider Values
             if (a.dataset.type === "volume-slider") {
-              a.value = Math.trunc( data["gain"] )
+              if ("gain" in channel) { a.value = Math.trunc( channel["gain"] ) }
             }
             else if (a.dataset.type === "volume-value") {
-              a.innerHTML = Math.trunc( data["gain"] )
+              if ("gain" in channel) { a.innerHTML = Math.trunc( channel["gain"] ) }
             }
+
+            // Button Values
             else if (a.dataset.type === "solo-button") {
-              if (data["is_solo"] === true) {
-                toggleButton(a)
-              }
+              if ("is_solo" in channel) { setButton(a, channel["is_solo"]) }
+            }
+            else if (a.dataset.type === "channel-strip") {
+              if ("is_solo" in channel) { setChanStrip(a, channel["is_solo"]) }
             }
             else if (a.dataset.type === "mute-button") {
-              if (data["is_mute"] === true) {
-                toggleButton(a)
-              }
+              if ("is_mute" in channel) { setButton(a, channel["is_mute"]) }
             }
           })
+
         }
       },
 
@@ -126,6 +170,7 @@ function loadActionCableSlidersMaster() {
       disconnected: function() {
         // Called when the subscription has been terminated by the server
         console.log("Actioncable: User #"+ID+" is disconnected..")
+        location.reload(true)
       },
 
       received: function(data) {

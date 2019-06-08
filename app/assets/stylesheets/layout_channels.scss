@@ -33,6 +33,13 @@
   border:           $border-style-ch;
   border-radius:    10px;
   background-color: $bg-color-channel;
+  transition:       $TFade;
+
+  &.soloed {
+    border-color:     $color-solo-remote;
+    background-color: $color-solo-dim-remote;
+    transition:       $TFade;
+  }
 
   .ch-title {
     padding:      12px;

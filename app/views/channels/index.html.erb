@@ -40,7 +40,13 @@
 </div>
 
 <% @channels.each do |channel| %>
-  <div class=" channel ">
+  <div  class=" channel "
+    <% if channel.port_group.user != @user %>
+        data-type="channel-strip"
+        data-channel=<%= channel.id %>>
+    <% else %>
+        >
+    <% end %>
 
     <div class=" ch-title "><strong><%= channel.port_group.name %>:</strong></div>
 
@@ -64,6 +70,8 @@
           data-channel=<%= channel.id %>
           class=" ch-value "
           onclick="resetRangeSliderValue(this)">0</div>
+
+    <div class=" ch-value " data-type="hidden-label" hidden>Solo</div>
 
     <div class=" ch-body ">
       <input  id=<%= "range_slider_#{channel.port_group.name}" %>

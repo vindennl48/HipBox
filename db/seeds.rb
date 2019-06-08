@@ -26,4 +26,14 @@ users.each do |user|
   i += 1
 end
 
+#Talkback Channel
+port_group = PortGroup.find_or_create_by(name: "Talkback", io: true, is_global: true, user: nil)
+Port.find_or_create_by(name: "Talkback", io: true, path: "system:cature_#{i}", port_group: port_group)
+i += 1
+
+#Click Channel
+port_group = PortGroup.find_or_create_by(name: "Click", io: true, user: nil)
+Port.find_or_create_by(name: "Click", io: true, path: "system:cature_#{i}", port_group: port_group)
+i += 1
+
 puts "----> Done!"
