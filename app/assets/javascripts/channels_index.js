@@ -1,3 +1,4 @@
+// -- Range Sliders --
 function rangeSlider(slider) {
   document.getElementById(slider.dataset.target).innerHTML = slider.value
   App["channel_"+slider.dataset.channel].saveChannelGain(slider.value)
@@ -9,23 +10,20 @@ function resetRangeSliderValue(number) {
   App["channel_"+number.dataset.channel].saveChannelGain(number.innerHTML)
 }
 
-function rangeSliderMaster(slider) {
-  document.getElementById(slider.dataset.target).innerHTML = slider.value
-  App["mixer"].saveGain(slider.value)
-}
-
-function resetRangeSliderValueMaster(number) {
-  number.innerHTML = 50
-  document.getElementById(number.dataset.target).value = 50
-  App["mixer"].saveGain(number.innerHTML)
-}
-
 function toggleButton(button) {
   if (button.classList.contains("active")) {
     button.classList.remove("active")
+    if (button.dataset.type === "solo-button")
+      App["channel_"+button.dataset.channel].saveSolo(false)
+    else if (button.dataset.type === "mute-button")
+      App["channel_"+button.dataset.channel].saveMute(false)
   }
   else {
     button.classList.add("active")
+    if (button.dataset.type === "solo-button")
+      App["channel_"+button.dataset.channel].saveSolo(true)
+    else if (button.dataset.type === "mute-button")
+      App["channel_"+button.dataset.channel].saveMute(true)
   }
 }
 
@@ -56,10 +54,22 @@ function loadActionCableSliders() {
           data = data["data"]
           let element = document.querySelectorAll("[data-channel='"+ID+"']")
           element.forEach(function(a){
-            if (a.dataset.type === "volume-slider")
+            if (a.dataset.type === "volume-slider") {
               a.value = Math.trunc( data["gain"] )
-            else
+            }
+            else if (a.dataset.type === "volume-value") {
               a.innerHTML = Math.trunc( data["gain"] )
+            }
+            else if (a.dataset.type === "solo-button") {
+              if (data["is_solo"] === true) {
+                toggleButton(a)
+              }
+            }
+            else if (a.dataset.type === "mute-button") {
+              if (data["is_mute"] === true) {
+                toggleButton(a)
+              }
+            }
           })
         }
       },
@@ -70,10 +80,31 @@ function loadActionCableSliders() {
 
       saveChannelGain: function(value) {
         return this.perform("saveChannelGain", {channel_id: ID, value: value});
+      },
+
+      saveMute: function(value) {
+        return this.perform("saveMute", {channel_id: ID, value: value});
+      },
+
+      saveSolo: function(value) {
+        return this.perform("saveSolo", {channel_id: ID, value: value});
       }
     });
 
   })
+}
+
+// -- Master Slider -
+
+function rangeSliderMaster(slider) {
+  document.getElementById(slider.dataset.target).innerHTML = slider.value
+  App["mixer"].saveGain(slider.value)
+}
+
+function resetRangeSliderValueMaster(number) {
+  number.innerHTML = 50
+  document.getElementById(number.dataset.target).value = 50
+  App["mixer"].saveGain(number.innerHTML)
 }
 
 function loadActionCableSlidersMaster() {
@@ -122,3 +153,5 @@ function loadActionCableSlidersMaster() {
 
   })
 }
+
+// --

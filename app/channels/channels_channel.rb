@@ -21,4 +21,14 @@ class ChannelsChannel < ApplicationCable::Channel
     channel = Channel.find(data['channel_id'])
     channel.update(gain: data['value'])
   end
+
+  def saveMute(data)
+    channel = Channel.find(data['channel_id'])
+    channel.update(is_mute: data['value'])
+  end
+
+  def saveSolo(data)
+    channel = Channel.find(data['channel_id'])
+    channel.update(is_solo: data['value'])
+  end
 end

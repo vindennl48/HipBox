@@ -46,9 +46,15 @@
 
     <div class=" ch-buttons ">
       <% if channel.port_group.user == @user %>
-        <button class=" solo " onclick="toggleButton(this)">Solo</button>
+        <button class=" solo "
+                data-type="solo-button"
+                data-channel=<%= channel.id %>
+                onclick="toggleButton(this)">Solo</button>
       <% else %>
-        <button class=" mute " onclick="toggleButton(this)">Mute</button>
+        <button class=" mute "
+                data-type="mute-button"
+                data-channel=<%= channel.id %>
+                onclick="toggleButton(this)">Mute</button>
       <% end %>
     </div>
 
