@@ -30,11 +30,10 @@ class ChannelsChannel < ApplicationCable::Channel
 
       channels.each do |c|
         c.update(is_mute: data['value'])
-        new_data = { is_mute: c['is_mute'] }
 
         ChannelsChannel.broadcast_to(c, {
           type:    "update",
-          channel: new_data
+          channel: { is_mute: c['is_mute'] }
         })
       end
     else
@@ -46,14 +45,28 @@ class ChannelsChannel < ApplicationCable::Channel
     channel  = Channel.find(data['channel_id'])
     channels = Channel.where(port_group: channel.port_group)
 
+    # Tell everyone you are soloed
     channels.each do |c|
       c.update(is_solo: data['value'])
-      new_data = { is_solo: c['is_solo'] }
 
       ChannelsChannel.broadcast_to(c, {
         type:    "update",
-        channel: new_data
+        channel: { is_solo: c['is_solo'] }
       })
     end
+
+    # Mute other users to you
+    channels = Channel.where(user: channel.user)
+
+    channels.each do |c|
+      if c.port_group.user != nil
+        c.update(is_mute: data['value'])
+        ChannelsChannel.broadcast_to(c, {
+          type:    "update",
+          channel: { is_mute: c['is_mute'] }
+        })
+      end
+    end
+
   end
 end
