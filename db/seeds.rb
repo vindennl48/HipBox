@@ -9,7 +9,7 @@
 
 puts "----> Creating Users"
 
-users = ["Mitch","James","Jesse","Sean"]
+users = ["James","Jesse","Sean","Mitch"]
 
 users.each do |user|
   if not User.exists? name: user

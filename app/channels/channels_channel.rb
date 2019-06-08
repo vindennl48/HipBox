@@ -15,7 +15,6 @@ class ChannelsChannel < ApplicationCable::Channel
       type: "update",
       data: channel
     })
-    #channel.update(gain: data['value'])
   end
 
   def saveChannelGain(data)
