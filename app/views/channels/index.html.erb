@@ -20,17 +20,19 @@
 
   <div class=" ch-title "><strong>Master:</strong></div>
 
-  <div id="range_slider_master_value"
-       data-target="range_slider_master"
-       class=" ch-value "
-       onclick="resetRangeSliderValue(this)">50</div>
+  <div  id="range_slider_master_value"
+        data-target="range_slider_master"
+        data-type="volume-value-master"
+        class=" ch-value "
+        onclick="resetRangeSliderValue(this)">50</div>
 
   <div class=" ch-body ">
-    <input id="range_slider_master"
-           data-target="range_slider_master_value"
-           class="form-control ng-valid ng-scope ng-dirty"
-           oninput="rangeSlider(this)"
-           type="range" min="0" max="100" step="1">
+    <input  id="range_slider_master"
+            data-target="range_slider_master_value"
+            data-type="volume-slider-master"
+            class="form-control ng-valid ng-scope ng-dirty"
+            oninput="rangeSlider(this)"
+            type="range" min="0" max="100" step="1">
   </div>
 
 </div>
@@ -48,17 +50,20 @@
       <% end %>
     </div>
 
-    <div id=<%= "range_slider_#{channel.port_group.name}_value" %>
-         data-target=<%= "range_slider_#{channel.port_group.name}" %>
-         class=" ch-value "
-         onclick="resetRangeSliderValue(this)">50</div>
+    <div  id=<%= "range_slider_#{channel.port_group.name}_value" %>
+          data-target=<%= "range_slider_#{channel.port_group.name}" %>
+          data-type="volume-value"
+          class=" ch-value "
+          onclick="resetRangeSliderValue(this)">50</div>
 
     <div class=" ch-body ">
-      <input id=<%= "range_slider_#{channel.port_group.name}" %>
-             data-target=<%= "range_slider_#{channel.port_group.name}_value" %>
-             class="form-control ng-valid ng-scope ng-dirty"
-             oninput="rangeSlider(this)"
-             type="range" min="0" max="100" step="1">
+      <input  id=<%= "range_slider_#{channel.port_group.name}" %>
+              data-target=<%= "range_slider_#{channel.port_group.name}_value" %>
+              data-type="volume-slider"
+              data-channel=<%= channel.id %>
+              class="form-control ng-valid ng-scope ng-dirty"
+              oninput="rangeSlider(this)"
+              type="range" min="0" max="100" step="1">
     </div>
 
   </div>
@@ -66,21 +71,7 @@
 <% end %>
 
 <script>
-  function rangeSlider(slider) {
-    document.getElementById(slider.dataset.target).innerHTML = slider.value
-  }
-
-  function resetRangeSliderValue(number) {
-    number.innerHTML = 50
-    document.getElementById(number.dataset.target).value = 50
-  }
-
-  function toggleButton(button) {
-    if (button.classList.contains('active')) {
-      button.classList.remove('active')
-    }
-    else {
-      button.classList.add('active')
-    }
-  }
+  document.addEventListener('DOMContentLoaded', (event) => {
+    loadActionCable()
+  })
 </script>
