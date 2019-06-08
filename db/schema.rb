@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 2019_06_08_122048) do
   create_table "channels", force: :cascade do |t|
     t.bigint "user_id"
     t.bigint "port_group_id"
-    t.decimal "gain", default: "0.0"
+    t.decimal "gain", default: "50.0"
     t.decimal "pan", default: "0.0"
     t.boolean "is_mute", default: false
     t.boolean "is_solo", default: false
@@ -59,7 +59,7 @@ ActiveRecord::Schema.define(version: 2019_06_08_122048) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"
-    t.decimal "gain", default: "0.0"
+    t.decimal "gain", default: "10.0"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

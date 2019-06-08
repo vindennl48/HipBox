@@ -4,7 +4,7 @@ class Channel < ApplicationRecord
   # before_update :updateActionCable
 
   def self.generate_channels(user)
-    PortGroup.all.each do |port_group|
+    PortGroup.all.order("id").each do |port_group|
       Channel.find_or_create_by(
         user:       user,
         port_group: port_group,

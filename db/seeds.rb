@@ -13,7 +13,7 @@ users = ["James","Jesse","Sean","Mitch"]
 
 users.each do |user|
   if not User.exists? name: user
-    User.create(name: user, email: "#{user}@hipbox.com", password: "password", password_confirmation: "password")
+    User.create(name: user, email: "#{user}@hipbox.com", password: "password", password_confirmation: "password", gain: 10)
   end
 end
 
