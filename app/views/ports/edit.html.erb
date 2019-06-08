@@ -1,0 +1,58 @@
+<div class=" menu-bar ">
+
+  <div class=" user-name ">
+    <h1>Ports</h1>
+  </div>
+
+  <div class=" admin-link ">
+    <%= link_to "Admin", admin_index_path %>
+  </div>
+
+  <div class=" log-out ">
+    <%= link_to "Back", channels_path %>
+  </div>
+
+</div>
+
+<%= form_with(model: @port, local: true) do |form| %>
+  <% if @port.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@port.errors.count, "error") %> prohibited this port from being saved:</h2>
+
+      <ul>
+      <% @port.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class=" table left no-border ">
+    <tbody>
+      <tr class="field">
+        <td><strong>Name: </strong></td>
+        <td><%= form.text_field :name %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Is Input?</strong></td>
+        <td><%= form.check_box :io %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Path: </strong></td>
+        <td><%= @port.path %></td>
+      </tr>
+      <tr>
+        <td><strong>Pan: </strong></td>
+        <td><%= form.text_field :pan %></td>
+      </tr>
+      <tr>
+        <td><strong>Port Group: </strong></td>
+        <td><%= form.text_field :port_group_id %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>

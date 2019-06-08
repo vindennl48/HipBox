@@ -1,7 +1,7 @@
 .menu-bar {
-  display: grid;
-  grid-template: 50px / 40% auto 100px;
-  align-items: center;
+  display:          grid;
+  grid-template:    50px / 40% auto 100px;
+  align-items:      center;
   background-color: $bg-color-menu;
 
   .user-name {

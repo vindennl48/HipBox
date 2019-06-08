@@ -40,11 +40,13 @@ a {
 
 table {
   //shrink to fit
-  width:       1px;
+  width:            1px;
 
-  text-align:  center;
-  white-space: nowrap;
-  padding:     10px;
+  text-align:       center;
+  white-space:      nowrap;
+  padding:          10px;
+  //color:            $font-color-dark;
+  //background-color: $bg-color-light;
 
   td {
     padding:        0px 7px;
@@ -82,7 +84,7 @@ table {
 }
 
 input {
-  width:      100%;
+  width:      250px;
   padding:    2px 0px;
   text-align: center;
 }
