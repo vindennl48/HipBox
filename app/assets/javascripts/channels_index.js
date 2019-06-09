@@ -118,14 +118,19 @@ function loadActionCableSliders() {
                 setButton(a, channel["is_solo"])
               }
             }
-            else if (a.dataset.type === "channel-strip") {
-              if ("is_solo" in channel) { setChanStrip(a, channel["is_solo"]) }
-            }
             else if (a.dataset.type === "mute-button") {
               if ("is_mute" in channel) {
                 a.hidden = false
                 setButton(a, channel["is_mute"])
               }
+            }
+          })
+
+          // This is now separated since all the elements need to be un-hidden
+          //  first before this function can work properly.
+          element.forEach(function(a){
+            if (a.dataset.type === "channel-strip") {
+              if ("is_solo" in channel) { setChanStrip(a, channel["is_solo"]) }
             }
           })
 
