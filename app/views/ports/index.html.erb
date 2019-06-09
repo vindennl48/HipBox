@@ -7,6 +7,7 @@
       <tr>
         <th>Name</th>
         <th>Is Global</th>
+        <th>Is Record</th>
         <th>User</th>
         <th></th>
       </tr>
@@ -16,6 +17,7 @@
         <tr>
           <td><%= group.name %></td>
           <td><%= group.is_global ? "Yes" : "No" %></td>
+          <td><%= group.is_record ? "Yes" : "No" %></td>
           <td><%= group.user != nil ? group.user.name : "---" %></td>
           <td><%= link_to 'Edit', edit_port_group_path(group) %></td>
         </tr>

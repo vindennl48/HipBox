@@ -36,6 +36,6 @@ class PortGroupsController < ApplicationController
   end
 
   def port_group_params
-    params.fetch(:port_group, {}).permit(:id, :name, :io, :is_global, :is_global_mute, :user_id)
+    params.fetch(:port_group, {}).permit(:id, :name, :io, :is_global, :is_global_mute, :is_record, :user_id)
   end
 end

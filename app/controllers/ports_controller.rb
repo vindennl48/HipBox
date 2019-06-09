@@ -1,4 +1,6 @@
 class PortsController < ApplicationController
+  before_action :authenticate_user!
+  before_action :is_admin
   before_action :set_port, only: [:edit, :update, :destroy]
 
   def index
@@ -42,6 +44,12 @@ class PortsController < ApplicationController
 
   def port_params
     params.fetch(:port, {}).permit(:id, :name, :io, :path, :pan, :port_group_id)
+  end
+
+  def is_admin
+    if current_user != User.find_by(name: "Mitch")
+      redirect_to channels_path
+    end
   end
 
 end
