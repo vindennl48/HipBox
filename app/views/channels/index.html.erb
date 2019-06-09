@@ -25,6 +25,7 @@
   </div>
 
   <div  id="range_slider_master_value"
+        hidden
         data-target="range_slider_master"
         data-type="volume-value-master"
         data-user=<%= @user.id %>
@@ -33,6 +34,7 @@
 
   <div class=" ch-body ">
     <input  id="range_slider_master"
+            hidden
             data-target="range_slider_master_value"
             data-type="volume-slider-master"
             data-user=<%= @user.id %>
@@ -57,11 +59,13 @@
     <div class=" ch-buttons ">
       <% if channel.port_group.user == @user %>
         <button class=" solo "
+                hidden
                 data-type="solo-button"
                 data-channel=<%= channel.id %>
                 onclick="toggleButton(this)">Solo</button>
       <% else %>
         <button class=" mute "
+                hidden
                 data-type="mute-button"
                 data-channel=<%= channel.id %>
                 onclick="toggleButton(this)">Mute</button>
@@ -69,6 +73,7 @@
     </div>
 
     <div  id=<%= "range_slider_#{channel.port_group.name}_value" %>
+          hidden
           data-target=<%= "range_slider_#{channel.port_group.name}" %>
           data-type="volume-value"
           data-channel=<%= channel.id %>
@@ -79,6 +84,7 @@
 
     <div class=" ch-body ">
       <input  id=<%= "range_slider_#{channel.port_group.name}" %>
+              hidden
               data-target=<%= "range_slider_#{channel.port_group.name}_value" %>
               data-type="volume-slider"
               data-channel=<%= channel.id %>

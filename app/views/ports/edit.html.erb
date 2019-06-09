@@ -1,18 +1,4 @@
-<div class=" menu-bar ">
-
-  <div class=" user-name ">
-    <h1>Ports</h1>
-  </div>
-
-  <div class=" admin-link ">
-    <%= link_to "Admin", admin_index_path %>
-  </div>
-
-  <div class=" log-out ">
-    <%= link_to "Back", channels_path %>
-  </div>
-
-</div>
+<%= render partial: "shared/admin_menu", locals: { title: "Ports" } %>
 
 <%= form_with(model: @port, local: true) do |form| %>
   <% if @port.errors.any? %>

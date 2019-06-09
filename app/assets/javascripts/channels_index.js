@@ -40,6 +40,8 @@ function setButton(button, value) {
   }
 }
 
+// For when another user solos themselves, this turns your
+//  channel strip blue and removes all elements.
 function setChanStrip(chanStrip, value) {
   if (value === true) {
     if (!chanStrip.classList.contains("soloed")) {
@@ -97,21 +99,33 @@ function loadActionCableSliders() {
 
             // Slider Values
             if (a.dataset.type === "volume-slider") {
-              if ("gain" in channel) { a.value = Math.trunc( channel["gain"] ) }
+              if ("gain" in channel) {
+                a.hidden = false
+                a.value  = Math.trunc( channel["gain"] )
+              }
             }
             else if (a.dataset.type === "volume-value") {
-              if ("gain" in channel) { a.innerHTML = Math.trunc( channel["gain"] ) }
+              if ("gain" in channel) {
+                a.hidden    = false
+                a.innerHTML = Math.trunc( channel["gain"] )
+              }
             }
 
             // Button Values
             else if (a.dataset.type === "solo-button") {
-              if ("is_solo" in channel) { setButton(a, channel["is_solo"]) }
+              if ("is_solo" in channel) {
+                a.hidden = false
+                setButton(a, channel["is_solo"])
+              }
             }
             else if (a.dataset.type === "channel-strip") {
               if ("is_solo" in channel) { setChanStrip(a, channel["is_solo"]) }
             }
             else if (a.dataset.type === "mute-button") {
-              if ("is_mute" in channel) { setButton(a, channel["is_mute"]) }
+              if ("is_mute" in channel) {
+                a.hidden = false
+                setButton(a, channel["is_mute"])
+              }
             }
           })
 
@@ -179,10 +193,14 @@ function loadActionCableSlidersMaster() {
           data = data["data"]
           let element = document.querySelectorAll("[data-user='"+ID+"']")
           element.forEach(function(a){
-            if (a.dataset.type === "volume-slider-master")
-              a.value = Math.trunc( data["gain"] )
-            else
+            if (a.dataset.type === "volume-slider-master") {
+              a.hidden = false
+              a.value  = Math.trunc( data["gain"] )
+            }
+            else {
+              a.hidden    = false
               a.innerHTML = Math.trunc( data["gain"] )
+            }
           })
         }
       },
