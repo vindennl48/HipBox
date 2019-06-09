@@ -1,3 +1,3 @@
 class Port < ApplicationRecord
-  belongs_to :port_group
+  belongs_to :port_group, optional: true
 end
