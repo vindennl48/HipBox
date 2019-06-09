@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  path: MyString
+  gain: 9.99
+  start: 
+  end: 
+  bpm: 1
+
+two:
+  name: MyString
+  path: MyString
+  gain: 9.99
+  start: 
+  end: 
+  bpm: 1
