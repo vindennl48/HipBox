@@ -6,7 +6,8 @@ class SamplesController < ApplicationController
   # GET /samples
   # GET /samples.json
   def index
-    @samples = Sample.all
+    @samples = Sample.all.order("id")
+    @clicks  = Click.all.order("id")
   end
 
   # GET /samples/new

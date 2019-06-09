@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_09_165052) do
+ActiveRecord::Schema.define(version: 2019_06_09_171546) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,6 +26,16 @@ ActiveRecord::Schema.define(version: 2019_06_09_165052) do
     t.datetime "updated_at", null: false
     t.index ["port_group_id"], name: "index_channels_on_port_group_id"
     t.index ["user_id"], name: "index_channels_on_user_id"
+  end
+
+  create_table "clicks", force: :cascade do |t|
+    t.string "name"
+    t.string "path", default: ""
+    t.decimal "gain", default: "0.0"
+    t.boolean "is_high", default: false
+    t.boolean "is_active", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "port_groups", force: :cascade do |t|

@@ -25,9 +25,38 @@
       <% end %>
     </tbody>
   </table>
-
   <div class="link-new">
     <%= link_to 'New', new_sample_path %>, 
     <%= link_to 'Upload' %>
+  </div>
+
+  <h1>Clicks</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Path</th>
+        <th>Gain</th>
+        <th>Is High</th>
+        <th>Is Active</th>
+        <th colspan="3"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @clicks.each do |click| %>
+        <tr>
+          <td><%= click.name %></td>
+          <td><%= click.path %></td>
+          <td><%= click.gain %></td>
+          <td><%= click.is_high ? "Yes" : "No" %></td>
+          <td><%= click.is_active ? "Yes" : "No" %></td>
+          <td><%= link_to 'Edit', edit_click_path(click) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <div class="link-new">
+    <%= link_to 'New', new_click_path %>
   </div>
 </div>

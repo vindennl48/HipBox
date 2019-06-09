@@ -1,0 +1,48 @@
+<%= render partial: "shared/admin_menu", locals: { title: "Click" } %>
+
+<%= form_with(model: @click, local: true) do |form| %>
+  <% if @click.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@click.errors.count, "error") %> prohibited this click from being saved:</h2>
+
+      <ul>
+      <% @click.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <table class="table left no-border">
+    <tbody>
+      <tr class="field">
+        <td><strong>Name: </strong></td>
+        <td><%= form.text_field :name %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Path: </strong></td>
+        <td><%= form.text_field :path %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Gain: </strong></td>
+        <td><%= form.text_field :gain %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Is High?: </strong></td>
+        <td><%= form.check_box :is_high %></td>
+      </tr>
+      <tr class="field">
+        <td><strong>Is Active?: </strong></td>
+        <td><%= form.check_box :is_active %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<div class=" link-delete ">
+  <%= link_to "Delete", @click, method: :delete, data: { confirm: "Are you sure you want to delete this click?" } %>
+</div>
