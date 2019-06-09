@@ -56,3 +56,7 @@
     <%= form.submit %>
   </div>
 <% end %>
+
+<div class=" link-delete ">
+  <%= link_to "Delete",  @port, method: :delete, data: { confirm: "Are you sure you want to delete this port?" } %>
+</div>

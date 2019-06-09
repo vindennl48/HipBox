@@ -3,8 +3,8 @@ Rails.application.routes.draw do
 
   resources :channels,    only: [:index]
   resources :admin,       only: [:index]
-  resources :ports,       only: [:index, :edit, :update]
-  resources :port_groups, only: [:edit, :update]
+  resources :ports,       only: [:index, :new, :edit, :update, :destroy]
+  resources :port_groups, only: [:new, :edit, :update, :destroy]
 
   devise_for :users, controllers: {
     sessions:      'users/sessions',

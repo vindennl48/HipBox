@@ -1,9 +1,14 @@
 class PortsController < ApplicationController
-  before_action :set_port, only: [:edit, :update]
+  before_action :set_port, only: [:edit, :update, :destroy]
 
   def index
     @ports       = Port.all.order("id")
     @port_groups = PortGroup.all.order("id")
+  end
+
+  def new
+    @port = Port.find_or_create_by(name: "new port", io: params['io'], path: "", pan: 0)
+    redirect_to ports_path
   end
 
   def edit
@@ -18,6 +23,14 @@ class PortsController < ApplicationController
         format.html { render :edit }
         format.json { render json: @port.errors, status: :unprocessable_entity }
       end
+    end
+  end
+
+  def destroy
+    @port.destroy
+    respond_to do |format|
+      format.html { redirect_to ports_path, notice: 'Port was successfully destroyed.' }
+      format.json { head :no_content }
     end
   end
 

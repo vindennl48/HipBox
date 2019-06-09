@@ -14,54 +14,104 @@
 
 </div>
 
-<h1>Ports</h1>
-<table class=" table ">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>In/Out</th>
-      <th>Path</th>
-      <th>Pan</th>
-      <th>PortGroup</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @ports.each do |port| %>
+<div class=" port-index-body ">
+  <h1>Port Groups In</h1>
+  <table class=" table ">
+    <thead>
       <tr>
-        <td><%= port.name %></td>
-        <td><%= port.io ? "In" : "Out" %></td>
-        <td><%= port.path %></td>
-        <td><%= port.pan == 0 ? "C" : (port.pan < 0 ? "L#{port.pan.abs}" : "R#{port.pan}") %></td>
-        <td><%= port.port_group.name %></td>
-        <td><%= link_to 'Edit', edit_port_path(port) %></td>
+        <th>Name</th>
+        <th>Is Global</th>
+        <th>User</th>
+        <th></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @port_groups.where(io: true).each do |group| %>
+        <tr>
+          <td><%= group.name %></td>
+          <td><%= group.is_global ? "Yes" : "No" %></td>
+          <td><%= group.user != nil ? group.user.name : "---" %></td>
+          <td><%= link_to 'Edit', edit_port_group_path(group) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <div class=" link-new ">
+    <%= link_to 'New', new_port_group_path(io: true) %>
+  </div>
 
-<br \>
-
-<h1>Port Groups</h1>
-<table class=" table ">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>In/Out</th>
-      <th>Is Global</th>
-      <th>User</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @port_groups.each do |group| %>
+  <h1>Port Groups Out</h1>
+  <table class=" table ">
+    <thead>
       <tr>
-        <td><%= group.name %></td>
-        <td><%= group.io ? "In" : "Out" %></td>
-        <td><%= group.is_global ? "Yes" : "No" %></td>
-        <td><%= group.user != nil ? group.user.name : "---" %></td>
-        <td><%= link_to 'Edit' %></td>
+        <th>Name</th>
+        <th></th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <% @port_groups.where(io: false).each do |group| %>
+        <tr>
+          <td><%= group.name %></td>
+          <td><%= link_to 'Edit', edit_port_group_path(group) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <div class=" link-new ">
+    <%= link_to 'New', new_port_group_path(io: false) %>
+  </div>
+
+  <h1>Ports In</h1>
+  <table class=" table ">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Path</th>
+        <th>Pan</th>
+        <th>PortGroup</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ports.where(io: true).each do |port| %>
+        <tr>
+          <td><%= port.name %></td>
+          <td><%= port.path %></td>
+          <td><%= port.pan == 0 ? "C" : (port.pan < 0 ? "L#{port.pan.abs}" : "R#{port.pan}") %></td>
+          <td><%= port.port_group ? port.port_group.name : "---" %></td>
+          <td><%= link_to 'Edit', edit_port_path(port) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <div class=" link-new ">
+    <%= link_to 'New', new_port_path(io: true) %>
+  </div>
+
+  <h1>Ports Out</h1>
+  <table class=" table ">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Path</th>
+        <th>Pan</th>
+        <th>PortGroup</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @ports.where(io: false).each do |port| %>
+        <tr>
+          <td><%= port.name %></td>
+          <td><%= port.path %></td>
+          <td><%= port.pan == 0 ? "C" : (port.pan < 0 ? "L#{port.pan.abs}" : "R#{port.pan}") %></td>
+          <td><%= port.port_group ? port.port_group.name : "---" %></td>
+          <td><%= link_to 'Edit', edit_port_path(port) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  <div class=" link-new ">
+    <%= link_to 'New', new_port_path(io: false) %>
+  </div>
+</div>

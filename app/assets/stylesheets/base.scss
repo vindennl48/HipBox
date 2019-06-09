@@ -20,6 +20,11 @@ body {
   background-color: $bg-color;
 }
 
+html, body {
+  max-width:  100%;
+  overflow-x: hidden;
+}
+
 div {
   //border: 1px solid black;
 }
@@ -40,13 +45,11 @@ a {
 
 table {
   //shrink to fit
-  width:            1px;
+  width:       1px;
 
-  text-align:       center;
-  white-space:      nowrap;
-  padding:          10px;
-  //color:            $font-color-dark;
-  //background-color: $bg-color-light;
+  text-align:  center;
+  white-space: nowrap;
+  padding:     10px;
 
   td {
     padding:        0px 7px;
