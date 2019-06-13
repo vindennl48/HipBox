@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <jack/jack.h>
+#include <lo/lo.h>
 #include "db.h"
 
 // These structs are for the hipbox mixer.
@@ -188,6 +189,58 @@ process (jack_nframes_t nframes, void *arg) {
 	return 0;      
 }
 
+// OSC Server
+
+void error_handler(int num, const char *msg, const char *path) {
+  fprintf(stderr, "LibLO server error %d in path %s: %s\n", num, path, msg);
+  fflush(stdout);
+}
+
+int wildcard_handler(const char *path, const char *types, lo_arg **argv, int argc,
+		 lo_message msg, void *user_data) {
+	//if (verbose) {
+  fprintf(stderr, "Warning: unhandled OSC message: '%s' with args '%s'.\n", path, types);
+	//}
+
+  return -1;
+}
+
+#define OSC_PORT  4000
+
+lo_server_thread init_osc( const char * port ) {
+	lo_server_thread st = NULL;
+	lo_server serv      = NULL;
+	
+	// Create new server
+	st = lo_server_thread_new( port, error_handler );
+	if (!st) return NULL;
+	
+	// Add the methods
+	serv = lo_server_thread_get_server( st );
+  //lo_server_thread_add_method(st, "/mixer/get_channel_count", "",   get_channel_count_handler, serv);
+  //lo_server_thread_add_method(st, "/mixer/channel/set_gain",  "if", set_gain_handler,          serv);
+  //lo_server_thread_add_method(st, "/mixer/channel/get_gain",  "i",  get_gain_handler,          serv);
+  //lo_server_thread_add_method(st, "/mixer/channel/get_label", "i",  get_label_handler,         serv);
+  //lo_server_thread_add_method(st, "/mixer/channel/set_label", "is", set_label_handler,         serv);
+	//lo_server_thread_add_method(st, "/ping",                    "",   ping_handler,              serv);
+
+  // add method that will match any path and args
+  lo_server_thread_add_method(st, NULL, NULL, wildcard_handler, serv);
+
+	// Start the thread
+	lo_server_thread_start(st);
+
+	//if (!quiet) {
+  char *url = lo_server_thread_get_url( st );
+  printf( "OSC server URL: %s\n", url );
+  free(url);
+	//}
+	
+	return st;
+}
+
+// End OSC Server
+
 /**
  * JACK calls this shutdown_callback if the server ever shuts down or
  * decides to disconnect the client.
@@ -201,9 +254,10 @@ jack_shutdown (void *arg)
 int
 main (int argc, char *argv[])
 {
-  const char     *client_name = "hipbox";
-	const char     *server_name = NULL;
-	jack_options_t options     = JackNullOption;
+	lo_server_thread server_thread = NULL;
+  const char     *client_name    = "hipbox";
+	const char     *server_name    = NULL;
+	jack_options_t options         = JackNullOption;
 	jack_status_t  status;
 	
 	/* open a client connection to the JACK server */
@@ -309,6 +363,9 @@ main (int argc, char *argv[])
   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
     out_port_groups[i].connect(client);
   }
+
+	// Setup OSC
+	server_thread = init_osc( (const char*)OSC_PORT );
 
 	/* keep running until stopped by the user */
 
