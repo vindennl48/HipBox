@@ -1,17 +1,35 @@
+#include <iostream>
 #include "hipbox_jack.h"
 #include "hipbox_osc.h"
+#include "json.h"
+
+using json = nlohmann::json;
 
 
 // Comment these out to shut them off
 /* -------------------------------------------------- */
 
 //#define JACK_AUDIO_SERVER
-#define OSC_SERVER
+//#define OSC_SERVER
 
 /* -------------------------------------------------- */
 
 
 int main (int argc, char *argv[]) {
+
+  auto j3 = R"(
+  {
+    "sad": true,
+    "pi": 3.14159
+  }
+)"_json;
+
+  if (j3.count("happy")) {
+    std::cout << "----> Computer is happy!" << std::endl;
+  }
+  else if (j3.count("sad")) {
+    std::cout << "----> Computer is sad.. " << std::endl;
+  }
 
 #ifdef JACK_AUDIO_SERVER
   // Setup JACK
