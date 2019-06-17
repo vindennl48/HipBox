@@ -1,14 +1,41 @@
 #include <vector>
 #include <jack/jack.h>
+#include <lo/lo.h>
+#include "json.h"
 #include "db.h"
-#include "hipbox_jack.h"
 #include "structures.h"
+#include "hipbox_jack.h"
+
+using json = nlohmann::json;
 
 jack_client_t *client;
 InPort        in_ports[NUM_IN_PORTS];
 InPortGroup   in_port_groups[NUM_IN_PORT_GROUPS];
 OutPortGroup  out_port_groups[NUM_OUT_PORT_GROUPS];
 Mixer         mixers[NUM_OUT_PORT_GROUPS];
+
+int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
+		 lo_message msg, void *user_data)
+{
+  auto j3 = json::parse((std::string)&argv[0]->s);
+  printf("----> rails_handler\n");
+  //printf("----> Json: %s \n", j3.dump().c_str());
+  //printf("----> %s \n", j3["inPorts"].dump().c_str());
+
+  /* Updates that require jack restart */
+  if (j3.count("inPorts")) {
+    int size = j3["inPorts"].size();
+    printf("----> Size: %i \n", size);
+    for (int i=0; i<size; i++) {
+      in_ports[i].port_name = (std::string)j3["inPorts"][i]["name"];
+      printf("----> InPorts %i - Name: %s \n", i, in_ports[i].port_name.c_str());
+      //std::cout << "----> InPorts: " << (std::string)j3["inPorts"][i]["name"] << std::endl;
+    }
+  }
+  /* END: Updates that require jack restart */
+
+  return 0;
+}
 
 int process (jack_nframes_t nframes, void *arg) {
 

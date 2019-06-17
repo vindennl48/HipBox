@@ -1,12 +1,13 @@
+#include <iostream>
+#include <string>
 #include "hipbox_osc.h"
+#include "hipbox_jack.h"
 
 lo_server_thread server_thread = NULL;
 
 int wildcard_handler(const char *path, const char *types, lo_arg **argv, int argc,
 		 lo_message msg, void *user_data) {
-	//if (verbose) {
   fprintf(stderr, "Warning: unhandled OSC message: '%s' with args '%s'.\n", path, types);
-	//}
 
   return -1;
 }
@@ -32,6 +33,7 @@ int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,
     return 0;
 }
 
+
 // OSC Server
 
 void error_handler(int num, const char *msg, const char *path) {
@@ -54,7 +56,8 @@ void start_osc() {
   //lo_server_thread_add_method(server_thread, "/mixer/channel/get_gain",  "i",  get_gain_handler,          serv);
   //lo_server_thread_add_method(server_thread, "/mixer/channel/get_label", "i",  get_label_handler,         serv);
   //lo_server_thread_add_method(server_thread, "/mixer/channel/set_label", "is", set_label_handler,         serv);
-  lo_server_thread_add_method(server_thread, "/ping",                    "",   ping_handler,              serv);
+  lo_server_thread_add_method(server_thread, "/rails", "s", rails_handler, serv);
+  lo_server_thread_add_method(server_thread, "/ping",  "",  ping_handler,  serv);
 
   // add method that will match any path and args
   lo_server_thread_add_method(server_thread, NULL, NULL, wildcard_handler, serv);
