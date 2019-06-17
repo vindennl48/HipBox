@@ -5,6 +5,17 @@
 #include <lo/lo.h>
 #include "db.h"
 
+
+#define NUM_MIXER_CHANNELS   8
+
+// These are based on an 8 input / 10 output audio interface
+#define NUM_IN_PORTS         8
+#define NUM_IN_PORT_GROUPS   8
+#define NUM_OUT_PORT_GROUPS  5
+
+#define OSC_PORT             "4000"
+
+
 // These structs are for the hipbox mixer.
 
 struct OutPortGroup {
@@ -115,8 +126,6 @@ struct Channel {
   bool        is_active = false;
 };
 
-#define NUM_MIXER_CHANNELS  8
-
 struct Mixer {
   Channel      channels[NUM_MIXER_CHANNELS];
   OutPortGroup *out_port_group;
@@ -126,19 +135,13 @@ struct Mixer {
 
 // End hipbox mixer structs
 
-// These are based on an 8 input / 10 output audio interface
-#define NUM_IN_PORTS         8
-#define NUM_IN_PORT_GROUPS   8
-#define NUM_OUT_PORT_GROUPS  5
-
 jack_client_t *client;
 InPort        in_ports[NUM_IN_PORTS];
 InPortGroup   in_port_groups[NUM_IN_PORT_GROUPS];
 OutPortGroup  out_port_groups[NUM_OUT_PORT_GROUPS];
 Mixer         mixers[NUM_OUT_PORT_GROUPS];
 
-int
-process (jack_nframes_t nframes, void *arg) {
+int process (jack_nframes_t nframes, void *arg) {
 
   /* Loop through all Mixers */
   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
@@ -205,38 +208,57 @@ int wildcard_handler(const char *path, const char *types, lo_arg **argv, int arg
   return -1;
 }
 
-#define OSC_PORT  4000
+int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,
+		 lo_message msg, void *user_data)
+{
+	lo_address src = lo_message_get_source( msg );
+	lo_server serv = (lo_server)user_data;
+	int result;
+	
+	// Display the address the ping came from
+	//if (verbose) {
+  char *url = lo_address_get_url(src);
+  printf( "Got ping from: %s\n", url);
+  free(url);
+	//}
+
+	// Send back reply
+	result = lo_send_from( src, serv, LO_TT_IMMEDIATE, "/pong", "" );
+	if (result<1) fprintf(stderr, "Error: sending reply failed: %s\n", lo_address_errstr(src));
+
+    return 0;
+}
 
 lo_server_thread init_osc( const char * port ) {
-	lo_server_thread st = NULL;
-	lo_server serv      = NULL;
-	
-	// Create new server
-	st = lo_server_thread_new( port, error_handler );
-	if (!st) return NULL;
-	
-	// Add the methods
-	serv = lo_server_thread_get_server( st );
+  lo_server_thread st   = NULL;
+  lo_server        serv = NULL;
+
+  // Create new server
+  st = lo_server_thread_new( port, error_handler );
+  if (!st) return NULL;
+
+  // Add the methods
+  serv = lo_server_thread_get_server( st );
   //lo_server_thread_add_method(st, "/mixer/get_channel_count", "",   get_channel_count_handler, serv);
   //lo_server_thread_add_method(st, "/mixer/channel/set_gain",  "if", set_gain_handler,          serv);
   //lo_server_thread_add_method(st, "/mixer/channel/get_gain",  "i",  get_gain_handler,          serv);
   //lo_server_thread_add_method(st, "/mixer/channel/get_label", "i",  get_label_handler,         serv);
   //lo_server_thread_add_method(st, "/mixer/channel/set_label", "is", set_label_handler,         serv);
-	//lo_server_thread_add_method(st, "/ping",                    "",   ping_handler,              serv);
+  lo_server_thread_add_method(st, "/ping",                    "",   ping_handler,              serv);
 
   // add method that will match any path and args
   lo_server_thread_add_method(st, NULL, NULL, wildcard_handler, serv);
 
-	// Start the thread
-	lo_server_thread_start(st);
+  // Start the thread
+  lo_server_thread_start(st);
 
-	//if (!quiet) {
+  //if (!quiet) {
   char *url = lo_server_thread_get_url( st );
   printf( "OSC server URL: %s\n", url );
   free(url);
-	//}
-	
-	return st;
+  //}
+
+  return st;
 }
 
 // End OSC Server
@@ -245,15 +267,11 @@ lo_server_thread init_osc( const char * port ) {
  * JACK calls this shutdown_callback if the server ever shuts down or
  * decides to disconnect the client.
  */
-void
-jack_shutdown (void *arg)
-{
+void jack_shutdown (void *arg) {
 	exit (1);
 }
 
-int
-main (int argc, char *argv[])
-{
+int main (int argc, char *argv[]) {
 	lo_server_thread server_thread = NULL;
   const char     *client_name    = "hipbox";
 	const char     *server_name    = NULL;
@@ -365,7 +383,7 @@ main (int argc, char *argv[])
   }
 
 	// Setup OSC
-	server_thread = init_osc( (const char*)OSC_PORT );
+  server_thread = init_osc(OSC_PORT);
 
 	/* keep running until stopped by the user */
 
@@ -376,6 +394,8 @@ main (int argc, char *argv[])
 	   they would be important to call.
 	*/
 
-	jack_client_close (client);
+  lo_server_thread_stop(server_thread);
+  lo_server_thread_free(server_thread);
+	jack_client_close(client);
 	exit (0);
 }
