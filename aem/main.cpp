@@ -1,7 +1,6 @@
-#include <iostream>
-#include "hipbox_jack.h"
-#include "hipbox_osc.h"
-
+#include <unistd.h>
+#include <string>
+#include "hipbox.h"
 
 // Comment these out to shut them off
 /* -------------------------------------------------- */

@@ -1,7 +1,7 @@
 class CreatePorts < ActiveRecord::Migration[5.2]
   def change
     create_table :ports do |t|
-      t.string :name,           null: false
+      t.string :name,           null: false, unique: true
       t.boolean :io,            default: true
       t.string :path,           default: ""
       t.decimal :pan,           default: 0
