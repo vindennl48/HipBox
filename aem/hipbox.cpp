@@ -7,19 +7,38 @@
 #include "hipbox.h"
 
 using json = nlohmann::json;
+using namespace std;
+
+// #define vector std::vector
+// #define string std::string
+// #define stod   std::stod
 
 // -- JACK --
+
+/* This will make it easy to create a struct if it doesn't already exist */
+template<class T>
+T* find_or_create(vector<T> *list, T *newT) {
+  int i_size = list->size();
+  for (int i=0; i<i_size; i++) {
+    if ((*list)[i].id == newT->id) return &(*list)[i];
+  }
+
+  list->push_back(*newT);
+  return &list->back();
+}
+
 struct OutPortGroup {
   jack_port_t                 *port_left;
   jack_port_t                 *port_right;
   jack_default_audio_sample_t *output_left, *output_right;
 
-  std::string name                     = "";
-  std::string port_name_left           = "left";
-  std::string port_name_right          = "right";
-  std::string hardware_port_path_left  = "";
-  std::string hardware_port_path_right = "";
-  bool        is_active                = false;
+  unsigned int id                       = 0;
+  string  name                     = "";
+  string  port_name_left           = "left";
+  string  port_name_right          = "right";
+  string  hardware_port_path_left  = "";
+  string  hardware_port_path_right = "";
+  bool         is_active                = false;
 
   void initialize(jack_client_t *client) {
     port_left  = jack_port_register(client, port_name_left.c_str(),  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
@@ -53,20 +72,20 @@ struct OutPortGroup {
       output_right[i] = 0;
     }
   }
-
 };
 
 struct InPort {
   jack_port_t                 *port;
   jack_default_audio_sample_t *input;
 
-  double      pan                = 0.0; // -1.0: Left, 1.0: Right
-  bool        is_active          = false;
-  std::string port_name          = "";
-  std::string hardware_port_path = "";
+  unsigned int id                 = 0;
+  double       pan                = 0.0; // -1.0: Left, 1.0: Right
+  bool         is_active          = false;
+  string  name               = "";
+  string  hardware_port_path = "";
 
   void initialize(jack_client_t *client) {
-    port = jack_port_register(client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+    port = jack_port_register(client, name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
     if (port == NULL) {
       fprintf(stderr, "no more JACK ports available\n");
@@ -91,9 +110,10 @@ struct InPort {
 };
 
 struct InPortGroup {
-  std::string          group_name = "";
-  bool                 is_active  = false;
-  std::vector<InPort*> ports;
+  unsigned int         id        = 0;
+  string          name      = "";
+  bool                 is_active = false;
+  vector<InPort*> ports;
 
   void initialize(jack_client_t *client) {
     int size = ports.size();
@@ -115,24 +135,26 @@ struct InPortGroup {
 
 struct Channel {
   InPortGroup *in_port_group;
-  double      gain      = 0.0;
-  double      pan       = 0.0;  // -1.0: Left, 1.0: Right
-  bool        is_mute   = false;
-  bool        is_active = false;
+  unsigned int id        = 0;
+  double       gain      = 0.0;
+  double       pan       = 0.0;  // -1.0: Left, 1.0: Right
+  bool         is_mute   = false;
+  bool         is_active = false;
 };
 
 struct Mixer {
-  Channel      channels[NUM_MIXER_CHANNELS];
-  OutPortGroup *out_port_group;
-  bool         is_active = false;
-  double       gain      = 0.0;
+  vector<Channel> channels;
+  OutPortGroup         *out_port_group;
+  unsigned             int id    = 0;
+  bool                 is_active = false;
+  double               gain      = 0.0;
 };
 
-jack_client_t *client;
-InPort        in_ports[NUM_IN_PORTS];
-InPortGroup   in_port_groups[NUM_IN_PORT_GROUPS];
-OutPortGroup  out_port_groups[NUM_OUT_PORT_GROUPS];
-Mixer         mixers[NUM_OUT_PORT_GROUPS];
+jack_client_t             *client;
+vector<InPort>       in_ports;
+vector<InPortGroup>  in_port_groups;
+vector<OutPortGroup> out_port_groups;
+vector<Mixer>        mixers;
 
 int process (jack_nframes_t nframes, void *arg) {
 
@@ -251,11 +273,11 @@ void start_jack() {
   // all be done by a JSON parser in the future, but for sake
   // of testing, here goes..
 
-  in_ports[0].port_name          = "mic";
+  in_ports[0].name          = "mic";
   in_ports[0].pan                = 0;
   in_ports[0].hardware_port_path = "system:capture_1";
   //in_ports[0].initialize(client);
-  in_ports[1].port_name          = "mic2";
+  in_ports[1].name          = "mic2";
   in_ports[1].hardware_port_path = "system:capture_2";
   //in_ports[1].initialize(client);
 
@@ -317,103 +339,105 @@ lo_server_thread server_thread = NULL;
 int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 		              lo_message msg, void *user_data)
 {
-  auto j3         = json::parse((std::string)&argv[0]->s);
-  bool is_restart = false;
-  int  size       = 0;
-  int  id         = 0;
+  auto j3         = json::parse((string)&argv[0]->s);
+  //bool is_restart = false;
+  //int  size       = 0;
+  //int  id         = 0;
 
   PRINTD("----> rails_handler\n");
   //PRINTD("----> Json: %s \n", j3.dump().c_str());
   //PRINTD("----> %s \n", j3["inPorts"].dump().c_str());
   //PRINTD("----> %s\n", j3.dump(4).c_str());
 
-  /* Updates that require jack restart */
-  if (j3.count("in_port_groups")) {
-    PRINTD("----> InPortGroups\n");
+  if (j3.count("mixers")) {
+    auto *mixers_p = &j3["mixers"];
 
-    // Reset all in-port groups
-    for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
-      InPortGroup in_port_group;
-      in_port_groups[i] = in_port_group;
-    }
+    int i_size = mixers_p->size();
+    for (int i=0; i<i_size; i++) {
+      auto *mixer_p          = &(*mixers_p)[i];
+      auto *out_port_group_p = &(*mixers_p)[i]["out_port_group"];
+      auto *channels_p       = &(*mixers_p)[i]["channels"];
 
-    size = j3["in_port_groups"].size();
-    for (int i=0; i<size; i++) {
-      in_port_groups[i].group_name = (std::string) j3["in_port_groups"][i]["name"];
-    }
+      OutPortGroup out_port_group;
+      out_port_group.id                       = (*out_port_group_p)["id"];
+      out_port_group.name                     = (*out_port_group_p)["name"];
+      out_port_group.port_name_left           = (*out_port_group_p)["ports"][0]["name"];
+      out_port_group.port_name_right          = (*out_port_group_p)["ports"][1]["name"];
+      out_port_group.hardware_port_path_left  = (*out_port_group_p)["ports"][0]["path"];
+      out_port_group.hardware_port_path_right = (*out_port_group_p)["ports"][1]["path"];
 
-    is_restart = true;
+      Mixer mixer;
+      mixer.id             = (*mixer_p)["id"];
+      mixer.gain           = stod((string)(*mixer_p)["gain"]);
+      mixer.out_port_group = find_or_create<OutPortGroup>(&out_port_groups, &out_port_group);
 
-    // Test
-    for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
-      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].group_name.c_str());
-    }
-  }
+      int j_size = channels_p->size();
+      for (int j=0; j<j_size; j++) {
+        auto *channel_p = &(*channels_p)[j];
 
-  if (j3.count("in_ports")) {
-    // Reset all in-ports
-    for (int i=0; i<NUM_IN_PORTS; i++) {
-      InPort in_port;
-      in_ports[i] = in_port;
-    }
+        InPortGroup in_port_group;
+        in_port_group.id   = (*channel_p)["port_group"]["id"];
+        in_port_group.name = (*channel_p)["port_group"]["name"];
 
-    size = j3["in_ports"].size();
-    size = size > NUM_IN_PORTS ? NUM_IN_PORTS : size;
-    for (int i=0; i<size; i++) {
-      in_ports[i].port_name          = (std::string) j3["in_ports"][i]["name"];
-      in_ports[i].hardware_port_path = (std::string) j3["in_ports"][i]["path"];
-      in_ports[i].pan                = std::stod((std::string) j3["in_ports"][i]["pan"]);
+        int k_size = (*channel_p)["port_group"]["ports"].size();
+        for (int k=0; k<k_size; k++) {
+          auto *port_p = &(*channel_p)["port_group"]["ports"][k];
 
-      // Assign in-port to in-port-group if it exists
-      if (j3["in_ports"][i].count("in_port_group_name")) {
-        std::string in_port_group_name = j3["in_ports"][i]["in_port_group_name"];
-        for (int j=0; j<NUM_IN_PORT_GROUPS; j++) {
-          if (in_port_group_name == in_port_groups[j].group_name) {
-            in_port_groups[j].ports.push_back(&in_ports[i]);
-            PRINTD("TEST> Found InPortGroup '%s'!\n", in_port_group_name.c_str());
-          }
+          InPort in_port;
+          in_port.id                 = (*port_p)["id"];
+          in_port.pan                = stod((string)(*port_p)["pan"]);
+          in_port.name               = (*port_p)["name"];
+          in_port.hardware_port_path = (*port_p)["path"];
+
+          in_port_group.ports.push_back(
+            find_or_create<InPort>(&in_ports, &in_port)
+          );
         }
+
+        Channel channel;
+        channel.id            = (*channel_p)["id"];
+        channel.gain          = stod((string)(*channel_p)["gain"]);
+        channel.pan           = stod((string)(*channel_p)["pan"]);
+        channel.is_mute       = (*channel_p)["is_mute"];
+        channel.in_port_group = find_or_create<InPortGroup>(&in_port_groups, &in_port_group);
+
+        mixer.channels.push_back(channel);
       }
+
+      mixers.push_back(mixer);
     }
 
-    is_restart = true;
+    // Test
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
+    }
 
     // Test
-    for (int i=0; i<NUM_IN_PORTS; i++) {
+    i_size = in_ports.size();
+    PRINTD("TEST> InPorts Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
       PRINTD("TEST> InPort Name: %s, Path: %s\n",
-        in_ports[i].port_name.c_str(),
+        in_ports[i].name.c_str(),
         in_ports[i].hardware_port_path.c_str()
       );
     }
 
     // Test for port groups
-    for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
-      if (in_port_groups[i].ports.size() > 0) {
-        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->port_name.c_str());
-      }
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Ports Size: %i\n", in_port_groups[i].ports.size());
+      // if (in_port_groups[i].ports.size() > 0) {
+        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
+      // }
     }
-  }
-
-  if (j3.count("out_port_groups")) {
-    // Reset all out-ports
-    for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
-      OutPortGroup out_port_group;
-      out_port_groups[i] = out_port_group;
-    }
-
-    size = j3["out_port_groups"].size();
-    size = size > NUM_OUT_PORT_GROUPS ? NUM_OUT_PORT_GROUPS : size;
-    for (int i=0; i<size; i++) {
-      out_port_groups[i].port_name_left           = j3["out_port_groups"][i]["port_left"]["name"];
-      out_port_groups[i].hardware_port_path_left  = j3["out_port_groups"][i]["port_left"]["path"];
-      out_port_groups[i].port_name_right          = j3["out_port_groups"][i]["port_right"]["name"];
-      out_port_groups[i].hardware_port_path_right = j3["out_port_groups"][i]["port_right"]["path"];
-    }
-
-    is_restart = true;
 
     // Test
-    for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+    i_size = out_port_groups.size();
+    PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
       PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
         out_port_groups[i].port_name_left.c_str(),
         out_port_groups[i].port_name_right.c_str(),
@@ -423,18 +447,135 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     }
   }
 
-  //if (j3.count("mixers")) {
-  //  // int size = j3["inPorts"].size();
-  //  // PRINTD("----> Size: %i \n", size);
-  //  // for (int i=0; i<size; i++) {
-  //  //   in_ports[i].port_name = (std::string)j3["inPorts"][i]["name"];
-  //  //   PRINTD("----> InPorts %i - Name: %s \n", i, in_ports[i].port_name.c_str());
-  //  //   //std::cout << "----> InPorts: " << (std::string)j3["inPorts"][i]["name"] << std::endl;
-  //  // }
-  //  is_restart = true;
-  //}
-  //
-  ///* END: Updates that require jack restart */
+  // /* Updates that require jack restart */
+  // if (j3.count("in_port_groups")) {
+  //   PRINTD("----> InPortGroups\n");
+
+  //   // Reset all in-port groups
+  //   for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
+  //     InPortGroup in_port_group;
+  //     in_port_groups[i] = in_port_group;
+  //   }
+
+  //   size = j3["in_port_groups"].size();
+  //   for (int i=0; i<size; i++) {
+  //     in_port_groups[i].name = (string) j3["in_port_groups"][i]["name"];
+  //   }
+
+  //   is_restart = true;
+
+  //   // Test
+  //   for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
+  //     PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
+  //   }
+  // }
+
+  // if (j3.count("in_ports")) {
+  //   // Reset all in-ports
+  //   for (int i=0; i<NUM_IN_PORTS; i++) {
+  //     InPort in_port;
+  //     in_ports[i] = in_port;
+  //   }
+
+  //   size = j3["in_ports"].size();
+  //   size = size > NUM_IN_PORTS ? NUM_IN_PORTS : size;
+  //   for (int i=0; i<size; i++) {
+  //     in_ports[i].name          = (string) j3["in_ports"][i]["name"];
+  //     in_ports[i].hardware_port_path = (string) j3["in_ports"][i]["path"];
+  //     in_ports[i].pan                = stod((string) j3["in_ports"][i]["pan"]);
+
+  //     // Assign in-port to in-port-group if it exists
+  //     if (j3["in_ports"][i].count("in_port_name")) {
+  //       string in_port_name = j3["in_ports"][i]["in_port_name"];
+  //       for (int j=0; j<NUM_IN_PORT_GROUPS; j++) {
+  //         if (in_port_name == in_port_groups[j].name) {
+  //           in_port_groups[j].ports.push_back(&in_ports[i]);
+  //           PRINTD("TEST> Found InPortGroup '%s'!\n", in_port_name.c_str());
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   is_restart = true;
+
+  //   // Test
+  //   for (int i=0; i<NUM_IN_PORTS; i++) {
+  //     PRINTD("TEST> InPort Name: %s, Path: %s\n",
+  //       in_ports[i].name.c_str(),
+  //       in_ports[i].hardware_port_path.c_str()
+  //     );
+  //   }
+
+  //   // Test for port groups
+  //   for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
+  //     if (in_port_groups[i].ports.size() > 0) {
+  //       PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->name.c_str());
+  //     }
+  //   }
+  // }
+
+  // if (j3.count("out_port_groups")) {
+  //   // Reset all out-ports
+  //   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+  //     OutPortGroup out_port_group;
+  //     out_port_groups[i] = out_port_group;
+  //   }
+
+  //   size = j3["out_port_groups"].size();
+  //   size = size > NUM_OUT_PORT_GROUPS ? NUM_OUT_PORT_GROUPS : size;
+  //   for (int i=0; i<size; i++) {
+  //     out_port_groups[i].port_name_left           = j3["out_port_groups"][i]["port_left"]["name"];
+  //     out_port_groups[i].hardware_port_path_left  = j3["out_port_groups"][i]["port_left"]["path"];
+  //     out_port_groups[i].port_name_right          = j3["out_port_groups"][i]["port_right"]["name"];
+  //     out_port_groups[i].hardware_port_path_right = j3["out_port_groups"][i]["port_right"]["path"];
+  //   }
+
+  //   is_restart = true;
+
+  //   // Test
+  //   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+  //     PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
+  //       out_port_groups[i].port_name_left.c_str(),
+  //       out_port_groups[i].port_name_right.c_str(),
+  //       out_port_groups[i].hardware_port_path_left.c_str(),
+  //       out_port_groups[i].hardware_port_path_right.c_str()
+  //     );
+  //   }
+  // }
+
+  // if (j3.count("mixers")) {
+  //   // Reset all mixers
+  //   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+  //     Mixer mixer;
+  //     mixers[i] = mixer;
+  //   }
+
+  //   int size = j3["mixers"].size();
+  //   size = size > NUM_OUT_PORT_GROUPS ? NUM_OUT_PORT_GROUPS : size;
+  //   for (int i=0; i<size; i++) {
+  //     for (int j=0; j<NUM_OUT_PORT_GROUPS; j++) {
+  //       if (j3["mixers"][i].out_port_name == out_port_groups[j].name) {
+  //         mixers[i].out_port_group = &out_port_groups[j];
+  //       }
+  //     }
+  //     for (int j=0; j<NUM_MIXER_CHANNELS; j++) {
+  //     }
+  //     mixers[i].out_port_group 
+  //   }
+  //   is_restart = true;
+  //   /*
+  //   mixers[0].out_port_group            = &out_port_groups[0];
+  //   mixers[0].channels[0].in_port_group = &in_port_groups[0];
+  //   mixers[0].channels[0].gain          = 0;
+  //   mixers[0].channels[0].pan           = 0;
+  //   mixers[0].channels[0].is_mute       = false;
+  //   mixers[0].channels[0].is_active     = true;
+  //   mixers[0].gain                      = 0;
+  //   mixers[0].is_active                 = true;
+  //   */
+  // }
+  
+  /* END: Updates that require jack restart */
 
   return 0;
 }
