@@ -49,16 +49,6 @@ class Channel < ApplicationRecord
       aem["in_ports"].push(in_port)
     end
 
-    #Out Ports
-    Port.where(io: false).order("id").each do |port|
-      out_port = port.as_json
-      if port.port_group
-        out_port["out_port_group_name"] = port.port_group.name
-      end
-
-      aem["out_ports"].push(out_port)
-    end
-
     #In Port Groups
     PortGroup.where(io: true).order("id").each do |port_group|
       in_port_group = port_group.as_json
@@ -75,6 +65,8 @@ class Channel < ApplicationRecord
       if port_group.user
         out_port_group["user_name"] = port_group.user.name
       end
+      out_port_group["port_left"]  = port_group.ports.find_by(pan: -1.0).as_json
+      out_port_group["port_right"] = port_group.ports.find_by(pan:  1.0).as_json
 
       aem["out_port_groups"].push(out_port_group)
     end
@@ -101,7 +93,7 @@ class Channel < ApplicationRecord
 
             Thread.exit
           rescue
-            puts "OSCRUBY> Failed to initialize OSC Client.."
+            puts "OSCRUBY> Failed to initialize OSC Client.. Retry in 3 seconds.."
             sleep 3
           end
         end

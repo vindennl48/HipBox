@@ -14,12 +14,12 @@ struct OutPortGroup {
   jack_port_t                 *port_right;
   jack_default_audio_sample_t *output_left, *output_right;
 
-  std::string name;
-  std::string port_name_left;
-  std::string port_name_right;
-  std::string hardware_port_path_left;
-  std::string hardware_port_path_right;
-  bool        is_active = false;
+  std::string name                     = "";
+  std::string port_name_left           = "left";
+  std::string port_name_right          = "right";
+  std::string hardware_port_path_left  = "";
+  std::string hardware_port_path_right = "";
+  bool        is_active                = false;
 
   void initialize(jack_client_t *client) {
     port_left  = jack_port_register(client, port_name_left.c_str(),  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
@@ -60,10 +60,10 @@ struct InPort {
   jack_port_t                 *port;
   jack_default_audio_sample_t *input;
 
-  double      pan       = 0.0; // -1.0: Left, 1.0: Right
-  bool        is_active = false;
-  std::string port_name;
-  std::string hardware_port_path;
+  double      pan                = 0.0; // -1.0: Left, 1.0: Right
+  bool        is_active          = false;
+  std::string port_name          = "";
+  std::string hardware_port_path = "";
 
   void initialize(jack_client_t *client) {
     port = jack_port_register(client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
@@ -91,9 +91,9 @@ struct InPort {
 };
 
 struct InPortGroup {
-  std::string          group_name;
+  std::string          group_name = "";
+  bool                 is_active  = false;
   std::vector<InPort*> ports;
-  bool                 is_active = false;
 
   void initialize(jack_client_t *client) {
     int size = ports.size();
@@ -322,14 +322,14 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   int  size       = 0;
   int  id         = 0;
 
-  printf("----> rails_handler\n");
-  //printf("----> Json: %s \n", j3.dump().c_str());
-  //printf("----> %s \n", j3["inPorts"].dump().c_str());
-  printf("----> %s\n", j3.dump(4).c_str());
+  PRINTD("----> rails_handler\n");
+  //PRINTD("----> Json: %s \n", j3.dump().c_str());
+  //PRINTD("----> %s \n", j3["inPorts"].dump().c_str());
+  //PRINTD("----> %s\n", j3.dump(4).c_str());
 
   /* Updates that require jack restart */
   if (j3.count("in_port_groups")) {
-    printf("----> InPortGroupss\n");
+    PRINTD("----> InPortGroups\n");
 
     // Reset all in-port groups
     for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
@@ -346,7 +346,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
     // Test
     for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
-      printf("TEST> InPortGroup Name: %s\n", in_port_groups[i].group_name.c_str());
+      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].group_name.c_str());
     }
   }
 
@@ -365,11 +365,12 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
       in_ports[i].pan                = std::stod((std::string) j3["in_ports"][i]["pan"]);
 
       // Assign in-port to in-port-group if it exists
-      if (j3["in_ports"][i].count("in_port_group")) {
-        std::string in_port_group_name = j3["in_ports"][i]["in_port_group"];
+      if (j3["in_ports"][i].count("in_port_group_name")) {
+        std::string in_port_group_name = j3["in_ports"][i]["in_port_group_name"];
         for (int j=0; j<NUM_IN_PORT_GROUPS; j++) {
           if (in_port_group_name == in_port_groups[j].group_name) {
             in_port_groups[j].ports.push_back(&in_ports[i]);
+            PRINTD("TEST> Found InPortGroup '%s'!\n", in_port_group_name.c_str());
           }
         }
       }
@@ -379,25 +380,61 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
     // Test
     for (int i=0; i<NUM_IN_PORTS; i++) {
-      printf("TEST> InPort Name: %s, Path: %s\n",
+      PRINTD("TEST> InPort Name: %s, Path: %s\n",
         in_ports[i].port_name.c_str(),
         in_ports[i].hardware_port_path.c_str()
       );
     }
+
+    // Test for port groups
+    for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
+      if (in_port_groups[i].ports.size() > 0) {
+        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->port_name.c_str());
+      }
+    }
   }
 
-//  if (j3.count("mixers")) {
-//    // int size = j3["inPorts"].size();
-//    // printf("----> Size: %i \n", size);
-//    // for (int i=0; i<size; i++) {
-//    //   in_ports[i].port_name = (std::string)j3["inPorts"][i]["name"];
-//    //   printf("----> InPorts %i - Name: %s \n", i, in_ports[i].port_name.c_str());
-//    //   //std::cout << "----> InPorts: " << (std::string)j3["inPorts"][i]["name"] << std::endl;
-//    // }
-//    is_restart = true;
-//  }
-//
-//  /* END: Updates that require jack restart */
+  if (j3.count("out_port_groups")) {
+    // Reset all out-ports
+    for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+      OutPortGroup out_port_group;
+      out_port_groups[i] = out_port_group;
+    }
+
+    size = j3["out_port_groups"].size();
+    size = size > NUM_OUT_PORT_GROUPS ? NUM_OUT_PORT_GROUPS : size;
+    for (int i=0; i<size; i++) {
+      out_port_groups[i].port_name_left           = j3["out_port_groups"][i]["port_left"]["name"];
+      out_port_groups[i].hardware_port_path_left  = j3["out_port_groups"][i]["port_left"]["path"];
+      out_port_groups[i].port_name_right          = j3["out_port_groups"][i]["port_right"]["name"];
+      out_port_groups[i].hardware_port_path_right = j3["out_port_groups"][i]["port_right"]["path"];
+    }
+
+    is_restart = true;
+
+    // Test
+    for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
+      PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
+        out_port_groups[i].port_name_left.c_str(),
+        out_port_groups[i].port_name_right.c_str(),
+        out_port_groups[i].hardware_port_path_left.c_str(),
+        out_port_groups[i].hardware_port_path_right.c_str()
+      );
+    }
+  }
+
+  //if (j3.count("mixers")) {
+  //  // int size = j3["inPorts"].size();
+  //  // PRINTD("----> Size: %i \n", size);
+  //  // for (int i=0; i<size; i++) {
+  //  //   in_ports[i].port_name = (std::string)j3["inPorts"][i]["name"];
+  //  //   PRINTD("----> InPorts %i - Name: %s \n", i, in_ports[i].port_name.c_str());
+  //  //   //std::cout << "----> InPorts: " << (std::string)j3["inPorts"][i]["name"] << std::endl;
+  //  // }
+  //  is_restart = true;
+  //}
+  //
+  ///* END: Updates that require jack restart */
 
   return 0;
 }

@@ -1,6 +1,11 @@
 #ifndef HIPBOX_H
 #define HIPBOX_H
 
+// Set DEBUG to 1 to turn on debug information
+#define DEBUG 1
+// Macro for printing debug information
+#define PRINTD(...) do { if (DEBUG) printf(__VA_ARGS__); } while (0)
+
 #include <lo/lo.h>
 #include <jack/jack.h>
 
