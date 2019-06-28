@@ -35,28 +35,72 @@ class Channel < ApplicationRecord
     $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
   end
 
+  def self._osc_ruby_service_start
+    loop do
+      begin
+        $OSCRUBY = OSC::Client.new 4000, '0.0.0.0'
+        puts "\nOSCRUBY> OSC Client is activated\n\n"
+
+        puts "\nOSCRUBY> Starting AEM process\n\n"
+        Channel.start_aem
+
+        #Thread.exit
+        return true
+      rescue
+        puts "\nOSCRUBY> Failed to initialize OSC Client.. Retry in 3 seconds..\n\n"
+        sleep 3
+      end
+    end
+  end
+
   def self.activate_osc
-    #if $OSCRUBY == nil
-      puts "OSCRUBY> Variable is not nil"
-      puts "OSCRUBY> Starting OSC Client"
+    if $OSCRUBY == nil
+      puts "\nOSCRUBY> Starting OSC Client\n\n"
 
       Thread.new do
-        loop do
-          begin
-            $OSCRUBY = OSC::Client.new 4000, '0.0.0.0'
-            puts "OSCRUBY> OSC Client is activated"
+        # lets try not to repeat ourselves
+        def run_loop
+          puts ""
+          puts "####################"
+          puts ""
+        end
 
-            puts "OSCRUBY> Starting AEM process"
-            Channel.start_aem
+        # Check Jack to see if it is running yet
+        cmd = `jack_control status`
+        if not cmd[/started/]
+          puts "\nOSCRUBY> Starting Jack Service\n\n"
 
-            Thread.exit
-          rescue
-            puts "OSCRUBY> Failed to initialize OSC Client.. Retry in 3 seconds.."
-            sleep 3
+          # Start jack service
+          cmd = `jack_control dps device hw:USB` # set device
+          cmd = `jack_control ds  asla`          # set driver
+          cmd = `jack_control dps rate 44100`    # set sample rate
+          cmd = `jack_control dps nperiods 2`    # set nperiods
+          cmd = `jack_control dps period 128`    # set buffer size
+          cmd = `jack_control start`             # start jack
+          if not cmd[/Failed/]
+            puts "\nOSCRUBY> Jack Service Started Successfully. Starting AEM\n\n"
+            if Channel._osc_ruby_service_start
+              Thread.exit
+            end
+          else
+            puts "\nOSCRUBY> ERROR> 'jack_control start' failed to start..\n\n"
           end
+        elsif cmd[/started/]
+          puts "\nOSCRUBY> Jack Service Already Started. Starting AEM\n\n"
+          if Channel._osc_ruby_service_start
+            Thread.exit
+          end
+        else
+          puts ""
+          puts "OSCRUBY> ERROR> Current 'jack_control status' is unrecognizable.."
+          puts "                Could not start AEM.."
+          puts ""
         end
       end
-    #end
+
+    else
+      puts "\nOSCRUBY> OSC Client is Already Started.\n\n"
+    end
   end
 
 end

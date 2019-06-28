@@ -33,33 +33,43 @@ struct OutPortGroup {
   jack_default_audio_sample_t *output_left, *output_right;
 
   unsigned int id                       = 0;
-  string  name                     = "";
-  string  port_name_left           = "left";
-  string  port_name_right          = "right";
-  string  hardware_port_path_left  = "";
-  string  hardware_port_path_right = "";
-  bool         is_active                = false;
+  string       name                     = "";
+  string       port_name_left           = "left";
+  string       port_name_right          = "right";
+  string       hardware_port_path_left  = "";
+  string       hardware_port_path_right = "";
 
   void initialize(jack_client_t *client) {
     port_left  = jack_port_register(client, port_name_left.c_str(),  JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
     port_right = jack_port_register(client, port_name_right.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
 
     if ((port_left == NULL) || (port_right == NULL)) {
-      fprintf(stderr, "ERROR> no more JACK ports available\n");
+      fprintf(stderr, "JACK> ERROR> no more JACK ports available\n");
+      fprintf(stderr, "             port_left: %s, port_right %s\n",
+        port_name_left.c_str(), port_name_right.c_str()
+      );
+      fprintf(stderr, "             port_left_path: %s, port_right_path %s\n",
+        hardware_port_path_left.c_str(), hardware_port_path_right.c_str()
+      );
       exit (1);
     }
-
-    is_active = true;
+    else {
+      printf("JACK> Jack OutPorts '%s' and '%s' Registered Successfully\n", port_name_left.c_str(), port_name_right.c_str());
+    }
   }
 
   void connect(jack_client_t *client) {
-    if (is_active) {
-      if (jack_connect(client, jack_port_name(port_left), hardware_port_path_left.c_str())) {
-        fprintf (stderr, "ERROR> cannot connect input ports\n");
-      }
-      if (jack_connect(client, jack_port_name(port_right), hardware_port_path_right.c_str())) {
-        fprintf (stderr, "ERROR> cannot connect input ports\n");
-      }
+    if (jack_connect(client, jack_port_name(port_left), hardware_port_path_left.c_str())) {
+      fprintf (stderr, "JACK> ERROR> cannot connect output ports\n");
+    }
+    else {
+      printf("JACK> Jack OutPort '%s' Connected Successfully\n", port_name_left.c_str());
+    }
+    if (jack_connect(client, jack_port_name(port_right), hardware_port_path_right.c_str())) {
+      fprintf (stderr, "JACK> ERROR> cannot connect output ports\n");
+    }
+    else {
+      printf("JACK> Jack OutPort '%s' Connected Successfully\n", port_name_right.c_str());
     }
   }
 
@@ -80,26 +90,39 @@ struct InPort {
 
   unsigned int id                 = 0;
   double       pan                = 0.0; // -1.0: Left, 1.0: Right
-  bool         is_active          = false;
-  string  name               = "";
-  string  hardware_port_path = "";
+  string       name               = "";
+  string       hardware_port_path = "";
 
   void initialize(jack_client_t *client) {
-    port = jack_port_register(client, name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+    if (hardware_port_path.substr(0,6) == "system") {
+      port = jack_port_register(client, name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
 
-    if (port == NULL) {
-      fprintf(stderr, "ERROR> no more JACK ports available\n");
-      exit (1);
+      if (port == NULL) {
+        fprintf(stderr, "JACK> ERROR> no more JACK ports available\n");
+        fprintf(stderr, "             port: %s\n", name.c_str());
+        fprintf(stderr, "             path: %s\n", hardware_port_path.c_str());
+        exit (1);
+      }
+      else {
+        printf("JACK> Jack InPort '%s' Registered Successfully\n", name.c_str());
+      }
     }
-
-    is_active = true;
+    else if (hardware_port_path.substr(0,6) == "hipbox") {
+      printf("JACK> Port %s Needs to be set up with AEM, not with jack.\n", name.c_str());
+    }
   }
 
   void connect(jack_client_t *client) {
-    if (is_active) {
+    if (hardware_port_path.substr(0,6) == "system") {
       if (jack_connect(client, hardware_port_path.c_str(), jack_port_name(port))) {
-        fprintf (stderr, "ERROR> cannot connect input ports\n");
+        fprintf (stderr, "JACK> ERROR> cannot connect input ports\n");
       }
+      else {
+        printf("JACK> Jack InPort '%s' Connected Successfully\n", name.c_str());
+      }
+    }
+    else if (hardware_port_path.substr(0,6) == "hipbox") {
+      printf("JACK> Port %s Needs to be set up with AEM, not with jack.\n", name.c_str());
     }
   }
 
@@ -110,9 +133,8 @@ struct InPort {
 };
 
 struct InPortGroup {
-  unsigned int         id        = 0;
-  string          name      = "";
-  bool                 is_active = false;
+  unsigned int    id   = 0;
+  string          name = "";
   vector<InPort*> ports;
 
   void initialize(jack_client_t *client) {
@@ -120,8 +142,6 @@ struct InPortGroup {
     for (int i=0; i<size; i++) {
       ports[i]->initialize(client);
     }
-
-    is_active = true;
   }
 
   void connect(jack_client_t *client) {
@@ -135,19 +155,17 @@ struct InPortGroup {
 
 struct Channel {
   InPortGroup *in_port_group;
-  unsigned int id        = 0;
-  double       gain      = 0.0;
-  double       pan       = 0.0;  // -1.0: Left, 1.0: Right
-  bool         is_mute   = false;
-  bool         is_active = false;
+  unsigned int id      = 0;
+  double       gain    = 0.0;
+  double       pan     = 0.0;  // -1.0: Left, 1.0: Right
+  bool         is_mute = false;
 };
 
 struct Mixer {
   vector<Channel> channels;
-  OutPortGroup         *out_port_group;
-  unsigned             int id    = 0;
-  bool                 is_active = false;
-  double               gain      = 0.0;
+  OutPortGroup    *out_port_group;
+  unsigned int    id   = 0;
+  double          gain = 0.0;
 };
 
 jack_client_t        *client;
@@ -156,56 +174,55 @@ vector<InPortGroup>  in_port_groups;
 vector<OutPortGroup> out_port_groups;
 vector<Mixer>        mixers;
 
-// int process (jack_nframes_t nframes, void *arg) {
-// 
-//   /* Loop through all Mixers */
-//   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
-//     Mixer        *mixer          = &mixers[i];
-//     OutPortGroup *out_port_group = mixer->out_port_group;
-// 
-//     if (mixer->is_active) {
-//       out_port_group->initPort(nframes);
-// 
-//       /* Loop through all Channels in Mixer */
-//       for (int j=0; j<NUM_MIXER_CHANNELS; j++) {
-//         Channel     *channel       = &mixer->channels[j];
-//         InPortGroup *in_port_group = channel->in_port_group;
-// 
-//         if (channel->is_active && !channel->is_mute) {
-// 
-//           /* Loop through all InPorts in Channel */
-//           int in_port_group_size = in_port_group->ports.size();
-//           for (int k=0; k<in_port_group_size; k++) {
-//             InPort *in_port = in_port_group->ports[k];
-//             in_port->initPort(nframes);
-// 
-//             double in_port_pan_left = 1, in_port_pan_right = 1;
-//             if (in_port->pan < 0)
-//               in_port_pan_right += in_port->pan;
-//             else
-//               in_port_pan_left -= in_port->pan;
-// 
-//             double channel_pan_left = 1, channel_pan_right = 1;
-//             if (channel->pan < 0)
-//               channel_pan_right += channel->pan;
-//             else
-//               channel_pan_left -= channel->pan;
-// 
-//             for (int l=0; l<nframes; l++) {
-//                                               //    raw audio           in port pan          channel pan                 channel gain             mixer gain
-//               out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
-//               out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
-//             }
-//           }
-// 
-//         }
-//       }
-// 
-//     }
-//   }
-// 
-// 	return 0;      
-// }
+int process (jack_nframes_t nframes, void *arg) {
+
+  /* Loop through all Mixers */
+  int i_size = out_port_groups.size();
+  for (int i=0; i<i_size; i++) {
+    Mixer        *mixer          = &mixers[i];
+    OutPortGroup *out_port_group = mixer->out_port_group;
+
+    out_port_group->initPort(nframes);
+
+    /* Loop through all Channels in Mixer */
+    int j_size = mixers.size();
+    for (int j=0; j<j_size; j++) {
+      Channel     *channel       = &mixer->channels[j];
+      InPortGroup *in_port_group = channel->in_port_group;
+
+      if (!channel->is_mute) {
+
+        /* Loop through all InPorts in Channel */
+        int k_size = in_port_group->ports.size();
+        for (int k=0; k<k_size; k++) {
+          InPort *in_port = in_port_group->ports[k];
+          in_port->initPort(nframes);
+
+          double in_port_pan_left = 1, in_port_pan_right = 1;
+          if (in_port->pan < 0)
+            in_port_pan_right += in_port->pan;
+          else
+            in_port_pan_left -= in_port->pan;
+
+          double channel_pan_left = 1, channel_pan_right = 1;
+          if (channel->pan < 0)
+            channel_pan_right += channel->pan;
+          else
+            channel_pan_left -= channel->pan;
+
+          for (int l=0; l<nframes; l++) {
+                                            //    raw audio           in port pan          channel pan                 channel gain             mixer gain
+            out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
+            out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
+          }
+        }
+
+      }
+    }
+  }
+
+	return 0;      
+}
 
 
 /**
@@ -216,116 +233,122 @@ void jack_shutdown (void *arg) {
 	exit (1);
 }
 
-// void start_jack() {
-//   const char     *client_name    = "hipbox";
-// 	const char     *server_name    = NULL;
-// 	jack_options_t options         = JackNullOption;
-// 	jack_status_t  status;
-// 	
-// 	/* open a client connection to the JACK server */
-// 
-// 	client = jack_client_open (client_name, options, &status, server_name);
-// 	if (client == NULL) {
-// 		fprintf (stderr, "ERROR> jack_client_open() failed, "
-// 			 "status = 0x%2.0x\n", status);
-// 		if (status & JackServerFailed) {
-// 			fprintf (stderr, "ERROR> Unable to connect to JACK server\n");
-// 		}
-// 		exit (1);
-// 	}
-// 	if (status & JackServerStarted) {
-// 		fprintf (stderr, "ERROR> JACK server started\n");
-// 	}
-// 	if (status & JackNameNotUnique) {
-// 		client_name = jack_get_client_name(client);
-// 		fprintf (stderr, "ERROR> unique name `%s' assigned\n", client_name);
-// 	}
-// 
-// 	/* tell the JACK server to call `process()' whenever
-// 	   there is work to be done.
-// 	*/
-// 
-// 	jack_set_process_callback (client, process, 0);
-// 
-// 	/* tell the JACK server to call `jack_shutdown()' if
-// 	   it ever shuts down, either entirely, or if it
-// 	   just decides to stop calling us.
-// 	*/
-// 
-// 	jack_on_shutdown (client, jack_shutdown, 0);
-// 
-// 	/* display the current sample rate. 
-// 	 */
-// 
-// 	printf ("engine sample rate: %" PRIu32 "\n",
-// 		jack_get_sample_rate (client));
-// 
-// 	/* create ports */
-// 
-// 
-//   /*
-//    * Setup will eventually be a JSON string sent over OSC
-//    * A test file "json_test.json" has been laid out in the
-//    * root of this dir.
-//    * */
-// 
-//   // Setting up all the InPorts and OutPortGroups.  This will
-//   // all be done by a JSON parser in the future, but for sake
-//   // of testing, here goes..
-// 
-//   in_ports[0].name          = "mic";
-//   in_ports[0].pan                = 0;
-//   in_ports[0].hardware_port_path = "system:capture_1";
-//   //in_ports[0].initialize(client);
-//   in_ports[1].name          = "mic2";
-//   in_ports[1].hardware_port_path = "system:capture_2";
-//   //in_ports[1].initialize(client);
-// 
-//   in_port_groups[0].ports.push_back(&in_ports[0]);
-//   in_port_groups[0].initialize(client);
-// 
-//   out_port_groups[0].port_name_left           = "mitch_L";
-//   out_port_groups[0].port_name_right          = "mitch_R";
-//   out_port_groups[0].hardware_port_path_left  = "system:playback_1";
-//   out_port_groups[0].hardware_port_path_right = "system:playback_2";
-//   out_port_groups[0].initialize(client);
-// 
-//   mixers[0].out_port_group            = &out_port_groups[0];
-//   mixers[0].channels[0].in_port_group = &in_port_groups[0];
-//   mixers[0].channels[0].gain          = 0;
-//   mixers[0].channels[0].pan           = 0;
-//   mixers[0].channels[0].is_mute       = false;
-//   mixers[0].channels[0].is_active     = true;
-//   mixers[0].gain                      = 0;
-//   mixers[0].is_active                 = true;
-// 
-// 
-//   // End setting up InPorts and OutPortGroups.
-// 
-// 
-// 	/* Tell the JACK server that we are ready to roll.  Our
-// 	 * process() callback will start running now. */
-// 
-// 	if (jack_activate (client)) {
-// 		fprintf (stderr, "ERROR> cannot activate client");
-// 		exit (1);
-// 	}
-// 
-// 	/* Connect the ports.  You can't do this before the client is
-// 	 * activated, because we can't make connections to clients
-// 	 * that aren't running.  Note the confusing (but necessary)
-// 	 * orientation of the driver backend ports: playback ports are
-// 	 * "input" to the backend, and capture ports are "output" from
-// 	 * it.
-// 	 */
-// 
-//   for (int i=0; i<NUM_IN_PORT_GROUPS; i++) {
-//     in_port_groups[i].connect(client);
-//   }
-//   for (int i=0; i<NUM_OUT_PORT_GROUPS; i++) {
-//     out_port_groups[i].connect(client);
-//   }
-// }
+void start_jack() {
+  const char     *client_name = "hipbox";
+	const char     *server_name = NULL;
+	jack_options_t options      = JackNullOption;
+	jack_status_t  status;
+	
+	/* open a client connection to the JACK server */
+	client = jack_client_open (client_name, options, &status, server_name);
+	if (client == NULL) {
+		fprintf (stderr, "JACK> ERROR> jack_client_open() failed, "
+			 "status = 0x%2.0x\n", status);
+		if (status & JackServerFailed) {
+			fprintf (stderr, "JACK> ERROR> Unable to connect to JACK server\n");
+		}
+		exit (1);
+	}
+	if (status & JackServerStarted) {
+		fprintf (stderr, "JACK> JACK server started\n");
+	}
+	if (status & JackNameNotUnique) {
+		client_name = jack_get_client_name(client);
+		fprintf (stderr, "JACK> unique name `%s' assigned\n", client_name);
+	}
+
+	/* tell the JACK server to call `process()' whenever
+	   there is work to be done.
+	*/
+
+	jack_set_process_callback (client, process, 0);
+
+	/* tell the JACK server to call `jack_shutdown()' if
+	   it ever shuts down, either entirely, or if it
+	   just decides to stop calling us.
+	*/
+
+	jack_on_shutdown (client, jack_shutdown, 0);
+
+	/* display the current sample rate. 
+	 */
+
+	printf ("engine sample rate: %" PRIu32 "\n",
+		jack_get_sample_rate (client));
+
+	/* initialize ports */
+  int i_size = in_port_groups.size();
+  for (int i=0; i<i_size; i++) {
+    in_port_groups[i].initialize(client);
+  }
+  i_size = out_port_groups.size();
+  for (int i=0; i<i_size; i++) {
+    out_port_groups[i].initialize(client);
+  }
+
+  // /*
+  //  * Setup will eventually be a JSON string sent over OSC
+  //  * A test file "json_test.json" has been laid out in the
+  //  * root of this dir.
+  //  * */
+
+  // // Setting up all the InPorts and OutPortGroups.  This will
+  // // all be done by a JSON parser in the future, but for sake
+  // // of testing, here goes..
+
+  // in_ports[0].name          = "mic";
+  // in_ports[0].pan                = 0;
+  // in_ports[0].hardware_port_path = "system:capture_1";
+  // //in_ports[0].initialize(client);
+  // in_ports[1].name          = "mic2";
+  // in_ports[1].hardware_port_path = "system:capture_2";
+  // //in_ports[1].initialize(client);
+
+  // in_port_groups[0].ports.push_back(&in_ports[0]);
+  // in_port_groups[0].initialize(client);
+
+  // out_port_groups[0].port_name_left           = "mitch_L";
+  // out_port_groups[0].port_name_right          = "mitch_R";
+  // out_port_groups[0].hardware_port_path_left  = "system:playback_1";
+  // out_port_groups[0].hardware_port_path_right = "system:playback_2";
+  // out_port_groups[0].initialize(client);
+
+  // mixers[0].out_port_group            = &out_port_groups[0];
+  // mixers[0].channels[0].in_port_group = &in_port_groups[0];
+  // mixers[0].channels[0].gain          = 0;
+  // mixers[0].channels[0].pan           = 0;
+  // mixers[0].channels[0].is_mute       = false;
+  // mixers[0].gain                      = 0;
+
+
+  // End setting up InPorts and OutPortGroups.
+
+
+	/* Tell the JACK server that we are ready to roll.  Our
+	 * process() callback will start running now. */
+
+	if (jack_activate (client)) {
+		fprintf (stderr, "JACK> ERROR> cannot activate client");
+		exit (1);
+	}
+
+	/* Connect the ports.  You can't do this before the client is
+	 * activated, because we can't make connections to clients
+	 * that aren't running.  Note the confusing (but necessary)
+	 * orientation of the driver backend ports: playback ports are
+	 * "input" to the backend, and capture ports are "output" from
+	 * it.
+	 */
+
+  i_size = in_port_groups.size();
+  for (int i=0; i<i_size; i++) {
+    in_port_groups[i].connect(client);
+  }
+  i_size = out_port_groups.size();
+  for (int i=0; i<i_size; i++) {
+    out_port_groups[i].connect(client);
+  }
+}
 
 void stop_jack() {
 	jack_client_close(client);
@@ -344,12 +367,13 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   PRINTD("----> rails_handler\n");
 
   /* Dump entire json string */
-  PRINTD("----> %s\n", j3.dump(4).c_str());
+  //PRINTD("----> %s\n", j3.dump(4).c_str());
 
   if (j3.count("mixers")) {
     auto *mixers_p = &j3["mixers"];
 
     /* Reset */
+    //stop_jack();
     in_ports.clear();
     in_port_groups.clear();
     out_port_groups.clear();
@@ -416,56 +440,64 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
       mixers.push_back(mixer);
     }
 
+    PRINTD("----> Starting Jack Service\n");
+    start_jack();
+    PRINTD("----> Jack Service Up and Running\n");
+
    /* All the testing to confirm this works
-    *
-    * // Test
-    * i_size = in_port_groups.size();
-    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
-    * }
-    *
-    *
-    * // Test
-    * i_size = in_ports.size();
-    * PRINTD("TEST> InPorts Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPort Name: %s, Path: %s\n",
-    *     in_ports[i].name.c_str(),
-    *     in_ports[i].hardware_port_path.c_str()
-    *   );
-    * }
-    *
-    * // Test for port groups
-    * i_size = in_port_groups.size();
-    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
-    *   // if (in_port_groups[i].ports.size() > 0) {
-    *     PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
-    *   // }
-    * }
-    *
-    * // Test
-    * i_size = out_port_groups.size();
-    * PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
-    *     out_port_groups[i].port_name_left.c_str(),
-    *     out_port_groups[i].port_name_right.c_str(),
-    *     out_port_groups[i].hardware_port_path_left.c_str(),
-    *     out_port_groups[i].hardware_port_path_right.c_str()
-    *   );
-    * }
     */
-  }
+    // Test
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
+    }
+    
+    
+    // Test
+    i_size = in_ports.size();
+    PRINTD("TEST> InPorts Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPort Name: %s, Path: %s\n",
+        in_ports[i].name.c_str(),
+        in_ports[i].hardware_port_path.c_str()
+      );
+    }
+    
+    // Test for port groups
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
+      // if (in_port_groups[i].ports.size() > 0) {
+        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
+      // }
+    }
+    
+    // Test
+    i_size = out_port_groups.size();
+    PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
+        out_port_groups[i].port_name_left.c_str(),
+        out_port_groups[i].port_name_right.c_str(),
+        out_port_groups[i].hardware_port_path_left.c_str(),
+        out_port_groups[i].hardware_port_path_right.c_str()
+      );
+    }
+    
+  } // -- END j3.count("mixers") --
+
+  //if (j3.count("channels")) {
+    //auto *channels_p = &j3["channels"];
+  //} // -- END j3.count("channels") --
 
   return 0;
 }
 
 int wildcard_handler(const char *path, const char *types, lo_arg **argv, int argc,
 		 lo_message msg, void *user_data) {
-  fprintf(stderr, "ERROR> Warning: unhandled OSC message: '%s' with args '%s'.\n", path, types);
+  fprintf(stderr, "OSC> ERROR> Warning: unhandled OSC message: '%s' with args '%s'.\n", path, types);
 
   return -1;
 }
@@ -486,14 +518,14 @@ int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
 	// Send back reply
 	result = lo_send_from( src, serv, LO_TT_IMMEDIATE, "/pong", "" );
-	if (result<1) fprintf(stderr, "ERROR> Error: sending reply failed: %s\n", lo_address_errstr(src));
+	if (result<1) fprintf(stderr, "OSC> ERROR> Error: sending reply failed: %s\n", lo_address_errstr(src));
 
     return 0;
 }
 
 
 void error_handler(int num, const char *msg, const char *path) {
-  fprintf(stderr, "ERROR> LibLO server error %d in path %s: %s\n", num, path, msg);
+  fprintf(stderr, "OSC> ERROR> LibLO server error %d in path %s: %s\n", num, path, msg);
   fflush(stdout);
 }
 
