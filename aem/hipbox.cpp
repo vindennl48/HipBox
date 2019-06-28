@@ -127,7 +127,15 @@ struct InPort {
   }
 
   void initPort(jack_nframes_t nframes) {
-    input = (jack_default_audio_sample_t*)jack_port_get_buffer(port, nframes);
+    if (hardware_port_path.substr(0,6) == "system") {
+      input = (jack_default_audio_sample_t*)jack_port_get_buffer(port, nframes);
+    }
+  }
+
+  bool checkRealPort() {
+    if (hardware_port_path.substr(0,6) == "system")
+      return true;
+    return false;
   }
 
 };
@@ -177,7 +185,7 @@ vector<Mixer>        mixers;
 int process (jack_nframes_t nframes, void *arg) {
 
   /* Loop through all Mixers */
-  int i_size = out_port_groups.size();
+  int i_size = mixers.size();
   for (int i=0; i<i_size; i++) {
     Mixer        *mixer          = &mixers[i];
     OutPortGroup *out_port_group = mixer->out_port_group;
@@ -185,7 +193,7 @@ int process (jack_nframes_t nframes, void *arg) {
     out_port_group->initPort(nframes);
 
     /* Loop through all Channels in Mixer */
-    int j_size = mixers.size();
+    int j_size = mixer->channels.size();
     for (int j=0; j<j_size; j++) {
       Channel     *channel       = &mixer->channels[j];
       InPortGroup *in_port_group = channel->in_port_group;
@@ -195,25 +203,29 @@ int process (jack_nframes_t nframes, void *arg) {
         /* Loop through all InPorts in Channel */
         int k_size = in_port_group->ports.size();
         for (int k=0; k<k_size; k++) {
-          InPort *in_port = in_port_group->ports[k];
-          in_port->initPort(nframes);
+          if (in_port_group->ports[k]->checkRealPort()) {
+            InPort *in_port = in_port_group->ports[k];
+            in_port->initPort(nframes);
 
-          double in_port_pan_left = 1, in_port_pan_right = 1;
-          if (in_port->pan < 0)
-            in_port_pan_right += in_port->pan;
-          else
-            in_port_pan_left -= in_port->pan;
+            double in_port_pan_left = 1, in_port_pan_right = 1;
+            if (in_port->pan < 0)
+              in_port_pan_right += in_port->pan;
+            else
+              in_port_pan_left -= in_port->pan;
 
-          double channel_pan_left = 1, channel_pan_right = 1;
-          if (channel->pan < 0)
-            channel_pan_right += channel->pan;
-          else
-            channel_pan_left -= channel->pan;
+            double channel_pan_left = 1, channel_pan_right = 1;
+            if (channel->pan < 0)
+              channel_pan_right += channel->pan;
+            else
+              channel_pan_left -= channel->pan;
 
-          for (int l=0; l<nframes; l++) {
-                                            //    raw audio           in port pan          channel pan                 channel gain             mixer gain
-            out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
-            out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
+            for (int l=0; l<nframes; l++) {
+                                              //    raw audio           in port pan          channel pan                 channel gain             mixer gain
+              //out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
+              //out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
+              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(0)) * db2lin(0);
+              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(0)) * db2lin(0);
+            }
           }
         }
 
@@ -445,46 +457,47 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     PRINTD("----> Jack Service Up and Running\n");
 
    /* All the testing to confirm this works
+    * 
+    * // Test
+    * i_size = in_port_groups.size();
+    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    * for (int i=0; i<i_size; i++) {
+    *   PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
+    * }
+    * 
+    * 
+    * // Test
+    * i_size = in_ports.size();
+    * PRINTD("TEST> InPorts Size: %i\n", i_size);
+    * for (int i=0; i<i_size; i++) {
+    *   PRINTD("TEST> InPort Name: %s, Path: %s\n",
+    *     in_ports[i].name.c_str(),
+    *     in_ports[i].hardware_port_path.c_str()
+    *   );
+    * }
+    * 
+    * // Test for port groups
+    * i_size = in_port_groups.size();
+    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    * for (int i=0; i<i_size; i++) {
+    *   PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
+    *   // if (in_port_groups[i].ports.size() > 0) {
+    *     PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
+    *   // }
+    * }
+    * 
+    * // Test
+    * i_size = out_port_groups.size();
+    * PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
+    * for (int i=0; i<i_size; i++) {
+    *   PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
+    *     out_port_groups[i].port_name_left.c_str(),
+    *     out_port_groups[i].port_name_right.c_str(),
+    *     out_port_groups[i].hardware_port_path_left.c_str(),
+    *     out_port_groups[i].hardware_port_path_right.c_str()
+    *   );
+    * }
     */
-    // Test
-    i_size = in_port_groups.size();
-    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
-    }
-    
-    
-    // Test
-    i_size = in_ports.size();
-    PRINTD("TEST> InPorts Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINTD("TEST> InPort Name: %s, Path: %s\n",
-        in_ports[i].name.c_str(),
-        in_ports[i].hardware_port_path.c_str()
-      );
-    }
-    
-    // Test for port groups
-    i_size = in_port_groups.size();
-    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
-      // if (in_port_groups[i].ports.size() > 0) {
-        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
-      // }
-    }
-    
-    // Test
-    i_size = out_port_groups.size();
-    PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
-        out_port_groups[i].port_name_left.c_str(),
-        out_port_groups[i].port_name_right.c_str(),
-        out_port_groups[i].hardware_port_path_left.c_str(),
-        out_port_groups[i].hardware_port_path_right.c_str()
-      );
-    }
     
   } // -- END j3.count("mixers") --
 
