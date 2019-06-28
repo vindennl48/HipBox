@@ -344,7 +344,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   PRINTD("----> rails_handler\n");
 
   /* Dump entire json string */
-  //PRINTD("----> %s\n", j3.dump(4).c_str());
+  PRINTD("----> %s\n", j3.dump(4).c_str());
 
   if (j3.count("mixers")) {
     auto *mixers_p = &j3["mixers"];
