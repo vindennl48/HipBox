@@ -9,12 +9,8 @@
 #include <lo/lo.h>
 #include <jack/jack.h>
 
-// These are based on an 8 input / 10 output audio interface
-#define NUM_IN_PORTS        16
-#define NUM_IN_PORT_GROUPS  16
-#define NUM_OUT_PORT_GROUPS 5
-#define NUM_MIXER_CHANNELS  16 
-#define OSC_PORT            "4000"
+#define DEFAULT_VECTOR_SIZE  24
+#define OSC_PORT             "4000"
 
 // -- OSC --
 int  wildcard_handler(const char *path, const char *types, lo_arg **argv, int argc,

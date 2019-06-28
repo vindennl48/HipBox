@@ -36,7 +36,7 @@ class Channel < ApplicationRecord
   end
 
   def self.activate_osc
-    if $OSCRUBY == nil
+    #if $OSCRUBY == nil
       puts "OSCRUBY> Variable is not nil"
       puts "OSCRUBY> Starting OSC Client"
 
@@ -56,7 +56,7 @@ class Channel < ApplicationRecord
           end
         end
       end
-    end
+    #end
   end
 
 end
