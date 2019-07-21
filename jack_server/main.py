@@ -18,14 +18,14 @@ PEOPLE = {
 
 # mixer inputs
 INPUTS = {
-    "james":    {"port": "james_guitarix:out_0", "pan": "L",         "record": True},
-    # "jesse":    {"port": "system:capture_2",       "pan": "R",         "record": True},
-    "jesse":    {"port": "jesse_guitarix:out_0", "pan": "R",         "record": True},
+    "james":    {"port": "james_guitarix:out_0",   "pan": "L",         "record": True},
+    # "jesse":    {"port": "system:capture_2",     "pan": "R",         "record": True},
+    "jesse":    {"port": "jesse_guitarix:out_0",   "pan": "R",         "record": True},
     # "mitch":    {"port": "mitch_guitarix:out_0", "pan": "C",         "record": True},
-    "mitch":    {"port": "system:capture_3",     "pan": "C",         "record": True},
-    "sean":     {"port": ["system:capture_5",    "system:capture_6", "SimpleDAW:out_0"], "pan": "C", "record": True},
-    "talkback": {"port": "system:capture_4",     "pan": "C",         "record": False},
-    "click":    {"port": "SimpleDAW:out_click",  "pan": "C",         "record": False},
+    "mitch":    {"port": "system:capture_3",       "pan": "C",         "record": True},
+    "sean":     {"port": ["system:capture_5",      "system:capture_6", "SimpleDAW:out_0"], "pan": "C", "record": True},
+    "talkback": {"port": "system:capture_4",       "pan": "C",         "record": False},
+    "click":    {"port": "SimpleDAW:out_click",    "pan": "C",         "record": False},
 }
 
 GUITARIX_INPUTS = {
@@ -45,12 +45,12 @@ MIDI_MAP = {
 
     # -- Chrono --
     # "note_17":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/play/chrono"],
-    # "note_18":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/play/chrono"],
+    "note_18":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",98], "/simpledaw/click"],
     "note_19":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/click"],
 
     # -- Space --
-    # "note_27":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
-    # "note_28":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    "note_27":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    "note_28":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
     "note_29":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/click"],
 
     # -- Petrichor --
@@ -74,10 +74,14 @@ AUDIO_FILES = [
     {"name": "sono",      "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/sono2.wav"},
     {"name": "old_pete",  "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/old_pete2.wav"},
     {"name": "petrichor", "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/petrichor2.wav"},
+    {"name": "space",     "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/space.wav"},
 ]
 
-CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
-CLICK_LOW  = {"name": "click_low",  "gain": -20, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
+CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high_04.wav"}
+CLICK_LOW  = {"name": "click_low",  "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_low_04.wav"}
+
+# CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
+# CLICK_LOW  = {"name": "click_low",  "gain": -20, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
 
 # Ports
 OSC_INPORT          = 3001     # Receiving osc from rails
