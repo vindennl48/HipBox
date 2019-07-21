@@ -7,7 +7,7 @@ namespace :hipbox do
       10.times do
         cmd = `nmcli device wifi list`
         if cmd[/#{wifi_name}/]
-          cmd = `nmcli device wifi connect #{wifi_name} password #{wifi_passwd}`
+          cmd = `nmcli device wifi connect "#{wifi_name}" password #{wifi_passwd}`
           if cmd[/successfully activated/]
             puts "----> Successfully connected to network '#{wifi_name}'!"
             sleep(10)
