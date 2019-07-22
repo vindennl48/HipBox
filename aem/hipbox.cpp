@@ -412,7 +412,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     auto *mixers_p = &j3["mixers"];
 
     /* Reset */
-    //stop_jack();
+    stop_jack();
     in_ports.clear();
     in_port_groups.clear();
     out_port_groups.clear();
