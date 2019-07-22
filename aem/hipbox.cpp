@@ -221,10 +221,10 @@ int process (jack_nframes_t nframes, void *arg) {
 
             for (int l=0; l<nframes; l++) {
                                               //    raw audio           in port pan          channel pan                 channel gain             mixer gain
-              //out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
-              //out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
-              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(0)) * db2lin(0);
-              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(0)) * db2lin(0);
+              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
+              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
+              //out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(0)) * db2lin(0);
+              //out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(0)) * db2lin(0);
             }
           }
         }
@@ -371,6 +371,33 @@ void stop_jack() {
 // -- OSC --
 lo_server_thread server_thread = NULL;
 
+Mixer* find_mixer(unsigned int id) {
+  int i_size = mixers.size();
+  for (int i=0; i<i_size; i++) {
+    Mixer *mixer_p = &mixers[i];
+    if (mixer_p->id == id) {
+      return mixer_p;
+    }
+  }
+  return NULL;
+}
+
+Channel* find_channel(unsigned int id) {
+  int i_size = mixers.size();
+  for (int i=0; i<i_size; i++) {
+    Mixer *mixer_p = &mixers[i];
+
+    int j_size = mixer_p->channels.size();
+    for (int j=0; j<j_size; j++) {
+      Channel *channel_p = &mixer_p->channels[j];
+      if (channel_p->id == id) {
+        return channel_p;
+      }
+    }
+  }
+  return NULL;
+}
+
 int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 		              lo_message msg, void *user_data)
 {
@@ -456,54 +483,81 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     start_jack();
     PRINTD("----> Jack Service Up and Running\n");
 
-   /* All the testing to confirm this works
-    * 
-    * // Test
-    * i_size = in_port_groups.size();
-    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
-    * }
-    * 
-    * 
-    * // Test
-    * i_size = in_ports.size();
-    * PRINTD("TEST> InPorts Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPort Name: %s, Path: %s\n",
-    *     in_ports[i].name.c_str(),
-    *     in_ports[i].hardware_port_path.c_str()
-    *   );
-    * }
-    * 
-    * // Test for port groups
-    * i_size = in_port_groups.size();
-    * PRINTD("TEST> InPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
-    *   // if (in_port_groups[i].ports.size() > 0) {
-    *     PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
-    *   // }
-    * }
-    * 
-    * // Test
-    * i_size = out_port_groups.size();
-    * PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
-    * for (int i=0; i<i_size; i++) {
-    *   PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
-    *     out_port_groups[i].port_name_left.c_str(),
-    *     out_port_groups[i].port_name_right.c_str(),
-    *     out_port_groups[i].hardware_port_path_left.c_str(),
-    *     out_port_groups[i].hardware_port_path_right.c_str()
-    *   );
-    * }
-    */
+   //* All the testing to confirm this works
+    
+    // Test
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
+    }
+    
+    
+    // Test
+    i_size = in_ports.size();
+    PRINTD("TEST> InPorts Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPort Name: %s, Path: %s\n",
+        in_ports[i].name.c_str(),
+        in_ports[i].hardware_port_path.c_str()
+      );
+    }
+    
+    // Test for port groups
+    i_size = in_port_groups.size();
+    PRINTD("TEST> InPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
+      // if (in_port_groups[i].ports.size() > 0) {
+        PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
+      // }
+    }
+    
+    // Test
+    i_size = out_port_groups.size();
+    PRINTD("TEST> OutPortGroups Size: %i\n", i_size);
+    for (int i=0; i<i_size; i++) {
+      PRINTD("TEST> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
+        out_port_groups[i].port_name_left.c_str(),
+        out_port_groups[i].port_name_right.c_str(),
+        out_port_groups[i].hardware_port_path_left.c_str(),
+        out_port_groups[i].hardware_port_path_right.c_str()
+      );
+    }
+    //*/
     
   } // -- END j3.count("mixers") --
 
-  //if (j3.count("channels")) {
-    //auto *channels_p = &j3["channels"];
-  //} // -- END j3.count("channels") --
+  if (j3.count("mixer")) {
+    PRINTD("OSC> Mixer data incoming\n");
+
+    // Incoming channel from OSC
+    auto *in_mixer_p = &j3["mixer"];
+
+    Mixer *mixer_p = find_mixer((*in_mixer_p)["id"]);
+    if (mixer_p) {
+      if ((*in_mixer_p).count("gain"))
+        mixer_p->gain = stod((string)(*in_mixer_p)["gain"]);
+    }
+  }
+
+  if (j3.count("channel")) {
+    PRINTD("OSC> Channel data incoming\n");
+
+    // Incoming channel from OSC
+    auto *in_chan_p = &j3["channel"];
+
+    // Current saved channel in mixer
+    Channel *channel_p = find_channel((*in_chan_p)["id"]);
+    if (channel_p) {
+      if ((*in_chan_p).count("gain"))
+        channel_p->gain = stod((string)(*in_chan_p)["gain"]);
+      if ((*in_chan_p).count("pan"))
+        channel_p->pan = stod((string)(*in_chan_p)["pan"]);
+      if ((*in_chan_p).count("is_mute"))
+        channel_p->is_mute = (*in_chan_p)["is_mute"];
+    }
+  } // -- END j3.count("channels") --
 
   return 0;
 }

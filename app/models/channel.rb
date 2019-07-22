@@ -1,6 +1,7 @@
 class Channel < ApplicationRecord
   belongs_to    :user
   belongs_to    :port_group
+  after_update  :send_to_aem
 
   def self.generate_channels(user)
     PortGroup.where(io: true).order("id").each do |port_group|
@@ -43,6 +44,7 @@ class Channel < ApplicationRecord
 
         puts "\nOSCRUBY> Starting AEM process\n\n"
         Channel.start_aem
+        puts "\nOSCRUBY> AEM Started Successfully\n\n"
 
         #Thread.exit
         return true
@@ -58,13 +60,6 @@ class Channel < ApplicationRecord
       puts "\nOSCRUBY> Starting OSC Client\n\n"
 
       Thread.new do
-        # lets try not to repeat ourselves
-        def run_loop
-          puts ""
-          puts "####################"
-          puts ""
-        end
-
         # Check Jack to see if it is running yet
         cmd = `jack_control status`
         if not cmd[/started/]
@@ -101,6 +96,13 @@ class Channel < ApplicationRecord
     else
       puts "\nOSCRUBY> OSC Client is Already Started.\n\n"
     end
+  end
+
+  private
+
+  def send_to_aem
+    aem = { "channel" => self }
+    $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
   end
 
 end
