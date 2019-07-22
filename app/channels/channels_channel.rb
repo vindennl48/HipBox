@@ -59,7 +59,7 @@ class ChannelsChannel < ApplicationCable::Channel
     channels = Channel.where(user: channel.user)
 
     channels.each do |c|
-      if c.port_group.user != nil
+      if c.port_group.user != nil and c != channel
         c.update(is_mute: data['value'])
         ChannelsChannel.broadcast_to(c, {
           type:    "update",
