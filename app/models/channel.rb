@@ -57,6 +57,10 @@ class Channel < ApplicationRecord
 
   def self.activate_osc
     if $OSCRUBY == nil
+      puts "\nAEM> Starting Server\n\n"
+      #cmd = `./aem/simple_client`
+      cmd = spawn("./aem/simple_client")
+
       puts "\nOSCRUBY> Starting OSC Client\n\n"
 
       Thread.new do
