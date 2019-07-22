@@ -220,9 +220,9 @@ int process (jack_nframes_t nframes, void *arg) {
               channel_pan_left -= channel->pan;
 
             for (int l=0; l<nframes; l++) {
-                                              //    raw audio           in port pan          channel pan                 channel gain             mixer gain
-              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(channel->gain)) * db2lin(mixer->gain);
-              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(channel->gain)) * db2lin(mixer->gain);
+                                              //    raw audio           in port pan          channel pan          channel gain                 mixer gain
+              out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * slider2lin(channel->gain)) * slider2lin(mixer->gain);
+              out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * slider2lin(channel->gain)) * slider2lin(mixer->gain);
               //out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(0)) * db2lin(0);
               //out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(0)) * db2lin(0);
             }
@@ -550,8 +550,10 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     // Current saved channel in mixer
     Channel *channel_p = find_channel((*in_chan_p)["id"]);
     if (channel_p) {
-      if ((*in_chan_p).count("gain"))
+      if ((*in_chan_p).count("gain")) {
         channel_p->gain = stod((string)(*in_chan_p)["gain"]);
+        PRINTD("OSC> Channel Gain DB: %f\n", slider2db((double)channel_p->gain));
+      }
       if ((*in_chan_p).count("pan"))
         channel_p->pan = stod((string)(*in_chan_p)["pan"]);
       if ((*in_chan_p).count("is_mute"))
