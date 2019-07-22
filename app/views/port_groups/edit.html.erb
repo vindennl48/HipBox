@@ -32,8 +32,18 @@
         <td><%= form.check_box :is_record %></td>
       </tr>
       <tr class="field">
-        <td><strong>User ID</strong></td>
-        <td><%= form.text_field :user_id %></td>
+        <td><strong>User</strong></td>
+        <td><%= form.select :user_id,
+          options_from_collection_for_select(
+            User.all,
+            'id',
+            'name',
+            @port_group.user_id,
+          ),
+          include_blank: true%></td>
+        <!-- 
+        <td><%#= form.text_field :user_id %></td>
+        -->
       </tr>
     </tbody>
   </table>

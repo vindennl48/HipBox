@@ -508,9 +508,9 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     PRINTD("TEST> InPortGroups Size: %i\n", i_size);
     for (int i=0; i<i_size; i++) {
       PRINTD("TEST> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
-      // if (in_port_groups[i].ports.size() > 0) {
+       if (in_port_groups[i].ports.size() > 0) {
         PRINTD("TEST> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
-      // }
+       }
     }
     
     // Test

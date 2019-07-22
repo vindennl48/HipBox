@@ -19,7 +19,7 @@
         <td><strong>Name: </strong></td>
         <td><%= form.text_field :name %></td>
       </tr>
-      <tr class="field">
+      <tr class="field" hidden>
         <td><strong>Is Input?</strong></td>
         <td><%= form.check_box :io %></td>
       </tr>
@@ -50,9 +50,6 @@
             "system:playback_10",
           ], @port.path) %></td>
         <% end %>
-        <!-- 
-        <td><%#= @port.path %></td>
-        -->
       </tr>
       <tr class="field">
         <td><strong>Pan: </strong></td>
@@ -60,7 +57,13 @@
       </tr>
       <tr class="field">
         <td><strong>Port Group: </strong></td>
-        <td><%= form.text_field :port_group_id %></td>
+        <td><%= form.select :port_group_id,
+          options_from_collection_for_select(
+            PortGroup.where(io: @port.io),
+            'id',
+            'name',
+            @port.port_group_id
+          ) %></td>
       </tr>
     </tbody>
   </table>

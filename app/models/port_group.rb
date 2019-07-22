@@ -3,6 +3,8 @@ class PortGroup < ApplicationRecord
   has_many       :ports
   before_destroy :clean_channels
   after_update   :restart_aem
+  after_create   :restart_aem
+  after_destroy  :restart_aem
 
   private
 
