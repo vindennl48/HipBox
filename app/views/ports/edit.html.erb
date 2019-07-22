@@ -25,7 +25,34 @@
       </tr>
       <tr class="field">
         <td><strong>Path: </strong></td>
-        <td><%= @port.path %></td>
+        <% if @port.io %>
+          <td><%= form.select :path, options_for_select([
+            "system:capture_1",
+            "system:capture_2",
+            "system:capture_3",
+            "system:capture_4",
+            "system:capture_5",
+            "system:capture_6",
+            "system:capture_7",
+            "system:capture_8",
+          ], @port.path) %></td>
+        <% else %>
+          <td><%= form.select :path, options_for_select([
+            "system:playback_1",
+            "system:playback_2",
+            "system:playback_3",
+            "system:playback_4",
+            "system:playback_5",
+            "system:playback_6",
+            "system:playback_7",
+            "system:playback_8",
+            "system:playback_9",
+            "system:playback_10",
+          ], @port.path) %></td>
+        <% end %>
+        <!-- 
+        <td><%#= @port.path %></td>
+        -->
       </tr>
       <tr class="field">
         <td><strong>Pan: </strong></td>
