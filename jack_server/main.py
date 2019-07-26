@@ -35,38 +35,36 @@ GUITARIX_INPUTS = {
 }
 
 MIDI_MAP = {
-    "note_6":  ["/rails/mute/mitch/talkback/toggle"],
-    "note_10": [["/rails/record/mitch/record",0],"/simpledaw/stop/all","/record/stop"],
+    "note_0": ["/rails/mute/mitch/talkback/toggle"],
+    "note_1": [["/rails/record/mitch/record",1]],
+    "note_2": [["/rails/record/mitch/record",0],"/simpledaw/stop/all","/record/stop"],
 
     # -- Sono --
-    "note_7":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
-    "note_8":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
-    "note_9":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
+    "note_3":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/play/sono"],
+    "note_4":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",118], "/simpledaw/click"],
 
     # -- Chrono --
     # "note_17":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/play/chrono"],
-    "note_18":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",98], "/simpledaw/click"],
-    "note_19":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/click"],
+    "note_5":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",98], "/simpledaw/click"],
+    "note_6":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",90], "/simpledaw/click"],
 
     # -- Space --
-    "note_27":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
-    "note_28":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
-    "note_29":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/click"],
+    # "note_27":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    # "note_28":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/play/space"],
+    "note_7":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/click"],
+    "note_8":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",120], "/simpledaw/click"],
 
     # -- Petrichor --
-    "note_37":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/play/petrichor"],
-    "note_38":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/play/petrichor"],
-    "note_39":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/click"],
+    "note_9":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/play/petrichor"],
+    "note_10": [["/simpledaw/timesig",4], ["/simpledaw/bpm",142], "/simpledaw/click"],
 
     # -- Blind --
-    "note_47":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/play/blind"],
-    "note_48":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/play/blind"],
-    "note_49":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/click"],
+    "note_11":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/play/blind"],
+    "note_12":  [["/simpledaw/timesig",3], ["/simpledaw/bpm",120], "/simpledaw/click"],
 
     # -- Blind --
-    "note_57":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/play/old_pete"],
-    "note_58":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/play/old_pete"],
-    "note_59":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/click"],
+    "note_13":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/play/old_pete"],
+    "note_14":  [["/simpledaw/timesig",4], ["/simpledaw/bpm",125], "/simpledaw/click"],
 }
 
 AUDIO_FILES = [
@@ -77,8 +75,8 @@ AUDIO_FILES = [
     {"name": "space",     "gain": -10, "filepath": "/home/mitch/hipbox/audio_files/space.wav"},
 ]
 
-CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high_04.wav"}
-CLICK_LOW  = {"name": "click_low",  "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_low_04.wav"}
+CLICK_HIGH = {"name": "click_high", "gain": -12, "filepath": "/home/mitch/hipbox/audio_files/click_high_04.wav"}
+CLICK_LOW  = {"name": "click_low",  "gain": -12, "filepath": "/home/mitch/hipbox/audio_files/click_low_04.wav"}
 
 # CLICK_HIGH = {"name": "click_high", "gain": -16, "filepath": "/home/mitch/hipbox/audio_files/click_high.wav"}
 # CLICK_LOW  = {"name": "click_low",  "gain": -20, "filepath": "/home/mitch/hipbox/audio_files/click_low.wav"}
