@@ -60,13 +60,13 @@ struct OutPortGroup {
 
   void connect(jack_client_t *client) {
     if (jack_connect(client, jack_port_name(port_left), hardware_port_path_left.c_str())) {
-      fprintf (stderr, "JACK> ERROR> cannot connect output ports\n");
+      fprintf (stderr, "JACK> ERROR> cannot connect output ports for port '%s'\n", port_name_left.c_str());
     }
     else {
       printf("JACK> Jack OutPort '%s' Connected Successfully\n", port_name_left.c_str());
     }
     if (jack_connect(client, jack_port_name(port_right), hardware_port_path_right.c_str())) {
-      fprintf (stderr, "JACK> ERROR> cannot connect output ports\n");
+      fprintf (stderr, "JACK> ERROR> cannot connect output ports for port '%s'\n", port_name_right.c_str());
     }
     else {
       printf("JACK> Jack OutPort '%s' Connected Successfully\n", port_name_right.c_str());
@@ -115,7 +115,7 @@ struct InPort {
   void connect(jack_client_t *client) {
     if (hardware_port_path.substr(0,6) == "system") {
       if (jack_connect(client, hardware_port_path.c_str(), jack_port_name(port))) {
-        fprintf (stderr, "JACK> ERROR> cannot connect input ports\n");
+        fprintf (stderr, "JACK> ERROR> cannot connect input ports for port '%s'\n", name.c_str());
       }
       else {
         printf("JACK> Jack InPort '%s' Connected Successfully\n", name.c_str());

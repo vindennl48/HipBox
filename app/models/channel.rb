@@ -13,6 +13,10 @@ class Channel < ApplicationRecord
   end
 
   def self.start_aem
+    if $ISSEED
+      return 0
+    end
+
     aem = {
       "mixers"  => [],
       "samples" => [],

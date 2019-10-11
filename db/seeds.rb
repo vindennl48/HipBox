@@ -6,6 +6,7 @@
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
 
+$ISSEED = true
 
 puts "----> Creating Users"
 
@@ -33,13 +34,12 @@ PortGroup.find_or_create_by(name: "Sean_HP",  io: false, user: User.find_by(name
 
 Port.find_or_create_by(name: "James_IN",      io: true,  path: "system:capture_1",   port_group: PortGroup.find_by(name: "James",    io: true))
 Port.find_or_create_by(name: "Jesse_IN",      io: true,  path: "system:capture_2",   port_group: PortGroup.find_by(name: "Jesse",    io: true))
-Port.find_or_create_by(name: "Talkback_IN",   io: true,  path: "system:capture_3",   port_group: PortGroup.find_by(name: "Talkback", io: true))
-Port.find_or_create_by(name: "Mitch_IN",      io: true,  path: "system:capture_4",   port_group: PortGroup.find_by(name: "Mitch",    io: true))
+Port.find_or_create_by(name: "Mitch_IN",      io: true,  path: "system:capture_3",   port_group: PortGroup.find_by(name: "Mitch",    io: true))
+Port.find_or_create_by(name: "Talkback_IN",   io: true,  path: "system:capture_4",   port_group: PortGroup.find_by(name: "Talkback", io: true))
 Port.find_or_create_by(name: "Sean_IN",       io: true,  path: "system:capture_5",   port_group: PortGroup.find_by(name: "Sean",     io: true))
 Port.find_or_create_by(name: "Sean_IN_L",     io: true,  path: "system:capture_6",   port_group: PortGroup.find_by(name: "Sean",     io: true), pan: -1)
 Port.find_or_create_by(name: "Sean_IN_R",     io: true,  path: "system:capture_7",   port_group: PortGroup.find_by(name: "Sean",     io: true), pan:  1)
 Port.find_or_create_by(name: "Click_IN",      io: true,  path: "hipbox:click",       port_group: PortGroup.find_by(name: "Click",    io: true))
-Port.find_or_create_by(name: "Talkback_IN",   io: true,  path: "hipbox:talkback",    port_group: PortGroup.find_by(name: "Talkback", io: true))
 
 Port.find_or_create_by(name: "-",             io: false, path: "system:playback_1")
 Port.find_or_create_by(name: "-",             io: false, path: "system:playback_2")

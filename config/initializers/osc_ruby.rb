@@ -1,6 +1,9 @@
 # global variable to send osc data to host
 $OSCRUBY = nil
 
+# global variable to send osc data to host
+$ISSEED = nil
+
 # $OSCRUBY = OSC::Client.new 4000, '0.0.0.0'
 # 
 # Thread.new do
