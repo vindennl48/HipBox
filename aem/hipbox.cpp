@@ -9,10 +9,6 @@
 using json = nlohmann::json;
 using namespace std;
 
-// #define vector std::vector
-// #define string std::string
-// #define stod   std::stod
-
 // -- JACK --
 
 /* This will make it easy to create a struct if it doesn't already exist */
@@ -483,6 +479,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     start_jack();
     PRINTD("----> Jack Service Up and Running\n");
 
+#ifdef DEBUG
    //* All the testing to confirm this works
     
     // Test
@@ -525,6 +522,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
       );
     }
     //*/
+#endif
     
   } // -- END j3.count("mixers") --
 
@@ -571,28 +569,6 @@ int wildcard_handler(const char *path, const char *types, lo_arg **argv, int arg
   return -1;
 }
 
-int ping_handler(const char *path, const char *types, lo_arg **argv, int argc,
-		 lo_message msg, void *user_data)
-{
-	lo_address src = lo_message_get_source( msg );
-	lo_server serv = (lo_server)user_data;
-	int result;
-	
-	// Display the address the ping came from
-	//if (verbose) {
-  char *url = lo_address_get_url(src);
-  printf( "Got ping from: %s\n", url);
-  free(url);
-	//}
-
-	// Send back reply
-	result = lo_send_from( src, serv, LO_TT_IMMEDIATE, "/pong", "" );
-	if (result<1) fprintf(stderr, "OSC> ERROR> Error: sending reply failed: %s\n", lo_address_errstr(src));
-
-    return 0;
-}
-
-
 void error_handler(int num, const char *msg, const char *path) {
   fprintf(stderr, "OSC> ERROR> LibLO server error %d in path %s: %s\n", num, path, msg);
   fflush(stdout);
@@ -608,13 +584,7 @@ void start_osc() {
 
   // Add the methods
   serv = lo_server_thread_get_server( server_thread );
-  //lo_server_thread_add_method(server_thread, "/mixer/get_channel_count", "",   get_channel_count_handler, serv);
-  //lo_server_thread_add_method(server_thread, "/mixer/channel/set_gain",  "if", set_gain_handler,          serv);
-  //lo_server_thread_add_method(server_thread, "/mixer/channel/get_gain",  "i",  get_gain_handler,          serv);
-  //lo_server_thread_add_method(server_thread, "/mixer/channel/get_label", "i",  get_label_handler,         serv);
-  //lo_server_thread_add_method(server_thread, "/mixer/channel/set_label", "is", set_label_handler,         serv);
   lo_server_thread_add_method(server_thread, "/rails", "s", rails_handler, serv);
-  lo_server_thread_add_method(server_thread, "/ping",  "",  ping_handler,  serv);
 
   // add method that will match any path and args
   lo_server_thread_add_method(server_thread, NULL, NULL, wildcard_handler, serv);
