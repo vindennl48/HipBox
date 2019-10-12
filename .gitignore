@@ -30,6 +30,7 @@
 aem/build
 aem/bin
 aem/simple_client
+recordings/*
 
 # Ignore SCSS git files
 app/assets/stylesheets/.gitignore
