@@ -182,10 +182,10 @@ struct RecFile {
 
   vector<InPort*> in_ports_p;
   SF_INFO         info;
-  unsigned int    id           = 0;
-  string          base_name    = "";
-  string          filename     = "";
-  bool            is_recording = false;
+  SNDFILE         *out      = NULL;
+  unsigned int    id        = 0;
+  string          base_name = "";
+  string          filename  = "";
 
   // ring-buffer
   vector<float> ring_buff      = vector<float>(RING_BUFF_SIZE);
@@ -198,6 +198,11 @@ struct RecFile {
     info.samplerate = 44100;
     info.channels   = 1;
     info.format     = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+  }
+
+  ~RecFile() {
+    if (out) sf_close(out);
+    ring_buff.clear();
   }
 
   void set_next_jack_buff(jack_nframes_t nframes) {
@@ -247,6 +252,10 @@ struct RecFile {
     return result;
   }
 
+  void write_next_sample() {
+    sf_writef_float(out, get_next_sample(), 1);
+  }
+
   void create_file() {
     char num_of_rec[3];
     char month[3];
@@ -266,25 +275,17 @@ struct RecFile {
       system(cmd.c_str());
     }
 
-    this->is_recording = true;
-
-    // -- TESTING --
-    SNDFILE *out = sf_open(filename.c_str(), SFM_WRITE, &info);
+    // Open the wav file for writing
+    out = sf_open(filename.c_str(), SFM_WRITE, &info);
     if (!out) {
       PRINTD("\n\n----> SNDFILE> Cannot open file for writing\n\n");
-    } else {
-      sf_close(out);
     }
-    // -- TESTING --
-
-    this->is_recording = false;
-
   }
+
+  void close_file() { sf_close(out); }
 
 };
 unsigned int RecFile::recNum = getRecNum();
-
-
 
 jack_client_t        *client;
 vector<InPort>       in_ports;
@@ -293,6 +294,41 @@ vector<OutPortGroup> out_port_groups;
 vector<Mixer>        mixers;
 vector<RecFile>      rec_files;
 bool                 is_recording = false;
+pthread_t            dt;
+
+void *rec_thread(void *d) {
+  int i_size = 0;
+
+  while(true) {
+    if (is_recording) {
+      i_size = rec_files.size();
+
+      // create the wav file and dir structure
+      for (int i=0; i<i_size; i++) {
+        RecFile *rec_file = &rec_files[i];
+        rec_file->create_file();
+      }
+
+      while(is_recording) {
+        // create the wav file and dir structure
+        for (int i=0; i<i_size; i++) {
+          RecFile *rec_file = &rec_files[i];
+          rec_file->write_next_sample();
+        }
+      }
+
+      // close out all recorded files
+      for (int i=0; i<i_size; i++) {
+        RecFile *rec_file = &rec_files[i];
+        rec_file->close_file();
+      }
+    }
+
+    usleep(10);
+  }
+
+  return NULL;
+}
 
 int process (jack_nframes_t nframes, void *arg) {
 
@@ -665,11 +701,6 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
         if ((*in_mixer_p)["is_recording"] && !is_recording) {
           is_recording = true;
           PRINTD("----> AEM> Is Recording!\n");
-
-          int i_size = rec_files.size();
-          for (int i=0; i<i_size; i++)
-            rec_files[i].create_file();
-
         } else {
           is_recording = false;
           PRINTD("----> AEM> Is Not Recording..\n");
@@ -715,6 +746,9 @@ void error_handler(int num, const char *msg, const char *path) {
 }
 
 void start_osc() {
+  //start the recording thread
+  pthread_create(&dt, NULL, rec_thread, NULL);
+
   lo_server_thread server_thread = NULL;
   lo_server        serv          = NULL;
 
