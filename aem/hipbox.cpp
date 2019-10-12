@@ -3,16 +3,17 @@
 #include <jack/jack.h>
 #include <lo/lo.h>
 #include <unistd.h>
+#include <sndfile.h>
 #include "json.h"
 #include "db.h"
 #include "hipbox.h"
+#include "isDir.h"
+#include "getRecNum.h"
 
 using json = nlohmann::json;
 using namespace std;
-
-// -- JACK --
-jack_client_t *client;
-
+static time_t now  = time(0);
+static tm     *ltm = localtime(&now);
 
 /* This will make it easy to create a struct if it doesn't already exist */
 template<class T>
@@ -177,9 +178,14 @@ struct Mixer {
 };
 
 struct RecFile {
+  static unsigned int recNum;
+
   vector<InPort*> in_ports_p;
-  unsigned int    id       = 0;
-  string          filename = "";
+  SF_INFO         info;
+  unsigned int    id           = 0;
+  string          base_name    = "";
+  string          filename     = "";
+  bool            is_recording = false;
 
   // ring-buffer
   vector<float> ring_buff      = vector<float>(RING_BUFF_SIZE);
@@ -187,6 +193,12 @@ struct RecFile {
   bool          wrap           = false;
   unsigned int  buff_pos       = 0;
   unsigned int  write_pos      = 0;
+
+  RecFile() {
+    info.samplerate = 44100;
+    info.channels   = 1;
+    info.format     = SF_FORMAT_WAV | SF_FORMAT_FLOAT;
+  }
 
   void set_next_jack_buff(jack_nframes_t nframes) {
     float sample = 0.0;
@@ -234,13 +246,53 @@ struct RecFile {
 
     return result;
   }
-};
 
+  void create_file() {
+    char num_of_rec[3];
+    char month[3];
+    char day[3];
+    sprintf(num_of_rec, "%02d", recNum);
+    sprintf(month,      "%02d", 1+ltm->tm_mon);
+    sprintf(day,        "%02d", ltm->tm_mday);
+    string num_of_rec_s = string(num_of_rec);
+
+    filename  = "recordings/" + num_of_rec_s + "/";
+    filename += to_string(1900+ltm->tm_year) + string(month) + string(day);
+    filename += "_" + base_name + "_" + num_of_rec_s + ".wav";
+
+    if (!isDir("recordings/"+num_of_rec_s)) {
+      PRINTD("\n\nAEM> 'recordings/%s' DIR doesn't exist.. Creating Directory\n\n", num_of_rec_s.c_str());
+      string cmd = "mkdir -p recordings/"+num_of_rec_s;
+      system(cmd.c_str());
+    }
+
+    this->is_recording = true;
+
+    // -- TESTING --
+    SNDFILE *out = sf_open(filename.c_str(), SFM_WRITE, &info);
+    if (!out) {
+      PRINTD("\n\n----> SNDFILE> Cannot open file for writing\n\n");
+    } else {
+      sf_close(out);
+    }
+    // -- TESTING --
+
+    this->is_recording = false;
+
+  }
+
+};
+unsigned int RecFile::recNum = getRecNum();
+
+
+
+jack_client_t        *client;
 vector<InPort>       in_ports;
 vector<InPortGroup>  in_port_groups;
 vector<OutPortGroup> out_port_groups;
 vector<Mixer>        mixers;
 vector<RecFile>      rec_files;
+bool                 is_recording = false;
 
 int process (jack_nframes_t nframes, void *arg) {
 
@@ -502,8 +554,8 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
         // Create recfile for recordable in_port_groups
         if (in_port_group.is_record) {
           RecFile rec_file;
-          rec_file.id       = in_port_group.id;
-          rec_file.filename = in_port_group.name;
+          rec_file.id        = in_port_group.id;
+          rec_file.base_name = in_port_group.name;
 
           rec_file.in_ports_p.insert(
             rec_file.in_ports_p.end(),
@@ -529,8 +581,8 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
     // Create recfile for scratch track
     RecFile rec_file;
-    rec_file.id       = 9999;
-    rec_file.filename = "Scratch";
+    rec_file.id        = 9999;
+    rec_file.base_name = "Scratch";
 
     i_size = in_port_groups.size();
     for (int i=0; i<i_size; i++) {
@@ -610,10 +662,18 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
         mixer_p->gain = stod((string)(*in_mixer_p)["gain"]);
 
       if ((*in_mixer_p).count("is_recording")) {
-        if ((*in_mixer_p)["is_recording"]) {
+        if ((*in_mixer_p)["is_recording"] && !is_recording) {
+          is_recording = true;
           PRINTD("----> AEM> Is Recording!\n");
+
+          int i_size = rec_files.size();
+          for (int i=0; i<i_size; i++)
+            rec_files[i].create_file();
+
         } else {
+          is_recording = false;
           PRINTD("----> AEM> Is Not Recording..\n");
+          RecFile::recNum = getRecNum();
         }
       }
     }

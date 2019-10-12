@@ -26,7 +26,9 @@ class MixerChannel < ApplicationCable::Channel
     User.all.each do |user|
       user.update(is_recording: data['value'])
       puts "MIXERCHANNEL> Record Update: #{data['value']}"
+      $BLOCKUSEROSC = true
     end
+    $BLOCKUSEROSC = false
   end
 
 end
