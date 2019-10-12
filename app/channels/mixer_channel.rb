@@ -13,7 +13,7 @@ class MixerChannel < ApplicationCable::Channel
     user = User.find(data['user_id'])
     MixerChannel.broadcast_to(user, {
       type: "update",
-      data: user
+      user: user
     })
   end
 
@@ -21,4 +21,12 @@ class MixerChannel < ApplicationCable::Channel
     user = User.find(data['user_id'])
     user.update(gain: data['value'])
   end
+
+  def record(data)
+    User.all.each do |user|
+      user.update(is_recording: data['value'])
+      puts "MIXERCHANNEL> Record Update: #{data['value']}"
+    end
+  end
+
 end

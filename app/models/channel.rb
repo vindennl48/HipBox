@@ -37,6 +37,7 @@ class Channel < ApplicationRecord
     aem["samples"] = Sample.all.as_json
     aem["clicks"]  = Click.all.as_json
 
+    puts "\n\nRAILS> Sending to AEM\n\n"
     $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
   end
 
@@ -108,8 +109,12 @@ class Channel < ApplicationRecord
   private
 
   def send_to_aem
-    aem = { "channel" => self }
-    $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+    begin
+      aem = { "channel" => self }
+      $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+    rescue
+      puts "\n\nRAILS> Channel> OSC failed to send to AEM.. \n\n"
+    end
   end
 
 end

@@ -11,7 +11,11 @@ class User < ApplicationRecord
   private
 
   def send_to_aem
-    aem = { "mixer" => self }
-    $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+    begin
+      aem = { "mixer" => self }
+      $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+    rescue
+      puts "\n\nRAILS> Channel> OSC failed to send to AEM.. \n\n"
+    end
   end
 end

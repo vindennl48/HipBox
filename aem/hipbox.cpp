@@ -608,6 +608,14 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     if (mixer_p) {
       if ((*in_mixer_p).count("gain"))
         mixer_p->gain = stod((string)(*in_mixer_p)["gain"]);
+
+      if ((*in_mixer_p).count("is_recording")) {
+        if ((*in_mixer_p)["is_recording"]) {
+          PRINTD("----> AEM> Is Recording!\n");
+        } else {
+          PRINTD("----> AEM> Is Not Recording..\n");
+        }
+      }
     }
   }
 

@@ -17,6 +17,8 @@ function toggleButton(button) {
       App["channel_"+button.dataset.channel].saveSolo(false)
     else if (button.dataset.type === "mute-button")
       App["channel_"+button.dataset.channel].saveMute(false)
+    else if (button.classList.contains("record"))
+      App["mixer"].record(false)
   }
   else {
     button.classList.add("active")
@@ -24,6 +26,8 @@ function toggleButton(button) {
       App["channel_"+button.dataset.channel].saveSolo(true)
     else if (button.dataset.type === "mute-button")
       App["channel_"+button.dataset.channel].saveMute(true)
+    else if (button.classList.contains("record"))
+      App["mixer"].record(true)
   }
 }
 
@@ -195,16 +199,26 @@ function loadActionCableSlidersMaster() {
       received: function(data) {
         // Called when there"s incoming data on the websocket for this channel
         if (data["type"] === "update") {
-          data = data["data"]
+          master = data["user"]
           let element = document.querySelectorAll("[data-user='"+ID+"']")
           element.forEach(function(a){
             if (a.dataset.type === "volume-slider-master") {
-              a.hidden = false
-              a.value  = Math.trunc( data["gain"] )
+              if ("gain" in master) {
+                a.hidden = false
+                a.value = Math.trunc( master["gain"] )
+              }
             }
-            else {
-              a.hidden    = false
-              a.innerHTML = Math.trunc( data["gain"] )
+            else if (a.dataset.type == "volume-value-master") {
+              if ("gain" in master) {
+                a.hidden    = false
+                a.innerHTML = Math.trunc( master["gain"] )
+              }
+            }
+            else if (a.dataset.type == "record-button") {
+              if ("is_recording" in master) {
+                a.hidden    = false
+                setButton(a, master["is_recording"])
+              }
             }
           })
         }
@@ -216,6 +230,10 @@ function loadActionCableSlidersMaster() {
 
       saveGain: function(value) {
         return this.perform("saveGain", {user_id: ID, value: value});
+      },
+
+      record: function(value) {
+        return this.perform("record", {user_id: ID, value: value});
       }
     });
 

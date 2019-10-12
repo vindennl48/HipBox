@@ -21,7 +21,11 @@
   <div class=" ch-title "><strong>Master:</strong></div>
 
   <div class=" ch-buttons ">
-    <button class=" record " onclick="toggleButton(this)">Rec</button>
+    <button class=" record "
+            hidden
+            data-type="record-button"
+            data-user=<%= @user.id %>
+            onclick="toggleButton(this)">Rec</button>
   </div>
 
   <div  id="range_slider_master_value"
