@@ -11,6 +11,7 @@
 
 #define DEFAULT_VECTOR_SIZE  24
 #define OSC_PORT             "4000"
+#define RING_BUFF_SIZE       (44100 * 10)
 
 // -- OSC --
 int  wildcard_handler(const char *path, const char *types, lo_arg **argv, int argc,

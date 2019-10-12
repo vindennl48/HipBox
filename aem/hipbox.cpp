@@ -2,6 +2,7 @@
 #include <string>
 #include <jack/jack.h>
 #include <lo/lo.h>
+#include <unistd.h>
 #include "json.h"
 #include "db.h"
 #include "hipbox.h"
@@ -10,6 +11,8 @@ using json = nlohmann::json;
 using namespace std;
 
 // -- JACK --
+jack_client_t *client;
+
 
 /* This will make it easy to create a struct if it doesn't already exist */
 template<class T>
@@ -137,8 +140,9 @@ struct InPort {
 };
 
 struct InPortGroup {
-  unsigned int    id   = 0;
-  string          name = "";
+  unsigned int    id        = 0;
+  string          name      = "";
+  bool            is_record = false;
   vector<InPort*> ports;
 
   void initialize(jack_client_t *client) {
@@ -172,16 +176,81 @@ struct Mixer {
   double          gain = 0.0;
 };
 
-jack_client_t        *client;
+struct RecFile {
+  vector<InPort*> in_ports_p;
+  unsigned int    id       = 0;
+  string          filename = "";
+
+  // ring-buffer
+  vector<float> ring_buff      = vector<float>(RING_BUFF_SIZE);
+  unsigned int  ring_buff_size = RING_BUFF_SIZE;
+  bool          wrap           = false;
+  unsigned int  buff_pos       = 0;
+  unsigned int  write_pos      = 0;
+
+  void set_next_jack_buff(jack_nframes_t nframes) {
+    float sample = 0.0;
+    int i_size   = 0;
+
+    for (int n=0; n<nframes; n++) {
+      sample = 0.0;
+
+      i_size = in_ports_p.size();
+      for (int i=0; i<i_size; i++)
+        sample += in_ports_p[i]->input[n];
+
+      set_next_sample(sample);
+    }
+  }
+
+  void set_next_sample(float sample) {
+    ring_buff[buff_pos] = sample;
+
+    if (++buff_pos >= ring_buff_size) {
+      buff_pos = 0;
+      wrap     = true;
+    }
+    if (wrap) {
+      if (buff_pos >= write_pos) {
+        if (buff_pos + 1 >= ring_buff_size) {
+          write_pos = 0;
+          wrap      = false;
+        } else {
+          write_pos = buff_pos + 1;
+        }
+      }
+    }
+  }
+
+  float* get_next_sample() {
+    while (write_pos == buff_pos) usleep(10);
+
+    float *result = &ring_buff[write_pos];
+
+    if (++write_pos >= ring_buff_size) {
+      write_pos = 0;
+      wrap      = false;
+    }
+
+    return result;
+  }
+};
+
 vector<InPort>       in_ports;
 vector<InPortGroup>  in_port_groups;
 vector<OutPortGroup> out_port_groups;
 vector<Mixer>        mixers;
+vector<RecFile>      rec_files;
 
 int process (jack_nframes_t nframes, void *arg) {
 
+  /* Initialize in_ports */
+  int i_size = in_ports.size();
+  for (int i=0; i<i_size; i++)
+    in_ports[i].initPort(nframes);
+
   /* Loop through all Mixers */
-  int i_size = mixers.size();
+  i_size = mixers.size();
   for (int i=0; i<i_size; i++) {
     Mixer        *mixer          = &mixers[i];
     OutPortGroup *out_port_group = mixer->out_port_group;
@@ -201,7 +270,7 @@ int process (jack_nframes_t nframes, void *arg) {
         for (int k=0; k<k_size; k++) {
           if (in_port_group->ports[k]->checkRealPort()) {
             InPort *in_port = in_port_group->ports[k];
-            in_port->initPort(nframes);
+            //in_port->initPort(nframes);
 
             double in_port_pan_left = 1, in_port_pan_right = 1;
             if (in_port->pan < 0)
@@ -219,8 +288,6 @@ int process (jack_nframes_t nframes, void *arg) {
                                               //    raw audio           in port pan          channel pan          channel gain                 mixer gain
               out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * slider2lin(channel->gain)) * slider2lin(mixer->gain);
               out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * slider2lin(channel->gain)) * slider2lin(mixer->gain);
-              //out_port_group->output_left[l]  += (((in_port->input[l] * in_port_pan_left)  * channel_pan_left)  * db2lin(0)) * db2lin(0);
-              //out_port_group->output_right[l] += (((in_port->input[l] * in_port_pan_right) * channel_pan_right) * db2lin(0)) * db2lin(0);
             }
           }
         }
@@ -229,8 +296,13 @@ int process (jack_nframes_t nframes, void *arg) {
     }
   }
 
-	return 0;      
-}
+  // process recordings
+  i_size = rec_files.size();
+  for (int i=0; i<i_size; i++)
+    rec_files[i].set_next_jack_buff(nframes);
+
+	return 0;
+} // -- END Process --
 
 
 /**
@@ -293,44 +365,6 @@ void start_jack() {
   for (int i=0; i<i_size; i++) {
     out_port_groups[i].initialize(client);
   }
-
-  // /*
-  //  * Setup will eventually be a JSON string sent over OSC
-  //  * A test file "json_test.json" has been laid out in the
-  //  * root of this dir.
-  //  * */
-
-  // // Setting up all the InPorts and OutPortGroups.  This will
-  // // all be done by a JSON parser in the future, but for sake
-  // // of testing, here goes..
-
-  // in_ports[0].name          = "mic";
-  // in_ports[0].pan                = 0;
-  // in_ports[0].hardware_port_path = "system:capture_1";
-  // //in_ports[0].initialize(client);
-  // in_ports[1].name          = "mic2";
-  // in_ports[1].hardware_port_path = "system:capture_2";
-  // //in_ports[1].initialize(client);
-
-  // in_port_groups[0].ports.push_back(&in_ports[0]);
-  // in_port_groups[0].initialize(client);
-
-  // out_port_groups[0].port_name_left           = "mitch_L";
-  // out_port_groups[0].port_name_right          = "mitch_R";
-  // out_port_groups[0].hardware_port_path_left  = "system:playback_1";
-  // out_port_groups[0].hardware_port_path_right = "system:playback_2";
-  // out_port_groups[0].initialize(client);
-
-  // mixers[0].out_port_group            = &out_port_groups[0];
-  // mixers[0].channels[0].in_port_group = &in_port_groups[0];
-  // mixers[0].channels[0].gain          = 0;
-  // mixers[0].channels[0].pan           = 0;
-  // mixers[0].channels[0].is_mute       = false;
-  // mixers[0].gain                      = 0;
-
-
-  // End setting up InPorts and OutPortGroups.
-
 
 	/* Tell the JACK server that we are ready to roll.  Our
 	 * process() callback will start running now. */
@@ -413,11 +447,13 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     in_port_groups.clear();
     out_port_groups.clear();
     mixers.clear();
+    rec_files.clear();
 
     in_ports.reserve(DEFAULT_VECTOR_SIZE);
     in_port_groups.reserve(DEFAULT_VECTOR_SIZE);
     out_port_groups.reserve(DEFAULT_VECTOR_SIZE);
     mixers.reserve(DEFAULT_VECTOR_SIZE);
+    rec_files.reserve(DEFAULT_VECTOR_SIZE);
     /* -- */
 
     int i_size = mixers_p->size();
@@ -444,8 +480,9 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
         auto *channel_p = &(*channels_p)[j];
 
         InPortGroup in_port_group;
-        in_port_group.id   = (*channel_p)["port_group"]["id"];
-        in_port_group.name = (*channel_p)["port_group"]["name"];
+        in_port_group.id        = (*channel_p)["port_group"]["id"];
+        in_port_group.name      = (*channel_p)["port_group"]["name"];
+        in_port_group.is_record = (*channel_p)["port_group"]["is_record"];
 
         int k_size = (*channel_p)["port_group"]["ports"].size();
         for (int k=0; k<k_size; k++) {
@@ -462,6 +499,21 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
           );
         }
 
+        // Create recfile for recordable in_port_groups
+        if (in_port_group.is_record) {
+          RecFile rec_file;
+          rec_file.id       = in_port_group.id;
+          rec_file.filename = in_port_group.name;
+
+          rec_file.in_ports_p.insert(
+            rec_file.in_ports_p.end(),
+            in_port_group.ports.begin(),
+            in_port_group.ports.end()
+          );
+
+          find_or_create<RecFile>(&rec_files, &rec_file);
+        }
+
         Channel channel;
         channel.id            = (*channel_p)["id"];
         channel.gain          = stod((string)(*channel_p)["gain"]);
@@ -474,6 +526,26 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
       mixers.push_back(mixer);
     }
+
+    // Create recfile for scratch track
+    RecFile rec_file;
+    rec_file.id       = 9999;
+    rec_file.filename = "Scratch";
+
+    i_size = in_port_groups.size();
+    for (int i=0; i<i_size; i++) {
+      InPortGroup *in_port_group = &in_port_groups[i];
+
+      if (in_port_group->is_record) {
+        rec_file.in_ports_p.insert(
+          rec_file.in_ports_p.end(),
+          in_port_group->ports.begin(),
+          in_port_group->ports.end()
+        );
+      }
+    }
+    find_or_create<RecFile>(&rec_files, &rec_file);
+    // Done creating scratch track
 
     PRINTD("----> Starting Jack Service\n");
     start_jack();
