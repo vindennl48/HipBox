@@ -701,7 +701,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
         if ((*in_mixer_p)["is_recording"] && !is_recording) {
           is_recording = true;
           PRINTD("----> AEM> Is Recording!\n");
-        } else {
+        } else if (!(*in_mixer_p)["is_recording"] && is_recording){
           is_recording = false;
           PRINTD("----> AEM> Is Not Recording..\n");
           RecFile::recNum = getRecNum();

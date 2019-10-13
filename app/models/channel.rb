@@ -38,7 +38,14 @@ class Channel < ApplicationRecord
     aem["clicks"]  = Click.all.as_json
 
     puts "\n\nRAILS> Sending to AEM\n\n"
-    $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+    while true
+      begin
+        $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
+        break
+      rescue
+        puts "RAILS> Failed to send OSC... Trying again.."
+      end
+    end
   end
 
   def self._osc_ruby_service_start
