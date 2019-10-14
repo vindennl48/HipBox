@@ -9,6 +9,7 @@
 #include "hipbox.h"
 #include "isDir.h"
 #include "getRecNum.h"
+#include "audioEngine.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -293,6 +294,8 @@ vector<InPortGroup>  in_port_groups;
 vector<OutPortGroup> out_port_groups;
 vector<Mixer>        mixers;
 vector<RecFile>      rec_files;
+vector<AudioFile>    audio_files;
+AudioEngine          audio_engine;
 bool                 is_recording = false;
 pthread_t            dt;
 
@@ -536,12 +539,14 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     out_port_groups.clear();
     mixers.clear();
     rec_files.clear();
+    audio_files.clear();
 
     in_ports.reserve(DEFAULT_VECTOR_SIZE);
     in_port_groups.reserve(DEFAULT_VECTOR_SIZE);
     out_port_groups.reserve(DEFAULT_VECTOR_SIZE);
     mixers.reserve(DEFAULT_VECTOR_SIZE);
     rec_files.reserve(DEFAULT_VECTOR_SIZE);
+    audio_files.reserve(DEFAULT_VECTOR_SIZE);
     /* -- */
 
     int i_size = mixers_p->size();

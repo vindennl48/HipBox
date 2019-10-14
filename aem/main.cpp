@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <string>
 #include "hipbox.h"
-#include "audioEngine.h"
 
 int main (int argc, char *argv[]) {
   // Setup OSC
