@@ -35,3 +35,10 @@ recordings/*
 # Ignore SCSS git files
 app/assets/stylesheets/.gitignore
 app/assets/stylesheets/README.md
+
+/public/packs
+/public/packs-test
+/node_modules
+/yarn-error.log
+yarn-debug.log*
+.yarn-integrity
