@@ -1,6 +1,12 @@
 # HipBox v6.0.1
 
-The v6 is because we are completely ditching Ableton Live.. and Windows for that matter.  This is strictly a linux based distribution now.  There were many reasons for going this route, a couple being the complexity and overhead of v5.  This system is designed to be ran on a singleboard computer, specifically an odroid.  In my tests, this was done in an Arch Linux distro running on an HP EliteBook 8440p. (the slowest computer I could get my hands on).
+## What is it?
+
+'HipBox' is an 'In-Ear Monitoring System' for a music band.  Each member has independent control over the volume of each band member in their headphones during a practice or show.  This software provides a smartphone GUI that can interact with sliders to adjust volume, and buttons to mute or solo specific band members.  This also allows for recording and uploading practices, jams, or shows to a google drive account.
+
+## Why the new version?
+
+The v6 is because we are completely ditching Ableton Live (DAW music software).. and Windows for that matter.  This is strictly a linux based distribution now.  There were many reasons for going this route, a couple being the complexity and overhead of v5.  This system is designed to be ran on a singleboard computer, specifically an 'odroid'.  In my tests, this was done in an Arch Linux distro running on an HP EliteBook 8440p. (the slowest computer I could get my hands on).
 
 ## Features
 
