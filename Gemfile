@@ -3,7 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.5.1'
 
-gem 'react-rails',       '~> 2.4.5'
+gem 'react-rails',       '~> 2.6.0'
 gem 'devise',            '~> 4.5.0'
 gem 'ruby-osc',          '~> 0.4.1'
 gem 'google-api-client', '~> 0.8'
