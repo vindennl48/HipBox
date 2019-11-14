@@ -20,7 +20,6 @@ class Channel < ApplicationRecord
     aem = {
       "mixers"  => [],
       "samples" => [],
-      "clicks"  => [],
     }
 
     User.all.order("id").each do |user|
@@ -35,7 +34,6 @@ class Channel < ApplicationRecord
     end
 
     aem["samples"] = Sample.all.as_json
-    aem["clicks"]  = Click.all.as_json
 
     puts "\n\nRAILS> Sending to AEM\n\n"
     while true

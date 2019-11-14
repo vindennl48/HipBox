@@ -28,16 +28,6 @@ ActiveRecord::Schema.define(version: 2019_10_12_190359) do
     t.index ["user_id"], name: "index_channels_on_user_id"
   end
 
-  create_table "clicks", force: :cascade do |t|
-    t.string "name"
-    t.string "path", default: ""
-    t.decimal "gain", default: "0.0"
-    t.boolean "is_high", default: false
-    t.boolean "is_active", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "port_groups", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "io", default: true
