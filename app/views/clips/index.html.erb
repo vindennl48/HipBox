@@ -1,7 +1,7 @@
 <%= render partial: "shared/admin_menu", locals: { title: "Audio" } %>
 
 <div class="port-index-body">
-  <h1>Samples</h1>
+  <h1>Clips</h1>
   <table>
     <thead>
       <tr>
@@ -14,19 +14,19 @@
     </thead>
 
     <tbody>
-      <% @samples.each do |sample| %>
+      <% @clips.each do |clip| %>
         <tr>
-          <td><%= sample.name %></td>
-          <td><%= sample.path %></td>
-          <td><%= sample.gain %></td>
-          <td><%= sample.bpm %></td>
-          <td><%= link_to 'Edit', edit_sample_path(sample) %></td>
+          <td><%= clip.name %></td>
+          <td><%= clip.path %></td>
+          <td><%= clip.gain %></td>
+          <td><%= clip.bpm %></td>
+          <td><%= link_to 'Edit', edit_clip_path(clip) %></td>
         </tr>
       <% end %>
     </tbody>
   </table>
   <div class="link-new">
-    <%= link_to 'New', new_sample_path %>, 
+    <%= link_to 'New', new_clip_path %>, 
     <%= link_to 'Upload' %>
   </div>
 </div>

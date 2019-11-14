@@ -1,12 +1,12 @@
-<%= render partial: "shared/admin_menu", locals: { title: "Sample" } %>
+<%= render partial: "shared/admin_menu", locals: { title: "Clip" } %>
 
-<%= form_with(model: @sample, local: true) do |form| %>
-  <% if @sample.errors.any? %>
+<%= form_with(model: @clip, local: true) do |form| %>
+  <% if @clip.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(@sample.errors.count, "error") %> prohibited this sample from being saved:</h2>
+      <h2><%= pluralize(@clip.errors.count, "error") %> prohibited this clip from being saved:</h2>
 
       <ul>
-      <% @sample.errors.full_messages.each do |message| %>
+      <% @clip.errors.full_messages.each do |message| %>
         <li><%= message %></li>
       <% end %>
       </ul>
@@ -48,5 +48,5 @@
 <% end %>
 
 <div class=" link-delete ">
-  <%= link_to "Delete", @sample, method: :delete, data: { confirm: "Are you sure you want to delete this sample?" } %>
+  <%= link_to "Delete", @clip, method: :delete, data: { confirm: "Are you sure you want to delete this clip?" } %>
 </div>
