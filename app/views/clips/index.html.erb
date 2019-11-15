@@ -8,7 +8,6 @@
         <th>Name</th>
         <th>Path</th>
         <th>Gain</th>
-        <th>Bpm</th>
         <th colspan="3"></th>
       </tr>
     </thead>
@@ -19,7 +18,6 @@
           <td><%= clip.name %></td>
           <td><%= clip.path %></td>
           <td><%= clip.gain %></td>
-          <td><%= clip.bpm %></td>
           <td><%= link_to 'Edit', edit_clip_path(clip) %></td>
         </tr>
       <% end %>
