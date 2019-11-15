@@ -11,13 +11,7 @@ class User < ApplicationRecord
   private
 
   def send_to_aem
-    if not $BLOCKUSEROSC
-      begin
-        aem = { "mixer" => self }
-        $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
-      rescue
-        puts "\n\nRAILS> Channel> OSC failed to send to AEM.. \n\n"
-      end
-    end
+    AEM.send( "mixer", self )
   end
+
 end

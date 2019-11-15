@@ -114,12 +114,7 @@ class Channel < ApplicationRecord
   private
 
   def send_to_aem
-    begin
-      aem = { "channel" => self }
-      $OSCRUBY.send OSC::Message.new("/rails", aem.to_json)
-    rescue
-      puts "\n\nRAILS> Channel> OSC failed to send to AEM.. \n\n"
-    end
+    AEM.send( "channel", self )
   end
 
 end

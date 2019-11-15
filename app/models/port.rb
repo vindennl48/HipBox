@@ -7,7 +7,7 @@ class Port < ApplicationRecord
   private
 
   def restart_aem
-    Channel.start_aem
+    AEM.init
   end
 
 end
