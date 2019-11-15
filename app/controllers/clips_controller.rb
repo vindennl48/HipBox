@@ -51,7 +51,7 @@ class ClipsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def clip_params
-      params.require(:clip).permit(:name, :path, :gain, :start, :end)
+      params.require(:clip).permit(:name, :path, :gain, :start, :end, :is_locked)
     end
 
     def is_admin
