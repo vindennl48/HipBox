@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# A `pre-commit` git hook that checks for style violations. To use, copy the
+# contents of this script and paste in `.git/hooks/pre-commit`. Only Ruby files
+# that have been added or modified to the commit are checked.
+
+project_root() {
+  git rev-parse --show-toplevel
+}
+
+rubocop_config() {
+  echo "$(project_root)/.rubocop.yml"
+}
+
+if command -v rubocop > /dev/null; then
+  git status --porcelain \
+    | grep -E '^[[:space:]]A|^[[:space:]]M|^\?\?' \
+    | grep '.rb' \
+    | awk '{print $2}' \
+    | xargs rubocop \
+      --auto-correct \
+      --color \
+      --config "$(rubocop_config)" \
+      --extra-details \
+      --force-exclusion \
+      --format simple \
+      --rails
+fi
