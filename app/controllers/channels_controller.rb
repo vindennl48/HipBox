@@ -1,7 +1,7 @@
 class ChannelsController < ApplicationController
   before_action :authenticate_user!
   before_action :generate_channels
-  before_action :activate_osc
+  before_action :start_aem
 
   def index
     @channels = Channel.where(user: current_user).order("id")
@@ -14,8 +14,8 @@ class ChannelsController < ApplicationController
     Channel.generate_channels(current_user)
   end
 
-  def activate_osc
-    Channel.activate_osc
+  def start_aem
+    AEM.start
   end
 
 end
