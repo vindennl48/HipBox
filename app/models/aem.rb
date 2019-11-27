@@ -1,49 +1,83 @@
-class AEM
+class AEM < Cmd::Debug
+  # Has the AEM been started yet
+  @@IS_STARTED    = false
   # OSC Client for sending osc data
-  @@CLIENT    = nil
+  @@OSC_CLIENT    = nil
   # If true, do not start or send OSC
-  @@IS_DEACTIVATED = false
+  @@IS_OSC_CLOSED = false
 
   def self.deactivate
-    @@IS_DEACTIVATED = true
+    @@IS_OSC_CLOSED = true
   end
 
   def self.activate
-    @@IS_DEACTIVATED = false
+    @@IS_OSC_CLOSED = false
   end
 
-  def self.is_deactivated
-    return @@IS_DEACTIVATED
+  def self.status
+    if @@OSC_CLIENT != nil or @@IS_OSC_CLOSED
+      return false
+    end
+    return true
+  end
+
+  def self.start
+    if @@IS_STARTED
+      self.print "AEM is already started"
+      return true
+    else
+      self.print "Starting AEM..."
+    end
+
+    if Cmd::Jack.start
+      self.print "Starting AEM"
+      cmd = spawn("./aem/simple_client")
+      @@IS_STARTED = true
+      self.print "AEM has been started"
+
+      if self.establish_connection
+        return true
+      end
+    end
+
+    self.print "Launcing of AEM has been stopped.."
+    return false
   end
 
   def self.establish_connection
-    if @@CLIENT != nil or @@IS_DEACTIVATED
-      return 0
+    if @@OSC_CLIENT != nil or @@IS_OSC_CLOSED
+      return false
     end
 
     Thread.new do
       loop do
         begin
-          @@CLIENT = OSC::Client.new 4000, '0.0.0.0'
-          puts "AEM-MODEL> OSC Client is activated"
+          @@OSC_CLIENT = OSC::Client.new 4000, '0.0.0.0'
+          self.print "OSC Client is activated"
 
-          puts "AEM-MODEL> Starting AEM process"
-          if AEM.init
-            puts "AEM-MODEL> AEM Started Successfully"
+          self.print "Starting AEM process"
+          if self.reset
+            self.print "AEM Started Successfully"
           else
-            puts "AEM-MODEL> AEM did not start successfully.. Problem with OSC communication.."
+            self.print "AEM did not start successfully.. Problem with OSC communication.."
           end
 
           Thread.exit
         rescue
-          puts "AEM-MODEL> Failed to initialize OSC Client.. Retry in 3 seconds.."
+          self.print "Failed to initialize OSC Client.. Retry in 3 seconds.."
           sleep 3
         end
       end
     end
+
+    return true
   end
 
-  def self.init
+  def self.reset
+    if not self.status
+      return false
+    end
+
     # also need to send selected song clips, click samples, etc.
     aem = { "mixers" => [] }
 
@@ -58,28 +92,28 @@ class AEM
       aem["mixers"].push(mixer)
     end
 
-    puts "AEM-MODEL> Sending initial json to AEM"
-    if AEM.send("init", aem)
-      puts "AEM-MODEL> Initial json was sent successfully to AEM"
-      return 1
+    self.print "Sending initial json to AEM"
+    if self.send("reset", aem)
+      self.print "Initial json was sent successfully to AEM"
+     return true
     else
-      puts "AEM-MODEL> Failed to send initial json to AEM.."
-      return 0
+      self.print "Failed to send initial json to AEM.."
+      return false
     end
   end
 
   def self.send(method, message)
-    if @@CLIENT == nil or @@IS_DEACTIVATED
-      return 0
+    if not self.status
+      return false
     end
 
     begin
-      @@CLIENT.send OSC::Message.new("/rails/#{method}", message.to_json)
-      return 1
+      @@OSC_CLIENT.send OSC::Message.new("/rails/#{method}", message.to_json)
+      return true
     rescue
-      puts "AEM-MODEL> Failed to send json to AEM..."
+      self.print "Failed to send json to AEM..."
     end
-    return 0
+    return false
   end
 
 end
