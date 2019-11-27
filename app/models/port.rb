@@ -1,13 +1,13 @@
 class Port < ApplicationRecord
   belongs_to    :port_group, optional: true
-  after_update  :restart_aem
-  after_create  :restart_aem
-  after_destroy :restart_aem
+  after_update  :reset_aem
+  after_create  :reset_aem
+  after_destroy :reset_aem
 
   private
 
-  def restart_aem
-    AEM.init
+  def reset_aem
+    AEM.reset
   end
 
 end
