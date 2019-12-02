@@ -18,86 +18,8 @@
 
 </div>
 
-<div class=" channel master ">
-
-  <div class=" ch-title "><strong>Master:</strong></div>
-
-  <div class=" ch-buttons ">
-    <button class=" record "
-            hidden
-            data-type="record-button"
-            data-user=<%= @user.id %>
-            data-event-trigger-id="record">Rec</button>
-  </div>
-
-  <div  id="range_slider_master_value"
-        hidden
-        data-target="range_slider_master"
-        data-type="volume-value-master"
-        data-user=<%= @user.id %>
-        data-event-trigger-id="currentMasterVolume"
-        class=" ch-value ">0</div>
-
-  <div class=" ch-body ">
-    <input  id="range_slider_master"
-            hidden
-            data-target="range_slider_master_value"
-            data-type="volume-slider-master"
-            data-user=<%= @user.id %>
-            data-event-trigger-id="masterVolumeSlider"
-            class="form-control ng-valid ng-scope ng-dirty"
-            type="range" min="0" max="100" step="1" value="0">
-  </div>
-
-</div>
+<%= render 'channels/channel_strip/body_master', user: @user %>
 
 <% @channels.each do |channel| %>
-  <div  class=" channel "
-    <% if channel.port_group.user != @user %>
-        data-type="channel-strip"
-        data-channel=<%= channel.id %>>
-    <% else %>
-        >
-    <% end %>
-
-    <div class=" ch-title "><strong><%= channel.port_group.name %>:</strong></div>
-
-    <div class=" ch-buttons ">
-      <% if channel.port_group.user == @user %>
-        <button class=" solo "
-                hidden
-                data-type="solo-button"
-                data-channel=<%= channel.id %>
-                data-event-trigger-id='solo'>Solo</button>
-      <% else %>
-        <button class=" mute "
-                hidden
-                data-type="mute-button"
-                data-channel=<%= channel.id %>
-                data-event-trigger-id='mute'>Mute</button>
-      <% end %>
-    </div>
-
-    <div  id=<%= "range_slider_#{channel.port_group.name}_value" %>
-          hidden
-          data-target=<%= "range_slider_#{channel.port_group.name}" %>
-          data-type="volume-value"
-          data-channel=<%= channel.id %>
-          data-event-trigger-id='currentVolume'
-          class=" ch-value ">0</div>
-
-    <div class=" ch-value " data-type="hidden-label" hidden>Solo</div>
-
-    <div class=" ch-body ">
-      <input  id=<%= "range_slider_#{channel.port_group.name}" %>
-              hidden
-              data-target=<%= "range_slider_#{channel.port_group.name}_value" %>
-              data-type="volume-slider"
-              data-channel=<%= channel.id %>
-              data-event-trigger-id='volumeSlider'
-              class="form-control ng-valid ng-scope ng-dirty"
-              type="range" min="0" max="100" step="1" value="0">
-    </div>
-
-  </div>
+  <%= render 'channels/channel_strip/body', channel: channel, user: @user %>
 <% end %>

@@ -1,0 +1,25 @@
+<div id="channel_<%= channel.id %>_body"
+     data-id="<%= channel.id %>"
+     data-type="channel-strip-body"
+     class=" channel "
+     >
+
+  <div class=" ch-title ">
+    <strong><%= channel.port_group.name %>:</strong>
+  </div>
+
+  <div class=" ch-buttons ">
+    <%= render 'channels/channel_strip/button',
+        channel_id: channel.id,
+        type:       channel.port_group.user == user ? "solo" : "mute" %>
+  </div>
+
+  <%= render 'channels/channel_strip/readout',
+      channel_id: channel.id %>
+
+  <div class=" ch-body ">
+    <%= render 'channels/channel_strip/slider',
+        channel_id: channel.id %>
+  </div>
+
+</div>

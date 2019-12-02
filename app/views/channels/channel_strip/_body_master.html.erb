@@ -1,0 +1,26 @@
+<div id="channel_0_body"
+     data-id="0"
+     data-userid="<%= user.id %>"
+     data-type="channel-strip-body-master"
+     class=" channel master "
+     >
+
+  <div class=" ch-title ">
+    <strong>Master:</strong>
+  </div>
+
+  <div class=" ch-buttons ">
+    <%= render 'channels/channel_strip/button',
+        channel_id: 0,
+        type:       "record" %>
+  </div>
+
+  <%= render 'channels/channel_strip/readout',
+      channel_id: 0 %>
+
+  <div class=" ch-body ">
+    <%= render 'channels/channel_strip/slider',
+        channel_id: 0 %>
+  </div>
+
+</div>
