@@ -1,15 +1,16 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.6.5'
+ruby '2.6.4'
 
 gem 'bootsnap', require: false
 gem 'devise'
 gem 'pg'
 gem 'puma'
-gem 'rails', '~> 6.0.0'
+gem 'rails', '~> 6.0.1'
 gem 'ruby-osc', '~> 0.4.1'
 gem 'sassc-rails'
+gem 'turbolinks'
 gem 'uglifier'
 gem 'webpacker'
 
