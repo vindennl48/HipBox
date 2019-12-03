@@ -17,12 +17,12 @@ class ChannelsChannel < ApplicationCable::Channel
     })
   end
 
-  def saveChannelGain(data)
+  def save_slider_value(data)
     channel = Channel.find(data['channel_id'])
     channel.update(gain: data['value'])
   end
 
-  def saveMute(data)
+  def save_mute_state(data)
     channel = Channel.find(data['channel_id'])
 
     if channel.port_group.is_global
@@ -31,17 +31,19 @@ class ChannelsChannel < ApplicationCable::Channel
       channels.each do |c|
         c.update(is_mute: data['value'])
 
-        ChannelsChannel.broadcast_to(c, {
-          type:    "update",
-          channel: { is_mute: c['is_mute'] }
-        })
+        if c != channel
+          ChannelsChannel.broadcast_to(c, {
+            type:    "update",
+            channel: { is_mute: c['is_mute'] }
+          })
+        end
       end
     else
       channel.update(is_mute: data['value'])
     end
   end
 
-  def saveSolo(data)
+  def save_solo_state(data)
     channel  = Channel.find(data['channel_id'])
     channels = Channel.where(port_group: channel.port_group)
 
@@ -49,10 +51,12 @@ class ChannelsChannel < ApplicationCable::Channel
     channels.each do |c|
       c.update(is_solo: data['value'])
 
-      ChannelsChannel.broadcast_to(c, {
-        type:    "update",
-        channel: { is_solo: c['is_solo'] }
-      })
+      if c != channel
+        ChannelsChannel.broadcast_to(c, {
+          type:    "update",
+          channel: { is_solo: c['is_solo'] }
+        })
+      end
     end
 
     # Mute other users to you
