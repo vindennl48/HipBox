@@ -1,3 +1,5 @@
+import App from '../channels/consumer.js'
+
 // -- Range Sliders --
 function rangeSlider(slider) {
   document.getElementById(slider.dataset.target).innerHTML = slider.value
@@ -199,7 +201,7 @@ function loadActionCableSlidersMaster() {
       received: function(data) {
         // Called when there"s incoming data on the websocket for this channel
         if (data["type"] === "update") {
-          master = data["user"]
+          let master = data["user"]
           let element = document.querySelectorAll("[data-user='"+ID+"']")
           element.forEach(function(a){
             if (a.dataset.type === "volume-slider-master") {
@@ -241,3 +243,13 @@ function loadActionCableSlidersMaster() {
 }
 
 // --
+
+export {
+  loadActionCableSliders,
+  loadActionCableSlidersMaster,
+  rangeSlider,
+  rangeSliderMaster,
+  resetRangeSliderValue,
+  resetRangeSliderValueMaster,
+  toggleButton,
+};
