@@ -17,14 +17,18 @@ class MixerChannel < ApplicationCable::Channel
     })
   end
 
-  def saveGain(data)
+  def save_slider_value(data)
     user = User.find(data['user_id'])
     user.update(gain: data['value'])
   end
 
-  def record(data)
+  def save_record_state(data)
     User.all.each do |user|
       user.update(is_recording: data['value'])
+      MixerChannel.broadcast_to(user, {
+        type: "update",
+        user: user,
+      })
       puts "MIXERCHANNEL> Record Update: #{data['value']}"
       $BLOCKUSEROSC = true
     end
