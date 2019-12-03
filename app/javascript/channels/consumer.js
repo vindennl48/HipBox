@@ -3,4 +3,7 @@
 
 import { createConsumer } from "@rails/actioncable"
 
-export default createConsumer()
+const App = {};
+App.cable = createConsumer();
+
+export default App;

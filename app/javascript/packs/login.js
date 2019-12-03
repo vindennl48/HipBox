@@ -1,3 +1,7 @@
+document.addEventListener('DOMContentLoaded', (event) => {
+  selectUserListener()
+});
+
 function selectUser() {
   document.getElementById("user_email").value =
     document.getElementById("user_name").value + "@hipbox.com"
