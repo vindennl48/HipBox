@@ -45,4 +45,16 @@ Port.find_or_create_by(name: "Jesse_R",       io: false, path: "system:playback_
 Port.find_or_create_by(name: "Sean_L",        io: false, path: "system:playback_9",  port_group: PortGroup.find_by(name: "Sean_HP",  io: false), pan: -1, )
 Port.find_or_create_by(name: "Sean_R",        io: false, path: "system:playback_10", port_group: PortGroup.find_by(name: "Sean_HP",  io: false), pan:  1, )
 
+puts "----> Creating default tags"
+
+tags = [
+  "james", "jesse", "sean", "mitch",                  # users
+  "sono", "chrono", "space", "petrichor", "blind",    # songs
+  "backtrack", "jam", "click",                        # audio types
+]
+
+tags.each do |tag|
+  Tag.find_or_create_by(name: tag)
+end
+
 puts "----> Done!"
