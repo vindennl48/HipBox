@@ -5,7 +5,7 @@
   </div>
 
   <% if @user.name == "Mitch" %>
-    <div class=" admin-link ">
+    <div class=" admin-link " data-turbolinks="false">
       <%= link_to "Admin", admin_index_path %>
     </div>
   <% end %>

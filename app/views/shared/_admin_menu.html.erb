@@ -4,11 +4,11 @@
     <h1><%= title %></h1>
   </div>
 
-  <div class=" admin-link ">
-    <%= link_to "Admin", admin_index_path %>
+  <div class=" admin-link " data-turbolinks="false">
+    <%= link_to "Admin", admin_index_path, method: :get %>
   </div>
 
-  <div class=" log-out ">
+  <div class=" log-out " data-turbolinks="false">
     <%= link_to ">Mixer", channels_path, method: :get %>
   </div>
 
