@@ -1,6 +1,6 @@
-#include <unistd.h>
-#include <string>
-#include "hipbox.h"
+#include <unistd.h>        // sleep()
+#include <stdlib.h>        // exit()
+#include "./src/osc/osc.h" // start_osc(), stop_osc()
 
 int main (int argc, char *argv[]) {
   // Setup OSC
