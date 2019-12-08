@@ -1,4 +1,8 @@
 class AEM < Cmd::Debug
+  # Do not start simple_client
+  ## This is for debugging, SHOULD BE SET TO false
+  @@NO_SIMPLE_CLIENT = false
+
   # Has the AEM been started yet
   @@IS_STARTED    = false
   # OSC Client for sending osc data
@@ -15,7 +19,10 @@ class AEM < Cmd::Debug
   end
 
   def self.status
-    if @@OSC_CLIENT != nil or @@IS_OSC_CLOSED
+    if @@OSC_CLIENT == nil or @@IS_OSC_CLOSED
+      self.print "Status is false."
+      self.print "    OSC_CLIENT:    #{@@OSC_CLIENT}"
+      self.print "    IS_OSC_CLOSED: #{@@IS_OSC_CLOSED}"
       return false
     end
     return true
@@ -31,7 +38,9 @@ class AEM < Cmd::Debug
 
     if Cmd::Jack.start
       self.print "Starting AEM"
-      cmd = spawn("./aem/simple_client")
+      if not @@NO_SIMPLE_CLIENT
+        cmd = spawn("./aem/simple_client")
+      end
       @@IS_STARTED = true
       self.print "AEM has been started"
 
