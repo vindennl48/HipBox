@@ -27,19 +27,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
     /* Reset */
     stop_jack();
-    in_ports.clear();
-    in_port_groups.clear();
-    out_port_groups.clear();
-    mixers.clear();
-    rec_files.clear();
-    audio_files.clear();
-
-    in_ports.reserve(DEFAULT_VECTOR_SIZE);
-    in_port_groups.reserve(DEFAULT_VECTOR_SIZE);
-    out_port_groups.reserve(DEFAULT_VECTOR_SIZE);
-    mixers.reserve(DEFAULT_VECTOR_SIZE);
-    rec_files.reserve(DEFAULT_VECTOR_SIZE);
-    audio_files.reserve(DEFAULT_VECTOR_SIZE);
+    reset_data();
     /* -- */
 
     int i_size = mixers_p->size();

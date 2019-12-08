@@ -24,4 +24,6 @@ extern vector<AudioFile>    audio_files;
 extern AudioEngine          audio_engine;
 extern bool                 is_recording;
 
+void reset_data();
+
 #endif
