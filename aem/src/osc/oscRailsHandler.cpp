@@ -15,7 +15,7 @@ using namespace std;
 int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 		              lo_message msg, void *user_data)
 {
-  auto j3 = json::parse((string)&argv[0]->s);
+  json j3 = json::parse((string)&argv[0]->s);
 
   PRINT("osc.rails_handler> Starting Rails Handler");
 
@@ -23,7 +23,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   //PRINT("osc.rails_handler> %s", j3.dump(4).c_str());
 
   if (j3.count("mixers")) {
-    auto *mixers_p = &j3["mixers"];
+    json *mixers_p = &j3["mixers"];
 
     /* Reset */
     stop_jack();
@@ -32,9 +32,9 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
     int i_size = mixers_p->size();
     for (int i=0; i<i_size; i++) {
-      auto *mixer_p          = &(*mixers_p)[i];
-      auto *out_port_group_p = &(*mixers_p)[i]["out_port_group"];
-      auto *channels_p       = &(*mixers_p)[i]["channels"];
+      json *mixer_p          = &(*mixers_p)[i];
+      json *out_port_group_p = &(*mixers_p)[i]["out_port_group"];
+      json *channels_p       = &(*mixers_p)[i]["channels"];
 
       OutPortGroup out_port_group;
       out_port_group.id                       = (*out_port_group_p)["id"];
@@ -51,7 +51,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
       int j_size = channels_p->size();
       for (int j=0; j<j_size; j++) {
-        auto *channel_p = &(*channels_p)[j];
+        json *channel_p = &(*channels_p)[j];
 
         InPortGroup in_port_group;
         in_port_group.id        = (*channel_p)["port_group"]["id"];
@@ -60,7 +60,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
 
         int k_size = (*channel_p)["port_group"]["ports"].size();
         for (int k=0; k<k_size; k++) {
-          auto *port_p = &(*channel_p)["port_group"]["ports"][k];
+          json *port_p = &(*channel_p)["port_group"]["ports"][k];
 
           InPort in_port;
           in_port.id                 = (*port_p)["id"];
@@ -176,7 +176,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     PRINT("osc.rails_handler> Mixer data incoming\n");
 
     // Incoming channel from OSC
-    auto *in_mixer_p = &j3["mixer"];
+    json *in_mixer_p = &j3["mixer"];
 
     Mixer *mixer_p = find_mixer((*in_mixer_p)["id"]);
     if (mixer_p) {
@@ -200,7 +200,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     PRINT("osc.rails_handler> Channel data incoming\n");
 
     // Incoming channel from OSC
-    auto *in_chan_p = &j3["channel"];
+    json *in_chan_p = &j3["channel"];
 
     // Current saved channel in mixer
     Channel *channel_p = find_channel((*in_chan_p)["id"]);
