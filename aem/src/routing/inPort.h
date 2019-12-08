@@ -4,7 +4,9 @@
 #include <string>
 #include <jack/jack.h>
 #include "../extra/print.h"
+#include "../extra/json.h"
 
+using json = nlohmann::json;
 using namespace std;
 
 struct InPort {
@@ -15,6 +17,8 @@ struct InPort {
   double       pan                = 0.0; // -1.0: Left, 1.0: Right
   string       name               = "";
   string       hardware_port_path = "";
+
+  static InPort* create_from_json(json *jin_port);
 
   void initialize(jack_client_t *client) {
     if (hardware_port_path.substr(0,6) == "system") {

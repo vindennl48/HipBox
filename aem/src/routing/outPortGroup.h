@@ -1,12 +1,20 @@
 #ifndef OUTPORTGROUP_H
 #define OUTPORTGROUP_H
 
+#include <jack/jack.h>
+#include <string>
+#include "../extra/json.h"
 #include "../extra/print.h"
+
+using json = nlohmann::json;
+using namespace std;
 
 struct OutPortGroup {
   jack_port_t                 *port_left;
   jack_port_t                 *port_right;
   jack_default_audio_sample_t *output_left, *output_right;
+
+  static OutPortGroup* create_from_json(json *jout_port_group);
 
   unsigned int id                       = 0;
   string       name                     = "";

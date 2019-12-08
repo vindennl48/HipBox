@@ -1,13 +1,15 @@
 #include <string>
 #include <lo/lo.h>
+#include "../routing/mixer.h"
+#include "../data/data.h"
+#include "../jack/jack.h"
 #include "../extra/json.h"
 #include "../extra/print.h"
 #include "../extra/find.h"
-#include "../extra/templates.h"
 #include "../extra/db.h"
 #include "../extra/getRecNum.h"
-#include "../data/data.h"
-#include "../jack/jack.h"
+
+#include <typeinfo>
 
 using json = nlohmann::json;
 using namespace std;
@@ -23,173 +25,41 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   //PRINT("osc.rails_handler> %s", j3.dump(4).c_str());
 
   if (j3.count("mixers")) {
-    json *mixers_p = &j3["mixers"];
-
-    /* Reset */
+    // Reset Jack and port objects
     stop_jack();
     reset_data();
-    /* -- */
 
-    int i_size = mixers_p->size();
+    int i_size = j3["mixers"].size();
     for (int i=0; i<i_size; i++) {
-      json *mixer_p          = &(*mixers_p)[i];
-      json *out_port_group_p = &(*mixers_p)[i]["out_port_group"];
-      json *channels_p       = &(*mixers_p)[i]["channels"];
-
-      OutPortGroup out_port_group;
-      out_port_group.id                       = (*out_port_group_p)["id"];
-      out_port_group.name                     = (*out_port_group_p)["name"];
-      out_port_group.port_name_left           = (*out_port_group_p)["ports"][0]["name"];
-      out_port_group.port_name_right          = (*out_port_group_p)["ports"][1]["name"];
-      out_port_group.hardware_port_path_left  = (*out_port_group_p)["ports"][0]["path"];
-      out_port_group.hardware_port_path_right = (*out_port_group_p)["ports"][1]["path"];
-
-      Mixer mixer;
-      mixer.id             = (*mixer_p)["id"];
-      mixer.gain           = stod((string)(*mixer_p)["gain"]);
-      mixer.out_port_group = find_or_create<OutPortGroup>(&out_port_groups, &out_port_group);
-
-      int j_size = channels_p->size();
-      for (int j=0; j<j_size; j++) {
-        json *channel_p = &(*channels_p)[j];
-
-        InPortGroup in_port_group;
-        in_port_group.id        = (*channel_p)["port_group"]["id"];
-        in_port_group.name      = (*channel_p)["port_group"]["name"];
-        in_port_group.is_record = (*channel_p)["port_group"]["is_record"];
-
-        int k_size = (*channel_p)["port_group"]["ports"].size();
-        for (int k=0; k<k_size; k++) {
-          json *port_p = &(*channel_p)["port_group"]["ports"][k];
-
-          InPort in_port;
-          in_port.id                 = (*port_p)["id"];
-          in_port.pan                = stod((string)(*port_p)["pan"]);
-          in_port.name               = (*port_p)["name"];
-          in_port.hardware_port_path = (*port_p)["path"];
-
-          in_port_group.ports.push_back(
-            find_or_create<InPort>(&in_ports, &in_port)
-          );
-        }
-
-        // Create recfile for recordable in_port_groups
-        if (in_port_group.is_record) {
-          RecFile rec_file;
-          rec_file.id        = in_port_group.id;
-          rec_file.base_name = in_port_group.name;
-
-          rec_file.in_ports_p.insert(
-            rec_file.in_ports_p.end(),
-            in_port_group.ports.begin(),
-            in_port_group.ports.end()
-          );
-
-          find_or_create<RecFile>(&rec_files, &rec_file);
-        }
-
-        Channel channel;
-        channel.id            = (*channel_p)["id"];
-        channel.gain          = stod((string)(*channel_p)["gain"]);
-        channel.pan           = stod((string)(*channel_p)["pan"]);
-        channel.is_mute       = (*channel_p)["is_mute"];
-        channel.in_port_group = find_or_create<InPortGroup>(&in_port_groups, &in_port_group);
-
-        mixer.channels.push_back(channel);
-      }
-
-      mixers.push_back(mixer);
+      Mixer::create_from_json( &j3["mixers"][i] );
     }
 
-    // Create recfile for scratch track
-    RecFile rec_file;
-    rec_file.id        = 9999;
-    rec_file.base_name = "Scratch";
-
-    i_size = in_port_groups.size();
-    for (int i=0; i<i_size; i++) {
-      InPortGroup *in_port_group = &in_port_groups[i];
-
-      if (in_port_group->is_record) {
-        rec_file.in_ports_p.insert(
-          rec_file.in_ports_p.end(),
-          in_port_group->ports.begin(),
-          in_port_group->ports.end()
-        );
-      }
-    }
-    find_or_create<RecFile>(&rec_files, &rec_file);
-    // Done creating scratch track
-
-    PRINT("osc.rails_handler> Starting Jack Service\n");
+    PRINT("osc.rails_handler> Starting Jack Service");
     start_jack();
-    PRINT("osc.rails_handler> Jack Service Up and Running\n");
+    PRINT("osc.rails_handler> Jack Service Up and Running");
 
-#ifdef DEBUG
-   //* All the testing to confirm this works
-    
-    // Test
-    i_size = in_port_groups.size();
-    PRINT("osc.rails_handler> InPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINT("osc.rails_handler> InPortGroup Name: %s\n", in_port_groups[i].name.c_str());
-    }
-    
-    
-    // Test
-    i_size = in_ports.size();
-    PRINT("osc.rails_handler> InPorts Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINT("osc.rails_handler> InPort Name: %s, Path: %s\n",
-        in_ports[i].name.c_str(),
-        in_ports[i].hardware_port_path.c_str()
-      );
-    }
-    
-    // Test for port groups
-    i_size = in_port_groups.size();
-    PRINT("osc.rails_handler> InPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINT("osc.rails_handler> InPortGroup Ports Size: %i\n", (int)in_port_groups[i].ports.size());
-       if (in_port_groups[i].ports.size() > 0) {
-        PRINT("osc.rails_handler> InPortGroup FirstPortName: %s\n", in_port_groups[i].ports[0]->hardware_port_path.c_str());
-       }
-    }
-    
-    // Test
-    i_size = out_port_groups.size();
-    PRINT("osc.rails_handler> OutPortGroups Size: %i\n", i_size);
-    for (int i=0; i<i_size; i++) {
-      PRINT("osc.rails_handler> OutPortGroup LeftName: %s, RightName: %s, LeftPath: %s, RightPath: %s\n",
-        out_port_groups[i].port_name_left.c_str(),
-        out_port_groups[i].port_name_right.c_str(),
-        out_port_groups[i].hardware_port_path_left.c_str(),
-        out_port_groups[i].hardware_port_path_right.c_str()
-      );
-    }
-    //*/
-#endif
+    mixer_debug();
     
   } // -- END j3.count("mixers") --
 
   if (j3.count("mixer")) {
-    PRINT("osc.rails_handler> Mixer data incoming\n");
+    PRINT("osc.rails_handler> Mixer data incoming");
 
     // Incoming channel from OSC
-    json *in_mixer_p = &j3["mixer"];
+    json *jmixer = &j3["mixer"];
 
-    Mixer *mixer_p = find_mixer((*in_mixer_p)["id"]);
-    if (mixer_p) {
-      if ((*in_mixer_p).count("gain"))
-        mixer_p->gain = stod((string)(*in_mixer_p)["gain"]);
+    Mixer *mixer = find_mixer((*jmixer)["id"]);
+    if (mixer) {
+      if ((*jmixer).count("gain"))
+        mixer->set_gain( (*jmixer)["gain"] );
 
-      if ((*in_mixer_p).count("is_recording")) {
-        if ((*in_mixer_p)["is_recording"] && !is_recording) {
+      if ((*jmixer).count("is_recording")) {
+        if ((*jmixer)["is_recording"] && !is_recording) {
           is_recording = true;
-          PRINT("osc.rails_handler> Is Recording!\n");
-        } else if (!(*in_mixer_p)["is_recording"] && is_recording){
+          PRINT("osc.rails_handler> Is Recording!");
+        } else if (!(*jmixer)["is_recording"] && is_recording){
           is_recording = false;
-          PRINT("osc.rails_handler> Is Not Recording..\n");
+          PRINT("osc.rails_handler> Is Not Recording..");
           RecFile::recNum = getRecNum();
         }
       }
@@ -197,7 +67,7 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
   }
 
   if (j3.count("channel")) {
-    PRINT("osc.rails_handler> Channel data incoming\n");
+    PRINT("osc.rails_handler> Channel data incoming");
 
     // Incoming channel from OSC
     json *in_chan_p = &j3["channel"];
@@ -206,11 +76,11 @@ int rails_handler(const char *path, const char *types, lo_arg **argv, int argc,
     Channel *channel_p = find_channel((*in_chan_p)["id"]);
     if (channel_p) {
       if ((*in_chan_p).count("gain")) {
-        channel_p->gain = stod((string)(*in_chan_p)["gain"]);
-        PRINT("osc.rails_handler> Channel Gain DB: %f\n", slider2db((double)channel_p->gain));
+        channel_p->set_gain( (*in_chan_p)["gain"] );
+        PRINT("osc.rails_handler> Channel Gain DB: %f", slider2db((double)channel_p->gain));
       }
       if ((*in_chan_p).count("pan"))
-        channel_p->pan = stod((string)(*in_chan_p)["pan"]);
+        channel_p->set_pan( (*in_chan_p)["pan"] );
       if ((*in_chan_p).count("is_mute"))
         channel_p->is_mute = (*in_chan_p)["is_mute"];
     }
