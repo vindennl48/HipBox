@@ -13,7 +13,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @port_groups.where(io: true).each do |group| %>
+      <% @in_port_groups.each do |group| %>
         <tr>
           <td><%= group.name %></td>
           <td><%= group.is_global ? "Yes" : "No" %></td>
@@ -37,7 +37,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @port_groups.where(io: false).each do |group| %>
+      <% @out_port_groups.each do |group| %>
         <tr>
           <td><%= group.name %></td>
           <td><%= link_to 'Edit', edit_port_group_path(group) %></td>
@@ -61,7 +61,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @ports.where(io: true).each do |port| %>
+      <% @in_ports.each do |port| %>
         <tr>
           <td><%= port.name %></td>
           <td><%= port.path %></td>
@@ -88,7 +88,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @ports.where(io: false).each do |port| %>
+      <% @out_ports.each do |port| %>
         <tr>
           <td><%= port.name %></td>
           <td><%= port.path %></td>

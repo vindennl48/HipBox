@@ -6,6 +6,14 @@ class PortGroup < ApplicationRecord
   after_create   :reset_aem
   after_destroy  :reset_aem
 
+  def self.in_port_groups
+    PortGroup.where(io: true).includes(:user).order("id")
+  end
+
+  def self.out_port_groups
+    PortGroup.where(io: false).order("id")
+  end
+
   private
 
   def clean_channels

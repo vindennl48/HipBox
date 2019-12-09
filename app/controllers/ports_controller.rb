@@ -4,8 +4,10 @@ class PortsController < ApplicationController
   before_action :set_port, only: [:edit, :update, :destroy]
 
   def index
-    @ports       = Port.all.order("id")
-    @port_groups = PortGroup.all.order("id")
+    @in_ports        = Port.in_ports
+    @out_ports       = Port.out_ports
+    @in_port_groups  = PortGroup.in_port_groups
+    @out_port_groups = PortGroup.out_port_groups
   end
 
   def new
