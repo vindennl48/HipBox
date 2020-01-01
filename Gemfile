@@ -5,7 +5,7 @@ ruby '2.5.1'
 
 gem 'react-rails',       '~> 2.4.5'
 gem 'devise',            '~> 4.5.0'
-gem 'ruby-osc',          '~> 0.4.1'
+gem 'ruby-osc',          '~> 0.40.0'
 gem 'google-api-client', '~> 0.8'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
