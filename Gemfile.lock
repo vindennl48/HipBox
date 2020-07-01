@@ -190,7 +190,7 @@ GEM
       execjs
       railties (>= 3.2)
       tilt
-    redis (4.0.3)
+    redis (4.2.1)
     regexp_parser (1.2.0)
     representable (3.0.4)
       declarative (< 0.1.0)
