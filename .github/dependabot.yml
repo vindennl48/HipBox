@@ -1,0 +1,28 @@
+version: 2
+updates:
+- package-ecosystem: bundler
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "10:00"
+  open-pull-requests-limit: 10
+  versioning-strategy: increase-if-necessary
+  ignore:
+  - dependency-name: listen
+    versions:
+    - 3.4.0
+  - dependency-name: google-api-client
+    versions:
+    - 0.52.0
+  - dependency-name: bootsnap
+    versions:
+    - 1.5.1
+  - dependency-name: capybara
+    versions:
+    - 3.34.0
+  - dependency-name: loofah
+    versions:
+    - 2.8.0
+  - dependency-name: jbuilder
+    versions:
+    - 2.10.1
